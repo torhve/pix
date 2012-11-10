@@ -1,0 +1,100 @@
+
+    <footer>
+    </footer>
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+    <script src="static/bootstrap/js/bootstrap.js"></script>
+    <script type="application/javascript" src="static/masonry/jquery.masonry.min.js"></script>
+    <script type="application/javascript" src="static/lightview-3.2.5/js/lightview/lightview.js"></script>
+    <script type="application/javascript" src="static/imagesloaded/jquery.imagesloaded.min.js"></script>
+    <script type="application/javascript" src="static/jquery.isotope.min.js"></script>
+    <script>
+(function($,sr){
+ 
+  // debouncing function from John Hann
+  // http://unscriptable.com/index.php/2009/03/20/debouncing-javascript-methods/
+  var debounce = function (func, threshold, execAsap) {
+      var timeout;
+ 
+      return function debounced () {
+          var obj = this, args = arguments;
+          function delayed () {
+              if (!execAsap)
+                  func.apply(obj, args);
+              timeout = null; 
+          };
+ 
+          if (timeout)
+              clearTimeout(timeout);
+          else if (execAsap)
+              func.apply(obj, args);
+ 
+          timeout = setTimeout(delayed, threshold || 100); 
+      };
+  }
+    // smartresize 
+    jQuery.fn[sr] = function(fn){  return fn ? this.bind('resize', debounce(fn)) : this.trigger(sr); };
+ 
+})(jQuery,'smartresize');
+
+$(function(){
+
+    var slides = [];
+    var currentSlide = 0;
+    var $container = $('#container');
+    
+    var itemtoHTML = function(urlobj) {
+        title = urlobj.nick + '@' + urlobj.buffer_name;
+        caption = urlobj.message.replace(urlobj.url, '');
+        return "<div class='item'><a class=lightview data-lightview-group=imgs data-lightview-title='"+title+"' data-lightview-caption='"+caption+"' href='"+urlobj.url+"'><img src="+urlobj.url+"></a><div class=meta><div class=title>"+title+"</div><div class=msg>"+caption+"</div></div></div>";
+    }
+    var addItem = function(slideobj, slidepos) {
+        $container.append(itemtoHTML(slideobj));
+    }
+
+
+    // Fetch the urls
+/*    $.getJSON('api/{% if buffer %}{{buffer}}/{% endif %}img{%if search%}?search={{search}}{% endif %}', function(data) { 
+        images = data.urls;
+        $.each(images, function(i, obj) {
+            addItem(obj, i);
+        });
+        doMasonry();
+    })*/
+    var $container = $('#items');
+    
+    var doMasonry = function() {
+        $container.imagesLoaded(function( $images, $proper, $broken ) {
+            $container.masonry({
+                resizable: false, // disable normal resizing
+                columnWidth: $(document).width() > 1225 ? 146 : 113,
+            });
+        });
+
+    };
+    doMasonry();
+    var asdf = function() {
+        // initialize Isotope
+        console.log('isotoping');
+        $container.isotope({
+          // options...
+          resizable: false, // disable normal resizing
+          // set columnWidth to a percentage of container width
+          masonry: { columnWidth: $(document).width() > 1225 ? 146 : 113 
+          }
+        });
+
+
+        // update columnWidth on window resize
+        $(window).smartresize(function(){
+          $container.isotope({
+            // update columnWidth to a percentage of container width
+            masonry: { columnWidth: $container.width() / 3 }
+          });
+        });
+    }
+
+})
+    </script>
+  </body>
+</html>
