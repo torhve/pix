@@ -1,5 +1,12 @@
 -- use nginx $root variable for template dir
 local TEMPLATEDIR = ngx.var.root .. '/';
+local cjson = require ("cjson")
+
+
+function ctx(ctx)
+    ctx['BASE'] = BASE
+    return ctx
+end
 
 function escape(s)
     if s == nil then return '' end
@@ -112,7 +119,7 @@ ngx.header.content_type = 'text/html';
 
 -- the db global
 red = nil
-
+BASE = '/ngphotox/'
 -- 
 -- Index view
 --
@@ -123,18 +130,122 @@ local function index()
 
     -- load template
     local page = tload('main.html')
-    local context = {counter = tostring(counter) }
+    local context = ctx{counter = tostring(counter) }
     -- render template with counter as context
+    -- and return it to nginx
+    ngx.print( page(context) )
+end
+
+--
+-- View for a single album
+-- 
+local function album()
+
+    local album = ngx.re.match(ngx.var.uri, '/(([a-zA-Z])+)/$')[1]
+    local images, err = red:smembers(album)
+    
+    -- load template
+    local page = tload('album.html')
+    local context = ctx{ 
+        album = album,
+        images = images,
+    }
+    -- render template with counter as context
+    -- and return it to nginx
+    ngx.print( page(ctx(context)) )
+end
+
+local function upload()
+    -- load template
+    local page = tload('upload.html')
+    local context = ctx{}
+    -- and return it to nginx
+    ngx.print( page(context) )
+end
+
+local function add_file_to_db(album, h)
+    local timestamp = ngx.time() -- FIXME we could use header for this
+    local imgh = {}
+    imgh['album'] = album
+    imgh['timestamp'] = timestamp
+    imgh['client'] = ngx.var.remote_addr
+    imgh['file_name'] = h['x-file-name']
+    local albumskey = 'albums'
+    local albumkey =  album
+    local imagekey =  album .. '_' .. h['x-file-name']
+
+    red:sadd(albumskey, albumkey)
+    red:sadd(albumkey, imagekey)
+    red:hmset(imagekey, imgh)
+
+end
+
+local function upload_post()
+    -- recieve data
+    ngx.req.read_body()
+
+    local path = '/home/xt/src/ngphotox/img/'
+
+    local h = ngx.req.get_headers()
+    local args = ""
+    for k, v in pairs(h) do
+        args = args .. "k:" .. k .. ":,v:" .. v .. "\n"
+    end
+    local md5 = h['content-md5'] -- FIXME check this with ngx.md5
+    local file_name = h['x-file-name']
+    local referer = h['referer']
+    local album = 'testalbum' -- TODO not done yet
+
+    path = path .. '/' .. album .. '/'
+
+    --local data = ngx.req.get_body_data()
+    local req_body_file_name = ngx.req.get_body_file()
+    tmpfile = io.open(req_body_file_name)
+    realfile = io.open(path .. file_name, 'w')
+    local size = 2^13      -- good buffer size (8K)
+    while true do
+      local block = tmpfile:read(size)
+      if not block then break end
+      realfile:write(block)
+    end
+
+    tmpfile:close()
+    realfile:close()
+
+
+    -- Save meta data to DB
+    add_file_to_db(album, h)
+
+    -- load template
+    local page = tload('uploaded.html')
+    local context = ctx{['data'] = data, ['args'] = args}
     -- and return it to nginx
     ngx.print( page(context) )
 end
 
 
 --
--- hello world view
+-- return images from db
 --
-local function hello()
-    ngx.print( tload('hello.html'){} )
+local function img()
+    ngx.header.content_type = 'application/json';
+    local albumskey = 'albums'
+    local albums, err = red:smembers(albumskey)
+    local res = {}
+    res['albums'] = albums
+    res['images'] = {}
+
+    for i, album in ipairs(albums) do
+        local images, err = red:smembers(album)
+        res['images'] = images
+        for i, image in ipairs(images) do
+            local imgh, err = red:hgetall(image)
+            res[image] = imgh
+        end
+    end
+
+
+    ngx.print( cjson.encode(res) )
 end
 
 -- 
@@ -165,12 +276,15 @@ end
 
 -- mapping patterns to views
 local routes = {
-    ['^/ngphotox/$']      = index,
+    ['^/ngphotox/$']             = index,
+    ['^/ngphotox/([a-zA-Z])+/$']    = album,
+    ['^/ngphotox/api/img/?$']    = img,
+    ['^/ngphotox/upload/?$']     = upload,
+    ['^/ngphotox/upload/post/?$']= upload_post,
 }
-
 -- iterate route patterns and find view
 for pattern, view in pairs(routes) do
-    if ngx.re.match(pattern, ngx.var.uri) then
+    if ngx.re.match(ngx.var.uri, pattern) then
         init_db()
         view()
         end_db()
