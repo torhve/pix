@@ -44,6 +44,7 @@
 		    -ms-filter: blur(2px);
 		     -o-filter: blur(2px);
 		        filter: blur(2px);
+                opacity: 0.6;
 	}
 	.no-blur.avgrund-active .avgrund-contents {
 		-webkit-filter: none;
@@ -51,13 +52,14 @@
 		    -ms-filter: none;
 		     -o-filter: none;
 		        filter: none;
+                opacity: 1;
 	}
 
 .avgrund-popup {
 	position: absolute;
-	width: 100%
-	height: 100%;
-    top: 80px;
+    max-width: 98%;
+    max-height: auto;
+    top: 70px;
     left: 15px;
 	visibility: hidden;
 	opacity: 0;

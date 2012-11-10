@@ -18,6 +18,7 @@ body {
     position: absolute;
     top: 15px;
     left: 0;
+    z-index: 1;
 }
 .album-label:hover {
     background: rgba(0, 0, 0, 0.6);
