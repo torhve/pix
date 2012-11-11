@@ -1,23 +1,19 @@
     {( "header.html" )}
+
     <div class="album-label">
         <h2><i class="icon-camera-retro"></i> {{ album}} </h2>
     </div>
-    {% for i, image in ipairs(images) do %}
-    <div id="image-{{ i }}" class="avgrund-popup">
-        <img src="{{ BASE }}img/{{ ngx.re.sub(image, '_', '/') }}">
-    </div>
-    {% end %}
 
     <div class="items avgrund-contents">
         {% for i, image in ipairs(images) do %}
         <div class="item">
-            <a href="#" onclick="Avgrund.show('#image-{{ i }}')">
+            <a href="{{ BASE }}img/{{ ngx.re.sub(image, '_', '/fs/') }}" class="lb">
                 <img src="{{ BASE }}img/{{ ngx.re.sub(image, '_', '/') }}">
             </a>
         </div>
         {% end %}
 
     </div>
-    <div class="avgrund-cover">
+
     {( "footer.html" )}
 

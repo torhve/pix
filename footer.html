@@ -6,25 +6,6 @@
     <script src="{{ BASE }}static/bootstrap/js/bootstrap.js"></script>
     <script type="application/javascript" src="{{ BASE }}static/imagesloaded/jquery.imagesloaded.min.js"></script>
     <script type="application/javascript" src="{{ BASE }}static/isotope/jquery.isotope.min.js"></script>
-    <script type="application/javascript" src="{{ BASE }}static/avgrund.js"></script>
-    <script>
-$(function(){
-
-    var $container = $('#items');
-    
-    var doMasonry = function() {
-        $container.imagesLoaded(function( $images, $proper, $broken ) {
-            $container.isotope({
-                masonry: { columnWidth: $container.width() / 3 }
-            });
-        });
-
-    };
-    doMasonry();
-   //masonry: { columnWidth: $(document).width() > 1225 ? 146 : 113 
-                //resizable: false, // disable normal resizing
-
-})
-    </script>
+    <script type="application/javascript" src="{{ BASE }}static/ngphotox.js"></script>
   </body>
 </html>
