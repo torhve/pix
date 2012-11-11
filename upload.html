@@ -1,6 +1,7 @@
     {( "header.html" )}
-<script src="static/md5.js"></script>
-<script>
+<script src="{{BASE}}static/md5.js"></script>
+<script> 
+  var album = '{{ album }}';
   function FileAPI (t, d, f) {
   
       var fileList = t,
@@ -216,7 +217,7 @@
               xhr.setRequestHeader("Cache-Control", "no-cache");
               xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
               xhr.setRequestHeader("X-File-Name", file.name);
-              xhr.setRequestHeader("X-Tag", "{{ tag }}");
+              xhr.setRequestHeader("X-Album", album);
               xhr.setRequestHeader("Content-MD5", calcMD5(file));
               xhr.send(file);
           }
@@ -261,17 +262,23 @@
 </script>
 
 <div class="container">
+    <div class="row">
+        <div class="span12">
     
-<div class="hero-unit">
-  <h1>Upload</h1>
-  <div class="small pull-right"><a href="#" id="fileSelect-show" onclick="showHide('fileSelect'); return false;">Alternate upload</a></div>
-</div>
- 
-<div id="fileDrop">
-    <p>Drop files here to upload</p>
-</div>
+        <div class="hero-unit">
+            <h1>Upload<small>to album <a href="{{BASE}}{{album}}/">{{ album }}</a></h1>
+          <div class="small pull-right"><a href="#" id="fileSelect-show" onclick="showHide('fileSelect'); return false;">Alternate upload</a></div>
+        </div>
+         
+        <div id="fileDrop">
+            <p>Drop files here to upload</p>
+        </div>
+    </div>
+    </div>
 
 
+    <div class="row">
+        <div class="span12">
 <div id="fileSelect">
     <div class="small pull-right"><a href="#" id="fileSelect-hide" onclick="showHide('fileSelect'); return false;">Hide alternate upload</a></div>
     <p>
@@ -289,6 +296,8 @@
 
 <div id="files">
     <ul id="fileList"></ul>
+</div>
+</div>
 </div>
 </div>
 

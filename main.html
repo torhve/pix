@@ -1,69 +1,28 @@
     {( "header.html" )}
-    <div class="album-label">
-        <h2><i class="icon-camera-retro"></i> Valedalen</h2>
-    </div>
-    <div id="test" class="avgrund-popup">
-        <img src="img/Valedalen/big/IMG_0629.JPG">
+
+    <div class="items">
+    {% for i, album in ipairs(albums) do %}
+        <div class="item">
+        <a href="{{ BASE}}{{ album }}/">
+            <img src="{{ BASE}}img/{{ images[album] }}"></a>
+        </a>
+            <div class="album-label">
+                <h2>
+                    <a href="{{ BASE}}{{ album }}/">
+                        <i class="icon-camera-retro"></i> {{ album }}
+                    </a>
+                </h2>
+            </div>
+        </div>
+    {% end %}
     </div>
 
-    <div class="items avgrund-contents">
-
-        <div class="item">
-            <a href="#" onclick="Avgrund.show('#test')"><img src="img/Valedalen/IMG_0629.JPG"></a>
-        </div>
-        <div class="item">
-            <img src="img/Valedalen/IMG_0632.JPG">
-        </div>
-        <div class="item">
-            <img src="img/Valedalen/IMG_0640.JPG">
-        </div>
-        <div class="item">
-            <img src="img/Valedalen/IMG_0644.JPG">
-        </div>
-        <div class="item">
-            <img src="img/Valedalen/IMG_0650.JPG">
-        </div>
-        <div class="item">
-            <img src="img/Valedalen/IMG_0654.JPG">
-        </div>
-        <div class="item">
-            <img src="img/Valedalen/IMG_0657.JPG">
-        </div>
-        <div class="item">
-            <img src="img/Valedalen/IMG_0660.JPG">
-        </div>
-        <div class="item">
-            <img src="img/Valedalen/IMG_0664.JPG">
-        </div>
-        <div class="item">
-            <img src="img/Valedalen/IMG_0667.JPG">
-        </div>
-        <div class="item">
-            <img src="img/Valedalen/IMG_0681.JPG">
-        </div>
-        <div class="item">
-            <img src="img/Valedalen/IMG_0630.JPG">
-        </div>
-        <div class="item">
-            <img src="img/Valedalen/IMG_0635.JPG">
-        </div>
-        <div class="item">
-            <img src="img/Valedalen/IMG_0642.JPG">
-        </div>
-        <div class="item">
-            <img src="img/Valedalen/IMG_0647.JPG">
-        </div>
-        <div class="item">
-            <img src="img/Valedalen/IMG_0651.JPG">
-        </div>
-        <div class="item">
-            <img src="img/Valedalen/IMG_0655.JPG">
-        </div>
-        <div class="item">
-            <img src="img/Valedalen/IMG_0658.JPG">
-        </div>
-
-    </div>
-    <div class="avgrund-cover">
+    <br style="clear: both">
+    <form action="{{ BASE }}upload/"> 
+        <label style="color: white">New album</label>
+        <input text="text" name="album" placeholder="Type name of album">
+        <button type="submit" class="btn">Sharing is caring</button>
+    </form>
+</div>
     {( "footer.html" )}
 

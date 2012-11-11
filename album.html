@@ -2,18 +2,18 @@
     <div class="album-label">
         <h2><i class="icon-camera-retro"></i> {{ album}} </h2>
     </div>
-    <div id="test" class="avgrund-popup">
-        <img src="{{ BASE }}img/Valedalen/big/IMG_0629.JPG">
+    {% for i, image in ipairs(images) do %}
+    <div id="image-{{ i }}" class="avgrund-popup">
+        <img src="{{ BASE }}img/{{ ngx.re.sub(image, '_', '/') }}">
     </div>
+    {% end %}
 
     <div class="items avgrund-contents">
-
-        <div class="item">
-            <a href="#" onclick="Avgrund.show('#test')"><img src="img/Valedalen/IMG_0629.JPG"></a>
-        </div>
         {% for i, image in ipairs(images) do %}
         <div class="item">
-            <img src="{{ BASE }}img/{{ ngx.re.sub(image, '_', '/') }}">
+            <a href="#" onclick="Avgrund.show('#image-{{ i }}')">
+                <img src="{{ BASE }}img/{{ ngx.re.sub(image, '_', '/') }}">
+            </a>
         </div>
         {% end %}
 

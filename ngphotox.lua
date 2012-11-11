@@ -124,13 +124,24 @@ BASE = '/ngphotox/'
 -- Index view
 --
 local function index()
-    
-    -- increment index counter
-    local counter = 0
+    -- Fetch all albums
+    local albums, err = red:smembers("albums")
+
+    images = {}
+
+    -- Fetch a cover img
+    for i, album in ipairs(albums) do
+        -- FIXME, only get 1 image
+        local theimages, err = red:smembers(album)
+        for i, image in ipairs(theimages) do
+            images[album] = ngx.re.sub(image, '_', '/')
+            break
+        end
+    end
 
     -- load template
     local page = tload('main.html')
-    local context = ctx{counter = tostring(counter) }
+    local context = ctx{albums = albums, images = images}
     -- render template with counter as context
     -- and return it to nginx
     ngx.print( page(context) )
@@ -141,7 +152,7 @@ end
 -- 
 local function album()
 
-    local album = ngx.re.match(ngx.var.uri, '/(([a-zA-Z])+)/$')[1]
+    local album = ngx.re.match(ngx.var.uri, '/(\\w+)/$')[1]
     local images, err = red:smembers(album)
     
     -- load template
@@ -158,7 +169,9 @@ end
 local function upload()
     -- load template
     local page = tload('upload.html')
-    local context = ctx{}
+    local args = ngx.req.get_uri_args()
+
+    local context = ctx{album=args['album']}
     -- and return it to nginx
     ngx.print( page(context) )
 end
@@ -187,14 +200,11 @@ local function upload_post()
     local path = '/home/xt/src/ngphotox/img/'
 
     local h = ngx.req.get_headers()
-    local args = ""
-    for k, v in pairs(h) do
-        args = args .. "k:" .. k .. ":,v:" .. v .. "\n"
-    end
     local md5 = h['content-md5'] -- FIXME check this with ngx.md5
     local file_name = h['x-file-name']
     local referer = h['referer']
-    local album = 'testalbum' -- TODO not done yet
+    local album = h['X-Album']
+    os.execute('mkdir ' .. path .. album)
 
     path = path .. '/' .. album .. '/'
 
@@ -218,7 +228,7 @@ local function upload_post()
 
     -- load template
     local page = tload('uploaded.html')
-    local context = ctx{['data'] = data, ['args'] = args}
+    local context = ctx{}
     -- and return it to nginx
     ngx.print( page(context) )
 end
@@ -243,7 +253,6 @@ local function img()
             res[image] = imgh
         end
     end
-
 
     ngx.print( cjson.encode(res) )
 end
@@ -276,11 +285,11 @@ end
 
 -- mapping patterns to views
 local routes = {
+    ['^/ngphotox/(\\w+)/$']      = album,
     ['^/ngphotox/$']             = index,
-    ['^/ngphotox/([a-zA-Z])+/$']    = album,
-    ['^/ngphotox/api/img/?$']    = img,
-    ['^/ngphotox/upload/?$']     = upload,
+    ['^/ngphotox/upload/$']     = upload,
     ['^/ngphotox/upload/post/?$']= upload_post,
+    ['^/ngphotox/api/img/?$']    = img,
 }
 -- iterate route patterns and find view
 for pattern, view in pairs(routes) do
@@ -292,5 +301,6 @@ for pattern, view in pairs(routes) do
         ngx.exit( ngx.HTTP_OK )
     end
 end
--- no match, return 404
+-- no match, log and return 404
+ngx.log(ngx.ERR, '404 with requested URI:' .. ngx.var.uri)
 ngx.exit( ngx.HTTP_NOT_FOUND )
