@@ -32,18 +32,15 @@ body {
     width: 100%;
 }
 .item {
-    float: left;
     margin: 3px;
     padding: 0;
     background: #211e27;
-    width: 32.8%;
-}
-.item {
     position: relative;
+    max-width:320px;
+    float: left;
 }
-
-.masonry,
-.masonry .masonry-brick {
+.isotope,
+.isotope .isotope-brick {
   -webkit-transition-duration: 0.5s;
      -moz-transition-duration: 0.5s;
       -ms-transition-duration: 0.5s;
@@ -51,7 +48,7 @@ body {
           transition-duration: 0.5s;
 }
 
-.masonry {
+.isotope {
   -webkit-transition-property: height, width;
      -moz-transition-property: height, width;
       -ms-transition-property: height, width;
@@ -59,7 +56,7 @@ body {
           transition-property: height, width;
 }
 
-.masonry .masonry-brick {
+.isotope .isotope-brick {
   -webkit-transition-property: left, right, top;
      -moz-transition-property: left, right, top;
       -ms-transition-property: left, right, top;

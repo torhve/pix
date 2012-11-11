@@ -1,0 +1,3 @@
+[submodule "static/isotope"]
+	path = static/isotope
+	url = https://github.com/desandro/isotope.git
