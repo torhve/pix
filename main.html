@@ -2,18 +2,16 @@
 
     <div class="items">
     {% for i, album in ipairs(albums) do %}
-        <div class="item">
-            <a href="{{ BASE}}{{ tags[album] }}/{{ album }}/">
+    <div class="item">
+        <a href="{{ BASE}}{{ tags[album] }}/{{ album }}/">
             <img src="{{ BASE}}img/{{ tags[album] }}/{{ images[album] }}"></a>
-        </a>
-            <div class="album-label">
-                <h2>
-                    <a href="{{ BASE}}{{ album }}/">
-                        <i class="icon-camera-retro"></i> {{ album }}
-                    </a>
-                </h2>
-            </div>
-        </div>
+    </a>
+    <div class="album-label">
+        <a href="{{ BASE}}{{tags[album]}}/{{ album }}/">
+            <i class="icon-camera-retro"></i> {{ album }}
+        </h2>
+    </div>
+</div>
     {% end %}
     </div>
 
