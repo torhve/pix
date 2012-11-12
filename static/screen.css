@@ -44,7 +44,8 @@ body {
     padding: 0;
     background: #211e27;
     position: relative;
-    max-width:320px;
+    max-width: auto;
+    max-width: 480px;
     float: left;
 }
 #fileDrop {
@@ -103,6 +104,7 @@ body {
     left: 0; 
     right: 0;
     bottom: 0;
+    background: #000;
 }
 #lightbox {
     position:fixed; /* keeps the lightbox window in the current viewport */

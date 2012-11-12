@@ -4,10 +4,10 @@
         <h2><i class="icon-camera-retro"></i> {{ album}} </h2>
     </div>
 
-    <div class="items avgrund-contents">
+    <div id="items" class="items avgrund-contents">
         {% for i, image in ipairs(images) do %}
         <div class="item">
-            <a data-image="{{ i }}" href="{{ BASE }}img/{{ ngx.re.sub(image, '_', '/fs/') }}" class="lb">
+            <a id="image-{{ i }}" href="{{ BASE }}img/{{ ngx.re.sub(image, '_', '/fs/') }}" class="lb">
                 <img src="{{ BASE }}img/{{ ngx.re.sub(image, '_', '/') }}">
             </a>
         </div>

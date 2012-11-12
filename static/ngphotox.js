@@ -1,15 +1,47 @@
+// proper column size
+$('.item').css('max-width', ($(document).width()/3)-8 + 'px');
+$('.item img').css('width', ($(document).width()/3)-8 + 'px');
+
+var $container = $('.items');
+$(window).smartresize(function(){
+    $('.item').css('max-width', ($(document).width()/3)-8 + 'px');
+    $('.item img').css('width', ($(document).width()/3)-8 + 'px');
+    $container.isotope({
+        resizable: false, // disable normal resizing
+        animationEngine: 'css' // Must use css, or no animation at all
+
+    });
+});
+
+
 var currentimage = 0;
+
+$.fn.preload = function() {
+    this.each(function(){
+        // Check if url starts with /
+        if (this[0] == '/') {
+            console.log(String(this));
+            $('<img>')[0].src = this;
+        }
+    });
+}
+
 $(function(){
     window.currentimage = 0;
 
-    var $container = $('.items');
     
     $container.imagesLoaded(function( $images, $proper, $broken ) {
         console.log('hello from loaded');
         $container.isotope({
-            animationEngine: 'css', // Must use css, or no animation at all
+            resizable: false, // disable normal resizing
+            animationEngine: 'css' // Must use css, or no animation at all
+
         });
     });
+//              layoutMode: 'cellsByRow',
+//              cellsByRow: {
+//                      columnWidth: 240,
+//                rowHeight: 360
 
     
     $('.lb').click(function(e) {
@@ -23,7 +55,7 @@ $(function(){
         var image_href = $(this).attr("href");
 
         // Save the current image
-        window.currentimage = parseInt($(this).data('image'));
+        window.currentimage = parseInt($(this).attr('id').split('-')[1]);
         
         
         /*  
@@ -87,7 +119,8 @@ $(function(){
     
     var goFS = function() {
         console.log('Going Fullscreen');
-        var elem = $('#lightbox');
+        var elem = document.getElementById("lightbox");
+
         if (elem.requestFullScreen) {
             elem.requestFullScreen();
         } else if (elem.mozRequestFullScreen) {
@@ -120,8 +153,13 @@ $(function(){
               c = window.currentimage + 1;
           }
           window.currentimage = c;
-          var image_href = $('a[data-image='+c+']').attr('href');
+          var image_href = $('#image-'+c).attr('href');
           setLBimage(image_href);
+          $([
+              $('#image-'+String(parseInt(c+1))).attr('href'),
+              $('#image-'+String(parseInt(c+2))).attr('href'),
+              $('#image-'+String(parseInt(c+3))).attr('href')
+          ]).preload();
           return false;
       }
       else if (e.keyCode == 70) {
