@@ -204,12 +204,26 @@ local function upload_post()
     local file_name = h['x-file-name']
     local referer = h['referer']
     local album = h['X-Album']
-    os.execute('mkdir ' .. path .. album)
+    
+    -- simple trick to check if path exists
+    local albumpath = path .. album
+    if not os.rename(albumpath, albumpath) then
+        os.execute('mkdir ' .. albumpath)
+    end
 
     path = path .. '/' .. album .. '/'
 
     --local data = ngx.req.get_body_data()
     local req_body_file_name = ngx.req.get_body_file()
+    if not req_body_file_name then
+        return ngx.say('No filename')
+    end
+    -- check if filename is image
+    local pattern = '\\.(jpe?g|gif|png)$'
+    if not ngx.re.match(file_name, pattern, "i") then
+        return ngx.exit(ngx.HTTP_FORBIDDEN) -- unsupported media type
+    end
+
     tmpfile = io.open(req_body_file_name)
     realfile = io.open(path .. file_name, 'w')
     local size = 2^13      -- good buffer size (8K)
