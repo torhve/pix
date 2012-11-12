@@ -1,3 +1,9 @@
 [submodule "static/isotope"]
 	path = static/isotope
 	url = https://github.com/desandro/isotope.git
+[submodule "static/bootstrap"]
+	path = static/bootstrap
+	url = https://github.com/twitter/bootstrap
+[submodule "static/fa"]
+	path = static/fa
+	url = https://github.com/FortAwesome/Font-Awesome.git
