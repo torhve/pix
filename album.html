@@ -7,7 +7,7 @@
     <div class="items avgrund-contents">
         {% for i, image in ipairs(images) do %}
         <div class="item">
-            <a href="{{ BASE }}img/{{ ngx.re.sub(image, '_', '/fs/') }}" class="lb">
+            <a data-image="{{ i }}" href="{{ BASE }}img/{{ ngx.re.sub(image, '_', '/fs/') }}" class="lb">
                 <img src="{{ BASE }}img/{{ ngx.re.sub(image, '_', '/') }}">
             </a>
         </div>

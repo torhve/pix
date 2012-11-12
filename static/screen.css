@@ -121,6 +121,7 @@ body {
     text-align:right; 
     color:#fff; 
     margin-right:20px; 
+    z-index: 4;
 }
 #lightbox img {
     box-shadow:0 0 25px #111;
@@ -145,6 +146,10 @@ body {
     overflow: hidden;
     background-color: transparent;
     background: url(spinner.png);
+    /*
+    -webkit-mask-image: url(spinner.png);
+    -moz-mask-image: url(spinner.png);
+    */
     -webkit-animation-name: spinnerRotate;
     -webkit-animation-duration: 2s;
     -webkit-animation-iteration-count: infinite;
