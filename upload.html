@@ -2,6 +2,7 @@
 <script src="{{BASE}}static/md5.js"></script>
 <script> 
   var album = '{{ album }}';
+  var tag = '{{ tag }}';
   function FileAPI (t, d, f) {
   
       var fileList = t,
@@ -219,6 +220,7 @@
               xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
               xhr.setRequestHeader("X-File-Name", file.name);
               xhr.setRequestHeader("X-Album", album);
+              xhr.setRequestHeader("X-Tag", tag);
               xhr.setRequestHeader("Content-MD5", calcMD5(file));
               xhr.send(file);
           }
@@ -267,7 +269,7 @@
         <div class="span12">
     
         <div class="hero-unit">
-            <h1>Upload<small>to album <a href="{{BASE}}{{album}}/">{{ album }}</a></h1>
+            <h1>Upload<small>to album <a href="{{BASE}}{{tag}}{{album}}/">{{ album }}</a></h1>
           <div class="small pull-right"><a href="#" id="fileSelect-show" onclick="showHide('fileSelect'); return false;">Alternate upload</a></div>
         </div>
          

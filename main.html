@@ -3,8 +3,8 @@
     <div class="items">
     {% for i, album in ipairs(albums) do %}
         <div class="item">
-        <a href="{{ BASE}}{{ album }}/">
-            <img src="{{ BASE}}img/{{ images[album] }}"></a>
+            <a href="{{ BASE}}{{ tags[album] }}/{{ album }}/">
+            <img src="{{ BASE}}img/{{ tags[album] }}/{{ images[album] }}"></a>
         </a>
             <div class="album-label">
                 <h2>

@@ -1,6 +1,7 @@
 -- use nginx $root variable for template dir
 local TEMPLATEDIR = ngx.var.root .. '/';
-local cjson = require ("cjson")
+local cjson = require("cjson")
+local math  = require("math")
 
 
 function ctx(ctx)
@@ -125,14 +126,17 @@ BASE = '/ngphotox/'
 --
 local function index()
     -- Fetch all albums
-    local albums, err = red:smembers("albums")
+    local albums, err = red:zrange("zalbums", 0, -1)
 
     images = {}
+    tags  = {}
 
     -- Fetch a cover img
     for i, album in ipairs(albums) do
         -- FIXME, only get 1 image
-        local theimages, err = red:smembers(album)
+        local theimages, err = red:zrange(album, 0, -1)
+        local tag, err = red:hget(album .. 'h', 'tag')
+        tags[album] = tag
         for i, image in ipairs(theimages) do
             images[album] = ngx.re.sub(image, '_', '/')
             break
@@ -153,13 +157,15 @@ end
 local function album()
 
     local album = ngx.re.match(ngx.var.uri, '/(\\w+)/$')[1]
-    local images, err = red:smembers(album)
+    local images, err = red:zrange(album, 0, -1)
+    local tag, err = red:hget(album .. 'h', 'tag')
     
     -- load template
     local page = tload('album.html')
     local context = ctx{ 
         album = album,
         images = images,
+        tag = tag,
     }
     -- render template with counter as context
     -- and return it to nginx
@@ -171,7 +177,10 @@ local function upload()
     local page = tload('upload.html')
     local args = ngx.req.get_uri_args()
 
-    local context = ctx{album=args['album']}
+    -- generate tag to make guessing urls non-worky
+    local tag = generate_tag()
+
+    local context = ctx{album=args['album'], tag=tag}
     -- and return it to nginx
     ngx.print( page(context) )
 end
@@ -180,21 +189,26 @@ local function add_file_to_db(album, h)
     local timestamp = ngx.time() -- FIXME we could use header for this
     local imgh = {}
     imgh['album'] = album
+    imgh['tag'] = h['X-tag']
     imgh['timestamp'] = timestamp
     imgh['client'] = ngx.var.remote_addr
     imgh['file_name'] = h['x-file-name']
-    local albumskey = 'albums'
-    local albumkey =  album
-    local imagekey =  album .. '_' .. h['x-file-name']
+    local albumskey = 'zalbums' -- albumset
+    local albumkey  =  album    -- image set
+    local albumhkey =  album .. 'h' -- album metadata
+    local imagekey  =  album .. '_' .. h['x-file-name']
 
-    red:sadd(albumskey, albumkey)
-    red:sadd(albumkey, imagekey)
+    red:zadd(albumskey, timestamp, albumkey)
+    red:zadd(albumkey, timestamp, imagekey)
     red:hmset(imagekey, imgh)
-
+    -- only set tag if not exist
+    red:hsetnx(albumhkey, 'tag', h['X-tag'])
 end
 
+--
+-- View that recieves data from upload page
+--
 local function upload_post()
-    -- recieve data
     ngx.req.read_body()
 
     local path = '/home/xt/src/ngphotox/img/'
@@ -204,14 +218,22 @@ local function upload_post()
     local file_name = h['x-file-name']
     local referer = h['referer']
     local album = h['X-Album']
-    
+    local tag = h['X-Tag']
+
+    -- Check if tag is OK
+    local albumhkey =  album .. 'h' -- album metadata
+    red:hsetnx(albumhkey, 'tag', h['X-tag'])
+    -- FIXME verify correct tag
+    local tag, err = red:hget(albumhkey, 'tag')
+
     -- simple trick to check if path exists
-    local albumpath = path .. album
+    local albumpath = path .. tag .. '/' .. album
     if not os.rename(albumpath, albumpath) then
+        os.execute('mkdir ' .. path .. tag)
         os.execute('mkdir ' .. albumpath)
     end
 
-    path = path .. '/' .. album .. '/'
+    path = albumpath .. '/'
 
     --local data = ngx.req.get_body_data()
     local req_body_file_name = ngx.req.get_body_file()
@@ -236,7 +258,6 @@ local function upload_post()
     tmpfile:close()
     realfile:close()
 
-
     -- Save meta data to DB
     add_file_to_db(album, h)
 
@@ -253,14 +274,14 @@ end
 --
 local function img()
     ngx.header.content_type = 'application/json';
-    local albumskey = 'albums'
-    local albums, err = red:smembers(albumskey)
+    local albumskey = 'zalbums'
+    local albums, err = red:zrange(albumskey, 0, -1)
     local res = {}
     res['albums'] = albums
     res['images'] = {}
 
     for i, album in ipairs(albums) do
-        local images, err = red:smembers(album)
+        local images, err = red:zrange(album, -1)
         res['images'] = images
         for i, image in ipairs(images) do
             local imgh, err = red:hgetall(image)
@@ -270,6 +291,25 @@ local function img()
 
     ngx.print( cjson.encode(res) )
 end
+
+function generate_tag()
+    ascii = 'abcdefgihjklmnopqrstuvxyz'
+    digits = '1234567890'
+
+    res = {}
+
+    while #res < 5 do
+        local choice = math.floor(math.random()*#ascii)+1
+        table.insert(res, string.sub(ascii, choice, choice))
+
+        local choice = math.floor(math.random()*#digits)+1
+        table.insert(res, string.sub(digits, choice, choice))
+    end
+
+    res = table.concat(res, '')
+    return res
+end
+
 
 -- 
 -- Initialise db
@@ -299,11 +339,11 @@ end
 
 -- mapping patterns to views
 local routes = {
-    ['^/ngphotox/(\\w+)/$']      = album,
-    ['^/ngphotox/$']             = index,
-    ['^/ngphotox/upload/$']     = upload,
-    ['^/ngphotox/upload/post/?$']= upload_post,
-    ['^/ngphotox/api/img/?$']    = img,
+    ['^/ngphotox/(\\w+)/(\\w+)/$']= album,
+    ['^/ngphotox/$']              = index,
+    ['^/ngphotox/upload/$']       = upload,
+    ['^/ngphotox/upload/post/?$'] = upload_post,
+    ['^/ngphotox/api/img/?$']     = img,
 }
 -- iterate route patterns and find view
 for pattern, view in pairs(routes) do
