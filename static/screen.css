@@ -132,3 +132,43 @@ body {
     height: 100%;
 }
 
+#spinner {
+    z-index: 3;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    margin: -100px 0 0 -100px;
+    height: 200px;
+    width: 200px;
+    text-indent: 250px;
+    white-space: nowrap;
+    overflow: hidden;
+    background-color: transparent;
+    background: url(spinner.png);
+    -webkit-animation-name: spinnerRotate;
+    -webkit-animation-duration: 2s;
+    -webkit-animation-iteration-count: infinite;
+    -webkit-animation-timing-function: linear;
+    -moz-animation-name: spinnerRotate;
+    -moz-animation-duration: 2s;
+    -moz-animation-iteration-count: infinite;
+    -moz-animation-timing-function: linear;
+}
+@-moz-keyframes spinnerRotate {
+    from {
+        -moz-transform:rotate(0deg);
+    }
+    to {
+        -moz-transform:rotate(360deg);
+    }
+}
+@-webkit-keyframes spinnerRotate {
+    from {
+        -webkit-transform:rotate(0deg);
+    }
+    to {
+        -webkit-transform:rotate(360deg);
+    }
+}
+
+
