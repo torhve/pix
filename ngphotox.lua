@@ -135,6 +135,10 @@ local function index()
     for i, album in ipairs(albums) do
         -- FIXME, only get 1 image
         local theimages, err = red:zrange(album, 0, -1)
+        if err then
+            ngx.say(err)
+            return
+        end
         local tag, err = red:hget(album .. 'h', 'tag')
         tags[album] = tag
         for i, image in ipairs(theimages) do
