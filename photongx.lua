@@ -358,7 +358,7 @@ local function img()
     res['images'] = {}
 
     for i, album in ipairs(albums) do
-        local images, err = red:zrange(album, -1)
+        local images, err = red:zrange(album, 0, -1)
         res['images'] = images
         for i, image in ipairs(images) do
             local imgh, err = red:hgetall(image)
