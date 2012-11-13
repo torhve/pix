@@ -120,7 +120,7 @@ ngx.header.content_type = 'text/html';
 
 -- the db global
 red = nil
-BASE = '/ngphotox/'
+BASE = '/photongx/'
 
 
 -- helpers
@@ -268,7 +268,7 @@ end
 local function upload_post()
     ngx.req.read_body()
 
-    local path = '/home/xt/src/ngphotox/img/'
+    local path = '/home/xt/src/photongx/img/'
 
     local h = ngx.req.get_headers()
     local md5 = h['content-md5'] -- FIXME check this with ngx.md5
@@ -396,12 +396,12 @@ end
 
 -- mapping patterns to views
 local routes = {
-    ['^/ngphotox/(\\w+)/(\\w+)/$']= album,
-    ['^/ngphotox/$']              = index,
-    ['^/ngphotox/admin/$']        = admin,
-    ['^/ngphotox/upload/$']       = upload,
-    ['^/ngphotox/upload/post/?$'] = upload_post,
-    ['^/ngphotox/api/img/?$']     = img,
+    ['^/photongx/(\\w+)/(\\w+)/$']= album,
+    ['^/photongx/$']              = index,
+    ['^/photongx/admin/$']        = admin,
+    ['^/photongx/upload/$']       = upload,
+    ['^/photongx/upload/post/?$'] = upload_post,
+    ['^/photongx/api/img/?$']     = img,
 }
 -- iterate route patterns and find view
 for pattern, view in pairs(routes) do
