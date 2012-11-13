@@ -29,10 +29,34 @@ $('.link-image-remove').bind('click', function(ev) {
     console.log('Remove res:', $.getJSON($(this).attr('href'), function(data) { console.log(data); }));
     return false;
 });
+$('form').submit(function(ev) {
+    ev.stopPropagation();
+    ev.preventDefault();
+    album = $('#albumname').val();
+    $('.uploadcontainer').clone().prependTo($('#admincontent')).toggleClass('hidden');
+    $('<h1>Upload<small>to album <a href="'+BASE+tag+album+'/">'+album+'</a></h1>').prependTo($('#admincontent .hero-unit'));
+    if (typeof FileReader == "undefined") alert ("Your browser is not supported. You will need to update to a modern browser with File API support to upload files.");
+      var fileList = document.getElementById("fileList");
+      var fileDrop = document.getElementById("fileDrop");
+      var fileField = document.getElementById("fileField");
+      FileAPI = new FileAPI(
+          fileList,
+          fileDrop,
+          fileField
+      );
+      FileAPI.init();
 
-  var album = '{{ album }}';
-  var tag = '{{ tag }}';
-  function FileAPI (t, d, f) {
+      // Automatically start upload when using the drop zone
+      fileDrop.ondrop = FileAPI.uploadQueue;
+      //fileField.onkeypress = FileAPI.uploadQueue;
+
+      var reset = document.getElementById("reset");
+      reset.onclick = FileAPI.clearList;
+      var upload = document.getElementById("upload");
+      upload.onclick = FileAPI.uploadQueue;
+});
+
+  var FileAPI = function (t, d, f) {
   
       var fileList = t,
           dropZone = d,
@@ -256,27 +280,6 @@ $('.link-image-remove').bind('click', function(ev) {
       
   }
   
-  window.onload = function () {
-      if (typeof FileReader == "undefined") alert ("Your browser is not supported. You will need to update to a modern browser with File API support to upload files.");
-      var fileList = document.getElementById("fileList");
-      var fileDrop = document.getElementById("fileDrop");
-      var fileField = document.getElementById("fileField");
-      FileAPI = new FileAPI(
-          fileList,
-          fileDrop,
-          fileField
-      );
-      FileAPI.init();
-
-      // Automatically start upload when using the drop zone
-      fileDrop.ondrop = FileAPI.uploadQueue;
-      //fileField.onkeypress = FileAPI.uploadQueue;
-
-      var reset = document.getElementById("reset");
-      reset.onclick = FileAPI.clearList;
-      var upload = document.getElementById("upload");
-      upload.onclick = FileAPI.uploadQueue;
-  }
 
   $('#fileSelect-show').bind('click', function() {
     $('#fileSelect').toggleClass('hidden');
