@@ -34,7 +34,7 @@ $('form').submit(function(ev) {
     ev.preventDefault();
     album = $('#albumname').val();
     $('.uploadcontainer').clone().prependTo($('#admincontent')).toggleClass('hidden');
-    $('<h1>Upload<small>to album <a href="'+BASE+tag+album+'/">'+album+'</a></h1>').prependTo($('#admincontent .hero-unit'));
+    $('<h1>Upload<small>to album <a href="'+BASE+tag+'/'+album+'/">'+album+'</a></h1>').prependTo($('#admincontent .hero-unit'));
     if (typeof FileReader == "undefined") alert ("Your browser is not supported. You will need to update to a modern browser with File API support to upload files.");
       var fileList = document.getElementById("fileList");
       var fileDrop = document.getElementById("fileDrop");

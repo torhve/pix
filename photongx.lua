@@ -117,6 +117,17 @@ function tload(name)
 end
 
 
+-- KEY SCHEME
+-- albums z: zalbums       = set('albumname', 'albumname2', ... )
+-- tags   h: albumnameh    = 'tag'
+-- album  z: albumname     = set('itag_filename', 'itag2_filename2', ...)
+-- images h: itag/filename = {album: 'albumname', timestamp: ... ... }
+
+-- URLs
+-- /base/atag/albumname
+-- /base/atag/itag/img01.jpg
+-- /base/atag/itag/img01.fs.jpg
+-- /base/atag/itag/img01.t.jpg
 -- helpers
 
 -- Fetch all albums
@@ -151,7 +162,7 @@ local function index()
         local tag, err = red:hget(album .. 'h', 'tag')
         tags[album] = tag
         for i, image in ipairs(theimages) do
-            images[album] = ngx.re.sub(image, '_', '/')
+            images[album] = image
             break
         end
     end
@@ -240,17 +251,6 @@ local function admin()
 end
 
 
--- KEY SCHEME
--- albums z: zalbums       = set('albumname', 'albumname2', ... )
--- tags   h: albumnameh    = 'tag'
--- album  z: albumname     = set('itag_filename', 'itag2_filename2', ...)
--- images h: itag/filename = {album: 'albumname', timestamp: ... ... }
-
--- URLs
--- /base/atag/albumname
--- /base/atag/itag/img01.jpg
--- /base/atag/itag/img01.fs.jpg
--- /base/atag/itag/img01.t.jpg
 
 local function add_file_to_db(album, itag, h)
     local imgh       = {}
