@@ -149,7 +149,7 @@ local function index()
 
     -- load template
     local page = tload('main.html')
-    local context = ctx{albums = albums, images = images}
+    local context = ctx{albums = albums, images = images, bodyclass = 'gallery'}
     -- render template with counter as context
     -- and return it to nginx
     ngx.print( page(context) )
@@ -170,6 +170,7 @@ local function album()
         album = album,
         images = images,
         tag = tag,
+        bodyclass = 'gallery',
     }
     -- render template with counter as context
     -- and return it to nginx

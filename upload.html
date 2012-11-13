@@ -1,4 +1,45 @@
     {( "header.html" )}
+
+<div class="container">
+    <div class="row">
+        <div class="span12">
+    
+        <div class="hero-unit">
+            <h1>Upload<small>to album <a href="{{BASE}}{{tag}}/{{album}}/">{{ album }}</a></h1>
+                <div class="small pull-right"><a href="#" id="fileSelect-show"> Alternate upload</a></div>
+        </div>
+         
+        <div id="fileDrop">
+            <p>Drop files here to upload</p>
+        </div>
+    </div>
+    </div>
+
+
+    <div class="row">
+        <div class="span12">
+<div id="fileSelect" class="hidden">
+    <div class="small pull-right"><a href="#" id="fileSelect-hide">Hide alternate upload</a></div>
+    <p>
+        <form action="" method="post" enctype="multipart/form-data">
+            <div class="controls">
+                <input class="input-file" type="file" id="fileField" name="fileField" multiple value="Browse..."/>
+            </div>
+        </form>
+    </p>
+    <p>
+      <a id="upload" class="btn" href="#" title="Upload all files in list">Upload files</a>
+      <a id="reset" class="btn" href="#" title="Remove all files from list">Clear list</a>
+    </p>
+</div>
+
+<div id="files">
+    <ul id="fileList"></ul>
+</div>
+</div>
+</div>
+</div>
+
 <script src="{{BASE}}static/md5.js"></script>
 <script> 
   var album = '{{ album }}';
@@ -206,7 +247,6 @@
                       if (ps[i].className == "loader") {
                           ps[i].textContent = "Upload complete";
                           ps[i].style["color"] = "white";
-                          div.className = "progress-bar active";
                           break;
                       }
                   }
@@ -250,59 +290,14 @@
       upload.onclick = FileAPI.uploadQueue;
   }
 
-  function showHide(shID) {
-    if (document.getElementById(shID)) {
-        if (document.getElementById(shID+'-show').style.display != 'none') {
-            document.getElementById(shID+'-show').style.display = 'none';
-            document.getElementById(shID).style.display = 'block';
-        }
-        else {
-            document.getElementById(shID+'-show').style.display = 'inline';
-            document.getElementById(shID).style.display = 'none';
-        }
-    }
-  }
+  $('#fileSelect-show').bind('click', function() {
+    $('#fileSelect').toggleClass('hidden');
+    return false;
+  });
+  $('#fileSelect-hide').bind('click', function() {
+    $('#fileSelect').toggleClass('hidden');
+    return false;
+  });
 </script>
-
-<div class="container">
-    <div class="row">
-        <div class="span12">
-    
-        <div class="hero-unit">
-            <h1>Upload<small>to album <a href="{{BASE}}{{tag}}/{{album}}/">{{ album }}</a></h1>
-          <div class="small pull-right"><a href="#" id="fileSelect-show" onclick="showHide('fileSelect'); return false;">Alternate upload</a></div>
-        </div>
-         
-        <div id="fileDrop">
-            <p>Drop files here to upload</p>
-        </div>
-    </div>
-    </div>
-
-
-    <div class="row">
-        <div class="span12">
-<div id="fileSelect">
-    <div class="small pull-right"><a href="#" id="fileSelect-hide" onclick="showHide('fileSelect'); return false;">Hide alternate upload</a></div>
-    <p>
-        <form action="" method="post" enctype="multipart/form-data">
-            <div class="controls">
-                <input class="input-file" type="file" id="fileField" name="fileField" multiple value="Browse..."/>
-            </div>
-        </form>
-    </p>
-    <p>
-      <a id="upload" class="btn" href="#" title="Upload all files in list">Upload files</a>
-      <a id="reset" class="btn" href="#" title="Remove all files from list">Clear list</a>
-    </p>
-</div>
-
-<div id="files">
-    <ul id="fileList"></ul>
-</div>
-</div>
-</div>
-</div>
-
     {( "footer.html" )}
 

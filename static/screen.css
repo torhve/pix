@@ -1,7 +1,9 @@
 body {
-  background: #0a0711;
   font-family: 'Open Sans', sans-serif;
 }
+body.gallery {
+  background: #0a0711;
+  }
 .container {
     background: white;
 }
