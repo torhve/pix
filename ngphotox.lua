@@ -121,12 +121,27 @@ ngx.header.content_type = 'text/html';
 -- the db global
 red = nil
 BASE = '/ngphotox/'
+
+
+-- helpers
+
+-- Fetch all albums
+function getalbums() 
+    local albums, err = red:zrange("zalbums", 0, -1)
+    if err then
+        ngx.say(err)
+        ngx.exit(ngx.HTTP_INTERNAL_SERVER_ERROR)
+    end
+    return albums
+end
+
+
+
 -- 
 -- Index view
 --
 local function index()
-    -- Fetch all albums
-    local albums, err = red:zrange("zalbums", 0, -1)
+    local albums = getalbums()
 
     images = {}
     tags  = {}
@@ -186,6 +201,43 @@ local function upload()
     local tag = generate_tag()
 
     local context = ctx{album=args['album'], tag=tag}
+    -- and return it to nginx
+    ngx.print( page(context) )
+end
+
+--
+-- Admin view
+-- 
+local function admin()
+    local albums = getalbums()
+    local tags  = {}
+    local images = {}
+    local imagecount = 0
+
+    -- Fetch a cover img
+    for i, album in ipairs(albums) do
+        local theimages, err = red:zrange(album, 0, -1)
+        local tag,       err = red:hget(album .. 'h', 'tag')
+        tags[album] = tag
+        images[album] = theimages
+        imagecount = imagecount + #theimages
+    end
+
+    -- load template
+    local page = tload('admin.html')
+    local args = ngx.req.get_uri_args()
+
+    -- generate tag to make guessing urls non-worky
+    local tag = generate_tag()
+
+    local context = ctx{
+        album=args['album'], 
+        tag=tag,
+        albums = albums,
+        tags = tags,
+        images = images,
+        imagecount = imagecount,
+    }
     -- and return it to nginx
     ngx.print( page(context) )
 end
@@ -346,6 +398,7 @@ end
 local routes = {
     ['^/ngphotox/(\\w+)/(\\w+)/$']= album,
     ['^/ngphotox/$']              = index,
+    ['^/ngphotox/admin/$']        = admin,
     ['^/ngphotox/upload/$']       = upload,
     ['^/ngphotox/upload/post/?$'] = upload_post,
     ['^/ngphotox/api/img/?$']     = img,
