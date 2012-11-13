@@ -506,7 +506,7 @@ local routes = {
 }
 -- iterate route patterns and find view
 for pattern, view in pairs(routes) do
-    if ngx.re.match(ngx.var.uri, pattern) then
+    if ngx.re.match(ngx.var.uri, pattern, "o") then -- regex mather in compile mode
         init_db()
         view()
         end_db()
