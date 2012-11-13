@@ -236,6 +236,9 @@ local function admin()
         albums = albums,
         tags = tags,
         images = images,
+        imagesjs = cjson.encode(images),
+        albumsjs = cjson.encode(albums),
+        tagsjs   = cjson.encode(tags),
         imagecount = imagecount,
     }
     -- and return it to nginx
@@ -349,6 +352,20 @@ local function img()
     ngx.print( cjson.encode(res) )
 end
 
+-- 
+-- remove img
+--
+local function api_img_remove()
+    ngx.header.content_type = 'application/json';
+    local imgfullkey = ngx.re.match(ngx.var.uri, '/(\\w+)$')[1]
+    local album = ngx.re.match(imgfullkey, '(\\w+)_')[1]
+    res = {
+        album = album,
+        imgfullkey = imgfullkey,
+    }
+    ngx.print( cjson.encode ( res ) )
+end
+
 function generate_tag()
     ascii = 'abcdefgihjklmnopqrstuvxyz'
     digits = '1234567890'
@@ -402,6 +419,7 @@ local routes = {
     ['^/photongx/upload/$']       = upload,
     ['^/photongx/upload/post/?$'] = upload_post,
     ['^/photongx/api/img/?$']     = img,
+    ['^'..BASE..'api/img/remove/(\\.*)'] = api_img_remove,
 }
 -- iterate route patterns and find view
 for pattern, view in pairs(routes) do

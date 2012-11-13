@@ -7,6 +7,13 @@ body.gallery {
 .container {
     background: white;
 }
+.admin-label {
+    color white;
+    position: absolute;
+    top: 0;
+    right:0;
+    z-index: 1;
+}
 .album-label {
     background: rgba(0, 0, 0, 0.4);
   -webkit-box-shadow: 0 2px 10px rgba(0,0,0,.25);
@@ -109,7 +116,6 @@ body.gallery {
     left: 0; 
     right: 0;
     bottom: 0;
-    background: #000;
 }
 #lightbox {
     position:fixed; /* keeps the lightbox window in the current viewport */
@@ -191,3 +197,11 @@ body.gallery {
     }    .gray {
         color: #333;
     }       
+
+.adminthumb {
+    max-width:180px;
+}
+.adminthumb.hidden {
+    display: none;
+}
+
