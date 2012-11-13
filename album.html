@@ -7,8 +7,8 @@
     <div id="items" class="items">
         {% for i, image in ipairs(images) do %}
         <div class="item">
-            <a id="image-{{ i }}" href="{{ BASE }}img/{{tag}}/{{ ngx.re.sub(image, '_', '/fs/') }}" class="lb">
-                <img src="{{ BASE }}img/{{tag}}/{{ ngx.re.sub(image, '_', '/') }}">
+            <a id="image-{{ i }}" href="{{ BASE }}img/{{tag}}/{{ image }}" class="lb">
+                <img src="{{ BASE }}img/{{tag}}/{{ image }}">
             </a>
         </div>
         {% end %}

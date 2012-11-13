@@ -3,25 +3,29 @@ local TEMPLATEDIR = ngx.var.root .. '/';
 local cjson = require("cjson")
 local math  = require("math")
 
+-- Load redis
+local redis = require "resty.redis"
 
+-- Set the content type
+ngx.header.content_type = 'text/html';
+
+-- the db global
+red = nil
+BASE = '/photongx/'
+IMGPATH = '/home/xt/src/photongx/img/'
+
+-- Default context helper
 function ctx(ctx)
     ctx['BASE'] = BASE
     return ctx
 end
 
+-- Template helper
 function escape(s)
     if s == nil then return '' end
 
     local esc, i = s:gsub('&', '&amp;'):gsub('<', '&lt;'):gsub('>', '&gt;')
     return esc
-end
-
--- Simplistic Tir template escaping, for when you need to show lua code on web.
-function tirescape(s)
-    if s == nil then return '' end
-
-    local esc, i = s:gsub('{', '&#123;'):gsub('}', '&#125;')
-    return escape(esc)
 end
 
 -- Helper function that loads a file into ram.
@@ -111,16 +115,6 @@ function tload(name)
         end
     end
 end
--- Load redis
-local redis = require "resty.redis"
-
--- Set the content type
-ngx.header.content_type = 'text/html';
-
-
--- the db global
-red = nil
-BASE = '/photongx/'
 
 
 -- helpers
@@ -245,22 +239,37 @@ local function admin()
     ngx.print( page(context) )
 end
 
-local function add_file_to_db(album, h)
-    local timestamp = ngx.time() -- FIXME we could use header for this
-    local imgh = {}
-    imgh['album'] = album
-    imgh['tag'] = h['X-tag']
-    imgh['timestamp'] = timestamp
-    imgh['client'] = ngx.var.remote_addr
-    imgh['file_name'] = h['x-file-name']
-    local albumskey = 'zalbums' -- albumset
-    local albumkey  =  album    -- image set
-    local albumhkey =  album .. 'h' -- album metadata
-    local imagekey  =  album .. '_' .. h['x-file-name']
 
-    red:zadd(albumskey, timestamp, albumkey)
-    red:zadd(albumkey, timestamp, imagekey)
-    red:hmset(imagekey, imgh)
+-- KEY SCHEME
+-- albums z: zalbums       = set('albumname', 'albumname2', ... )
+-- tags   h: albumnameh    = 'tag'
+-- album  z: albumname     = set('itag_filename', 'itag2_filename2', ...)
+-- images h: itag/filename = {album: 'albumname', timestamp: ... ... }
+
+-- URLs
+-- /base/atag/albumname
+-- /base/atag/itag/img01.jpg
+-- /base/atag/itag/img01.fs.jpg
+-- /base/atag/itag/img01.t.jpg
+
+local function add_file_to_db(album, itag, h)
+    local imgh       = {}
+    local timestamp  = ngx.time() -- FIXME we could use header for this
+    imgh['album']    = album
+    imgh['atag']     = h['X-tag']
+    imgh['itag']     = itag
+    imgh['timestamp']= timestamp
+    imgh['client']   = ngx.var.remote_addr
+    imgh['file_name']= h['x-file-name'] -- FIXME escaping
+    local albumskey  = 'zalbums' -- albumset
+    local albumkey   =  album    -- image set
+    local albumhkey  =  album .. 'h' -- album metadata
+    local imagekey   =  imgh['itag'] .. '/' .. h['x-file-name']
+
+    ngx.log(ngx.ERR, '___***___ ' .. imgh['itag'])
+    red:zadd(albumskey, timestamp, albumkey) -- add album to albumset
+    red:zadd(albumkey , timestamp, imagekey) -- add imey to imageset
+    red:hmset(imagekey, imgh)                -- add imagehash
     -- only set tag if not exist
     red:hsetnx(albumhkey, 'tag', h['X-tag'])
 end
@@ -271,14 +280,14 @@ end
 local function upload_post()
     ngx.req.read_body()
 
-    local path = '/home/xt/src/photongx/img/'
 
-    local h = ngx.req.get_headers()
-    local md5 = h['content-md5'] -- FIXME check this with ngx.md5
-    local file_name = h['x-file-name']
-    local referer = h['referer']
-    local album = h['X-Album']
-    local tag = h['X-Tag']
+    local h          = ngx.req.get_headers()
+    local md5        = h['content-md5'] -- FIXME check this with ngx.md5
+    local file_name  = h['x-file-name']
+    local referer    = h['referer']
+    local album      = h['X-Album']
+    local tag        = h['X-Tag']
+    local itag       = generate_tag()  -- Image tag
 
     -- Check if tag is OK
     local albumhkey =  album .. 'h' -- album metadata
@@ -286,14 +295,23 @@ local function upload_post()
     -- FIXME verify correct tag
     local tag, err = red:hget(albumhkey, 'tag')
 
+    local path  = IMGPATH
+
+    -- FIXME Check if tag already in use
     -- simple trick to check if path exists
     local albumpath = path .. tag .. '/' .. album
+    if not os.rename(path .. tag, path .. tag) then
+        os.execute('mkdir -p ' .. path .. tag)
+    end
     if not os.rename(albumpath, albumpath) then
-        os.execute('mkdir ' .. path .. tag)
-        os.execute('mkdir ' .. albumpath)
+        os.execute('mkdir -p ' .. albumpath)
     end
 
-    path = albumpath .. '/'
+    -- FIXME Check if tag already in use
+    local imagepath = path .. tag .. '/' .. itag .. '/'
+    if not os.rename(imagepath, imagepath) then
+        os.execute('mkdir -p ' .. imagepath)
+    end
 
     --local data = ngx.req.get_body_data()
     local req_body_file_name = ngx.req.get_body_file()
@@ -307,7 +325,7 @@ local function upload_post()
     end
 
     tmpfile = io.open(req_body_file_name)
-    realfile = io.open(path .. file_name, 'w')
+    realfile = io.open(imagepath .. file_name, 'w')
     local size = 2^13      -- good buffer size (8K)
     while true do
       local block = tmpfile:read(size)
@@ -319,7 +337,7 @@ local function upload_post()
     realfile:close()
 
     -- Save meta data to DB
-    add_file_to_db(album, h)
+    add_file_to_db(album, itag, h)
 
     -- load template
     local page = tload('uploaded.html')
@@ -363,6 +381,34 @@ local function api_img_remove()
         album = album,
         imgfullkey = imgfullkey,
     }
+    ngx.print( cjson.encode ( res ) )
+end
+
+local function api_album_remove()
+    ngx.header.content_type = 'application/json';
+    local match = ngx.re.match(ngx.var.uri, '/(\\w+)/(\\w+)$')
+    local tag = match[1]
+    local album = match[2]
+    if not tag or not album then
+        return ngx.print('Faulty tag or album')
+    end
+    res = {
+        tag = tag,
+        album = album,
+    }
+
+
+    local images, err = red:zrange(album, 0, -1)
+    --res['images'] = images
+
+    for i, image in ipairs(images) do
+        local imgh, err = red:del(image)
+        res[image] = imgh
+    end
+    res['album'] = red:del(album)
+    res[album..'h'] = red:del(album..'h')
+    res['command'] = "rm -rf "..IMGPATH..'/'..tag
+    os.execute(res['command'])
     ngx.print( cjson.encode ( res ) )
 end
 
@@ -420,6 +466,7 @@ local routes = {
     ['^/photongx/upload/post/?$'] = upload_post,
     ['^/photongx/api/img/?$']     = img,
     ['^'..BASE..'api/img/remove/(\\.*)'] = api_img_remove,
+    ['^'..BASE..'api/album/remove/(\\.*)'] = api_album_remove,
 }
 -- iterate route patterns and find view
 for pattern, view in pairs(routes) do
