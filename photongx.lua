@@ -369,6 +369,27 @@ local function img()
     ngx.print( cjson.encode(res) )
 end
 
+--
+-- view to count clicks
+--
+local function api_img_click()
+    local args = ngx.req.get_uri_args()
+    local match = ngx.re.match(args['img'], '^/.*/(\\w+)/(\\w+)/(.+)$')
+    if not match then
+        return ngx.print('Faulty request')
+    end
+    atag = match[1]
+    itag = match[2]
+    img  = match[3]
+    local key = itag .. '/' .. img
+    local counter, err = red:hincrby(key, 'views', 1)
+    if err then
+        ngx.print (cjson.encode ({image=key,error=err}) )
+        return
+    end
+    ngx.print (cjson.encode ({image=key,views=counter}) )
+end
+
 -- 
 -- remove img
 --
@@ -432,18 +453,15 @@ end
 function generate_tag()
     ascii = 'abcdefgihjklmnopqrstuvxyz'
     digits = '1234567890'
+    pool = ascii .. digits
 
     res = {}
-
-    while #res < 5 do
-        local choice = math.floor(math.random()*#ascii)+1
-        table.insert(res, string.sub(ascii, choice, choice))
-
-        local choice = math.floor(math.random()*#digits)+1
-        table.insert(res, string.sub(digits, choice, choice))
+    while #res < 6 do
+        local choice = math.floor(math.random()*#pool)+1
+        table.insert(res, string.sub(pool, choice, choice))
     end
-
     res = table.concat(res, '')
+
     return res
 end
 
@@ -482,6 +500,7 @@ local routes = {
     ['^/photongx/upload/$']       = upload,
     ['^/photongx/upload/post/?$'] = upload_post,
     ['^/photongx/api/img/?$']     = img,
+    ['^'..BASE..'api/img/click/$'] = api_img_click,
     ['^'..BASE..'api/img/remove/(\\.*)'] = api_img_remove,
     ['^'..BASE..'api/album/remove/(\\.*)'] = api_album_remove,
 }

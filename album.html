@@ -1,7 +1,7 @@
     {( "header.html" )}
 
     <div class="album-label">
-        <h2><i class="icon-camera-retro"></i> {{ album}} </h2>
+        <i class="icon-camera-retro"></i> {{ album}}
     </div>
 
     <div id="items" class="items">
@@ -15,6 +15,10 @@
 
     </div>
     <div id="spinner" class="hidden spinner">Loading ...</div>
+    <script>
+        var album = '{{album}}';
+        var BASE = '{{BASE}}';
+    </script>
 
     {( "footer.html" )}
 

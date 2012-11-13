@@ -31,18 +31,12 @@ $(function(){
 
     
     $container.imagesLoaded(function( $images, $proper, $broken ) {
-        console.log('hello from loaded');
         $container.isotope({
             resizable: false, // disable normal resizing
             animationEngine: 'css' // Must use css, or no animation at all
 
         });
     });
-//              layoutMode: 'cellsByRow',
-//              cellsByRow: {
-//                      columnWidth: 240,
-//                rowHeight: 360
-
     
     $('.lb').click(function(e) {
         // Show spinner
@@ -84,7 +78,8 @@ $(function(){
                 
             //insert lightbox HTML into page
             $('body').append(lightbox);
-
+            // Run the set here to, to trigger click
+            setLBimage(image_href);
         }
 
         showLB();
@@ -93,10 +88,13 @@ $(function(){
     var setLBimage = function(image_href) {
         //place href as img src value
         $('#content').html('<img src="' + image_href + '" />');
+        // Count the viewing
+        $.getJSON('/photongx/api/img/click/', { 'img':image_href}, function(data) {
+            console.log(data);
+        });
     };
     var showLB = function() {
         $('#content').imagesLoaded(function( $images, $proper, $broken ) {
-            console.log('hello from lb loaded');
             // effects for background
             $('.items').addClass('backgrounded');
             //show lightbox window - you could use .show('fast') for a transition
