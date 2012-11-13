@@ -266,7 +266,6 @@ local function add_file_to_db(album, itag, h)
     local albumhkey  =  album .. 'h' -- album metadata
     local imagekey   =  imgh['itag'] .. '/' .. h['x-file-name']
 
-    ngx.log(ngx.ERR, '___***___ ' .. imgh['itag'])
     red:zadd(albumskey, timestamp, albumkey) -- add album to albumset
     red:zadd(albumkey , timestamp, imagekey) -- add imey to imageset
     red:hmset(imagekey, imgh)                -- add imagehash
@@ -374,13 +373,29 @@ end
 -- remove img
 --
 local function api_img_remove()
-    ngx.header.content_type = 'application/json';
-    local imgfullkey = ngx.re.match(ngx.var.uri, '/(\\w+)$')[1]
-    local album = ngx.re.match(imgfullkey, '(\\w+)_')[1]
-    res = {
-        album = album,
-        imgfullkey = imgfullkey,
-    }
+    ngx.header.content_type = 'application/json'
+    local match = ngx.re.match(ngx.var.uri, '^/.*/(\\w+)/(\\w+)/(.+)$', 'a')
+    if not match then
+        return ngx.print('Faulty image')
+    end
+    res = {}
+    album = match[1]
+    itag = match[2]
+    img = match[3]
+    tag = red:hget(album..'h', 'tag')
+    -- delete image hash
+    res['image'] = red:del(itag .. '/' .. img)
+    -- delete image from album set
+    res['images'] = red:zrem(album, itag .. '/' .. img)
+    -- delete image and dir from file
+    res['rmimg'] = os.execute('rm ' .. IMGPATH .. tag .. '/' .. itag .. '/' .. img)
+    res['rmdir'] = os.execute('rmdir ' .. IMGPATH .. tag .. '/' .. itag .. '/')
+
+    res['album'] = album
+    res['itag'] = itag
+    res['tag'] = tag
+    res['img'] = img
+
     ngx.print( cjson.encode ( res ) )
 end
 

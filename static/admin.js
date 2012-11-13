@@ -26,6 +26,7 @@ $('.link-image-remove').bind('click', function(ev) {
     ev.preventDefault();
     // CALL API
     $(this).closest('.item').remove();
+    console.log('Remove res:', $.getJSON($(this).attr('href'), function(data) { console.log(data); }));
     return false;
 });
 
