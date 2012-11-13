@@ -407,6 +407,8 @@ local function api_album_remove()
     end
     res['album'] = red:del(album)
     res[album..'h'] = red:del(album..'h')
+
+    res['albums'] = red:zrem('zalbums', album)
     res['command'] = "rm -rf "..IMGPATH..'/'..tag
     os.execute(res['command'])
     ngx.print( cjson.encode ( res ) )
