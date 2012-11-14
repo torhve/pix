@@ -3,6 +3,7 @@ body {
 }
 body.gallery {
   background: #0a0711;
+  padding: 0;
   }
 .container {
     background: white;

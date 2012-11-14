@@ -7,3 +7,6 @@
 [submodule "static/fa"]
 	path = static/fa
 	url = https://github.com/FortAwesome/Font-Awesome.git
+[submodule "static/wookmark"]
+	path = static/wookmark
+	url = git://github.com/GBKS/Wookmark-jQuery.git

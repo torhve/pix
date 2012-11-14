@@ -28,11 +28,18 @@ var setColumnwidth = function() {
 
 $(window).smartresize(function(){
     setColumnwidth();
+    /*
     $container.isotope({
         itemSelector: '.item',
         resizable: false, // disable normal resizing
         animationEngine: 'css' // We want css, or no animation at all
     });
+    */
+        $('.item').wookmark({
+            container: $('.items'),
+            autoResize: false,
+            offset: 6
+        });
 });
 
 
@@ -53,11 +60,19 @@ $(function(){
     setColumnwidth();
     
     $container.imagesLoaded(function( $images, $proper, $broken ) {
+        /*
         $container.isotope({
             itemSelector: '.item',
             resizable: false, // disable normal resizing
             animationEngine: 'css' // We want css, or no animation at all
         });
+        */
+        $('.item').wookmark({
+            container: $('.items'),
+            autoResize: false,
+            offset: 6
+        });
+
 
         // We are loaded, so hide the spinner
         $('.spinner').addClass('hidden');
