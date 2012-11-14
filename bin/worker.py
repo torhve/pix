@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 from redis import Redis
@@ -61,7 +62,7 @@ if __name__ == '__main__':
         print "Generating " + outfile,
         t = time()
         sys.stdout.flush()
-        thumb = w.thumbnail(infile, outfile, size="640x640")        
+        thumb = w.thumbnail(infile, outfile, size="640x640")
         print "done (%d ms)" % ((time() - t) * 1000)
 
         update = { 'thumb_w': thumb['width'], \
