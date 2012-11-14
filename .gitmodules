@@ -7,6 +7,3 @@
 [submodule "static/fa"]
 	path = static/fa
 	url = https://github.com/FortAwesome/Font-Awesome.git
-[submodule "static/transit"]
-	path = static/transit
-	url = git://github.com/rstacruz/jquery.transit.git
