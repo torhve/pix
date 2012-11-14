@@ -152,13 +152,6 @@ $('form').submit(function(ev) {
           //var file = ev.target.file;
           if (file) {
               var li = document.createElement("li");
-              //if (file.type.search(/image\/.*/) != -1) {
-              //    var thumb = new Image();
-              //    thumb.src = ev.target.result;
-              //    thumb.addEventListener("mouseover", showImagePreview, false);
-              //    thumb.addEventListener("mouseout", removePreview, false);
-              //    li.appendChild(thumb);
-              //}
               var h5 = document.createElement("h5");
               var h5Text = document.createTextNode(file.name);
               h5.appendChild(h5Text);
@@ -185,47 +178,6 @@ $('form').submit(function(ev) {
           }
       }
   
-      //var showImagePreview = function (ev) {
-      //    var div = document.createElement("div");
-      //    div.style["top"] = (ev.pageY + 10) + "px";
-      //    div.style["left"] = (ev.pageX + 10) + "px";
-      //    div.style["opacity"] = 0;
-      //    div.className = "imagePreview";
-      //    var img = new Image();
-      //    img.src = ev.target.src;
-      //    div.appendChild(img);
-      //    document.body.appendChild(div);
-      //    document.body.addEventListener("mousemove", movePreview, false);
-      //    preview = div;
-      //    fadePreviewIn();
-      //}
-  
-      //var movePreview = function (ev) {
-      //    if (preview) {
-      //        preview.style["top"] = (ev.pageY + 10) + "px";
-      //        preview.style["left"] = (ev.pageX + 10) + "px";
-      //    }
-      //}
-  
-      //var removePreview = function (ev) {
-      //    document.body.removeEventListener("mousemove", movePreview, false);
-      //    document.body.removeChild(preview);
-      //}
-  
-      //var fadePreviewIn = function () {
-      //    if (preview) {
-      //        var opacity = preview.style["opacity"];
-      //        for (var i = 10; i < 250; i = i+10) {
-      //            (function () {
-      //                var level = i;
-      //                setTimeout(function () {
-      //                    preview.style["opacity"] = opacity + level / 250;
-      //                }, level);
-      //            })();
-      //        }
-      //    }
-      //}
-
       function roundNumber(num, dec) {
           var result = Math.round(num*Math.pow(10,dec))/Math.pow(10,dec);
           return result;
