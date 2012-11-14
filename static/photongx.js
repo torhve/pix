@@ -20,7 +20,7 @@ $.fn.preload = function() {
     this.each(function(){
         // Check if url starts with /
         if (this[0] == '/') {
-            console.log(String(this));
+            //console.log(String(this));
             $('<img>')[0].src = this;
         }
     });
@@ -70,10 +70,15 @@ $(function(){
             //create HTML markup for lightbox window
             var lightbox = 
             '<div id="lightbox" class="hidden">' +
-                '<p><a id="goFS" href="#"><i class="icon-fullscreen"></i></a> <i class="icon-remove"></i></p>' +
-                '<div id="content">' + //insert clicked link's href into img src
-                    '<img src="' + image_href +'" />' +
-                '</div>' +  
+                '<p>' +
+                '<a id="play" href="#"><i class="icon-play"></i></a>' +
+                '<a id="goFS" href="#"><i class="icon-fullscreen"></i></a>' +
+                '<a id="hideLB" href="#"><i class="icon-remove"></i></a></p>' +
+                '<a href="#prev" id="prev"><div><i class="icon-chevron-left"></i></div></a>' +
+                    '<div id="content">' + //insert clicked link's href into img src
+                        '<img src="' + image_href +'" />' +
+                    '</div>' +  
+                '<a href="#next" id="next"><div><i class="icon-chevron-right"></i></div></a>' +
             '</div>';
                 
             //insert lightbox HTML into page
@@ -81,6 +86,47 @@ $(function(){
             // Run the set here to, to trigger click
             setLBimage(image_href);
         }
+
+
+        // Handle clicks on the next link
+        $('#next').bind('click', function(e) {
+            navigateImage(currentimage + 1);
+            return false;
+        });
+        // Handle clicks on the prev link
+        $('#prev').bind('click', function(e) {
+            navigateImage(currentimage - 1);
+            return false;
+        });
+
+        // Handle clicks on the fs link
+        $('#goFS').bind('click', function(e) {
+            goFS();
+            return false;
+        });
+
+        // Handle clicks on the play link
+        $('#play').bind('click', function(e) {
+            if($('#play i').hasClass('icon-play')) {
+                $('#play i').removeClass('icon-play').addClass('icon-pause');
+                play();
+            }else {
+                $('#play i').removeClass('icon-pause').addClass('icon-play');
+                pause();
+            }
+            return false;
+        });
+
+        // Handle all clicks in lb-mode
+        $('#lightbox').bind('click', function(e) {
+            var target = $(e.target);
+            var id = target.attr('id');
+            if ('id' == 'goFS') {
+                goFS();
+            }
+            hideLB();
+            return false;
+        });
 
         showLB();
 
@@ -90,8 +136,9 @@ $(function(){
         $('#content').html('<img src="' + image_href + '" />');
         // Count the viewing
         $.getJSON('/photongx/api/img/click/', { 'img':image_href}, function(data) {
-            console.log(data);
+            //console.log(data);
         });
+        // FIXME scrollto
     };
     var showLB = function() {
         $('#content').imagesLoaded(function( $images, $proper, $broken ) {
@@ -112,12 +159,12 @@ $(function(){
     };
     
     //Click anywhere on the page to get rid of lightbox window
-    $('#lightbox').live('click', hideLB);  //must use live, as the lightbox element is inserted into the DOM
+   // $('#lightbox').live('click', hideLB);  //must use live, as the lightbox element is inserted into the DOM
     //
     
     var goFS = function() {
         console.log('Going Fullscreen');
-        var elem = document.getElementById("lightbox");
+        var elem = document.getElementById('lightbox');
 
         if (elem.requestFullScreen) {
             elem.requestFullScreen();
@@ -127,15 +174,31 @@ $(function(){
             elem.webkitRequestFullScreen();
         }
     }
+    
+    var slideshowtimer;
+
+    // Slideshow
+    var play = function() {
+        var interval = 3000;
+        slideshowtimer = setInterval(function(){ $('#next').click(); }, interval);
+    }
+    // Slideshow
+    var pause = function() {
+        window.clearInterval(slideshowtimer);
+    }
+
+    var navigateImage = function(c) {
+      window.currentimage = c;
+      var image_href = $('#image-'+c).attr('href');
+      setLBimage(image_href);
+      $([
+          $('#image-'+String(parseInt(c+1))).attr('href'),
+          $('#image-'+String(parseInt(c+2))).attr('href'),
+          $('#image-'+String(parseInt(c+3))).attr('href')
+      ]).preload();
+    }
 
 
-    // Click handler for fullscreenbutton
-    // Bind using body since dynamic element
-    $('body').bind('click', function() {
-        if ($(this).attr('id') == 'goFS') {
-            goFS();
-        }
-    });
 
     $(document).keydown(function(e){
       if (e.keyCode == 27) { 
@@ -150,14 +213,7 @@ $(function(){
           else if (e.keyCode == 39) {
               c = window.currentimage + 1;
           }
-          window.currentimage = c;
-          var image_href = $('#image-'+c).attr('href');
-          setLBimage(image_href);
-          $([
-              $('#image-'+String(parseInt(c+1))).attr('href'),
-              $('#image-'+String(parseInt(c+2))).attr('href'),
-              $('#image-'+String(parseInt(c+3))).attr('href')
-          ]).preload();
+          navigateImage(c);
           return false;
       }
       else if (e.keyCode == 70) {
