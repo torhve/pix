@@ -122,6 +122,11 @@ end
 -- tags   h: albumnameh    = 'tag'
 -- album  z: albumname     = set('itag_filename', 'itag2_filename2', ...)
 -- images h: itag/filename = {album: 'albumname', timestamp: ... ... }
+--
+
+-- Upload Queue
+-- queue l: queue:thumb = [img, img, img, img]
+
 
 -- URLs
 -- /base/atag/albumname
@@ -277,6 +282,9 @@ local function add_file_to_db(album, itag, h)
     red:hmset(imagekey, imgh)                -- add imagehash
     -- only set tag if not exist
     red:hsetnx(albumhkey, 'tag', h['X-tag'])
+
+    -- Add the uploaded image to the queue
+    red:lpush('queue:thumb', imagekey)
 end
 
 --
