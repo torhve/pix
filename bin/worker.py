@@ -1,3 +1,7 @@
+#
+# Worker module for generating thumbs and pulling exif info off images
+# @author simeng
+#
 # -*- coding: utf-8 -*-
 
 from redis import Redis
@@ -8,25 +12,33 @@ import sys
 import json
 from time import time
 import signal
+from optparse import OptionParser
 
 class Worker:
     def __init__(self, config):
+        self.config = config
+        self.work_list = None
         if 'redis' in config:
             # TODO support sockets and stuffs
             if 'unix_socket_path' in config["redis"]:
                 self.redis = Redis(unix_socket_path = config["redis"]["unix_socket_path"])
 
+
     def fetch_thumb_job(self):
-        return self.redis.blpop('queue:thumb')[1]
+        if self.config['fetch_mode'] == 'queue':
+            return self.redis.blpop('queue:thumb')[1]
+        else:
+            if self.work_list == None:
+                self.work_list = []
+
+                for album in self.redis.zrange('zalbums', 0, -1):
+                    for key in self.redis.zrange(album, 0, -1):
+                        self.work_list.append(key)
+
+            return self.work_list.pop()
 
     def get_image_info(self, key):
         image = self.redis.hgetall(key)
-
-        image['thumb_name'] = "t640." + image['file_name']
-
-        base = "img" + sep + image['atag'] + sep + image['itag'] + sep
-        image['relpath'] = base + image['file_name']
-        image['relpath_thumb_640'] = base + image['thumb_name']
 
         return image
 
@@ -43,25 +55,45 @@ class Worker:
                  'height': image.size().height() }
 
 if __name__ == '__main__':
+    parser = OptionParser()
+    parser.add_option('-a', '--all', dest="all", action="store_true", 
+            help="worker will ignore queue, process all images in database and exit")
+    (options, args) = parser.parse_args(sys.argv)
+
     BASE_DIR = os.path.dirname(__file__) + "/.."
     with open(BASE_DIR + sep + "etc" + sep + "config.json") as f:
         config = json.loads(f.read())
 
     signal.signal(signal.SIGINT, lambda num, frame: sys.exit(0))
 
+    if options.all:
+        config['fetch_mode'] = 'all'
+    else:
+        config['fetch_mode'] = 'queue'
+
     w = Worker(config)
+    photoconf = config['photos']
 
     while True:
-        key = w.fetch_thumb_job()
+        try:
+            key = w.fetch_thumb_job()
+        except IndexError, e:
+            break
+
         image = w.get_image_info(key)
 
-        infile = BASE_DIR + sep + image['relpath']
-        outfile = BASE_DIR + sep + image['relpath_thumb_640']
+        thumb_max_size = "%dx%d" % ( photoconf['thumb_max'], photoconf['thumb_max'] )
+        image['thumb_name'] = "t%d.%s" % ( photoconf['thumb_max'], image['file_name'] )
+
+        relbase = "img" + sep + image['atag'] + sep + image['itag'] + sep
+
+        infile = BASE_DIR + sep + relbase + image['file_name']
+        outfile = BASE_DIR + sep + relbase + image['thumb_name']
 
         print "Generating " + outfile,
         t = time()
         sys.stdout.flush()
-        thumb = w.thumbnail(infile, outfile, size="640x640")        
+        thumb = w.thumbnail(infile, outfile, size=thumb_max_size)        
         print "done (%d ms)" % ((time() - t) * 1000)
 
         update = { 'thumb_w': thumb['width'], \

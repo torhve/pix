@@ -1,5 +1,8 @@
 {
     "redis": {
         "unix_socket_path": "/var/run/redis/redis.sock"
+    },
+    "photos": {
+        "thumb_max": 640
     }
 }
