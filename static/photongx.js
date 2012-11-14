@@ -1,14 +1,33 @@
 // Show spinner until imagesloaded
 $('#spinner').removeClass('hidden');
 
-// proper column size
-$('.item').css('max-width', ($(document).width()/3)-8 + 'px');
-$('.item img').css('width', ($(document).width()/3)-8 + 'px');
+// calculate and set optimal column size
+var setColumnwidth = function() {
+    var docwidth = $(document).width();
+    var cwidth = 0;
+    var columns = 0;
+    // Decide on the best column width depending on docwidth
+    // people with huge screens can tolerate more columns
+    if (docwidth > 2500) 
+        columns = 5;
+    else if (docwidth > 1500) 
+        columns = 4;
+    else if (docwidth > 1000) 
+        columns = 3;
+    else if (docwidth >= 790)
+        columns = 2;
+    else if (docwidth < 790)
+        columns = 1;
 
-var $container = $('.items');
+    // also subtract 3*columns, since every item got 6 px margin, 3 on each side
+    cwidth = (docwidth / columns) - (4*columns); 
+    $('.item').css('max-width', cwidth + 'px');
+    $('.item img').css('width', cwidth + 'px');
+    console.log('Decided on ', columns, ' columns with docwidth ', docwidth);
+}
+
 $(window).smartresize(function(){
-    $('.item').css('max-width', ($(document).width()/3)-8 + 'px');
-    $('.item img').css('width', ($(document).width()/3)-8 + 'px');
+    setColumnwidth();
     $container.isotope({
         itemSelector: '.item',
         resizable: false, // disable normal resizing
@@ -17,6 +36,7 @@ $(window).smartresize(function(){
 });
 
 
+var $container = $('.items');
 var currentimage = 0;
 
 $.fn.preload = function() {
@@ -30,6 +50,7 @@ $.fn.preload = function() {
 }
 
 $(function(){
+    setColumnwidth();
     
     $container.imagesLoaded(function( $images, $proper, $broken ) {
         $container.isotope({
