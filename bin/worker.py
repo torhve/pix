@@ -6,6 +6,7 @@ import os
 from os.path import sep
 import sys
 import json
+from time import time
 
 class Worker:
     def __init__(self, config):
@@ -16,6 +17,16 @@ class Worker:
 
     def fetch_thumb_job(self):
         return self.redis.blpop('queue:thumb')[1]
+
+    def get_image_info(self, key):
+        image = self.redis.hgetall(key)
+
+        image['relpath'] = "img" + sep + image['atag'] + sep + image['itag'] \
+                + sep + image['file_name']
+        image['relpath_thumb_640'] = "img" + sep + image['atag'] + sep \
+                + image['itag'] + sep + "t640." + image['file_name']
+
+        return image
 
     def thumbnail(self, infile, outfile, size):
         image = Image(infile)
@@ -28,12 +39,17 @@ if __name__ == '__main__':
         config = json.loads(f.read())
 
     w = Worker(config)
-    key = w.fetch_thumb_job()
 
-    print key
+    while True:
+        key = w.fetch_thumb_job()
+        image = w.get_image_info(key)
 
-    infile = BASE_DIR + "/static/img/" + key
-    outfile = BASE_DIR + "/static/thumb/" + key
+        infile = BASE_DIR + sep + image['relpath']
+        outfile = BASE_DIR + sep + image['relpath_thumb_640']
 
-    w.thumbnail(infile, outfile, size="200x200")        
+        print "Generating " + outfile,
+        t = time()
+        sys.stdout.flush()
+        w.thumbnail(infile, outfile, size="640x640")        
+        print "done (%d ms)" % ((time() - t) * 1000)
 
