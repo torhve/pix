@@ -1,3 +1,6 @@
+// Show spinner until imagesloaded
+$('#spinner').removeClass('hidden');
+
 // proper column size
 $('.item').css('max-width', ($(document).width()/3)-8 + 'px');
 $('.item img').css('width', ($(document).width()/3)-8 + 'px');
@@ -34,6 +37,9 @@ $(function(){
             resizable: false, // disable normal resizing
             animationEngine: 'css' // We want css, or no animation at all
         });
+
+        // We are loaded, so hide the spinner
+        $('.spinner').addClass('hidden');
     });
     
     $('.lb').click(function(e) {
