@@ -12,7 +12,7 @@ ngx.header.content_type = 'text/html';
 -- the db global
 red = nil
 BASE = '/photongx/'
-IMGPATH = '/home/xt/src/photongx/img/'
+IMGPATH = '/home/simeng/photongx/img/'
 
 -- Default context helper
 function ctx(ctx)

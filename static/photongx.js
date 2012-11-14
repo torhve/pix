@@ -1,6 +1,3 @@
-// Show spinner until imagesloaded
-$('#spinner').removeClass('hidden');
-
 // calculate and set optimal column size
 var setColumnwidth = function() {
     var docwidth = $(document).width();

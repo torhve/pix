@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #
 # Worker module for generating thumbs and pulling exif info off images
 # @author simeng
