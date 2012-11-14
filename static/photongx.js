@@ -27,8 +27,6 @@ $.fn.preload = function() {
 }
 
 $(function(){
-    window.currentimage = 0;
-
     
     $container.imagesLoaded(function( $images, $proper, $broken ) {
         $container.isotope({
@@ -49,7 +47,7 @@ $(function(){
         var image_href = $(this).attr("href");
 
         // Save the current image
-        window.currentimage = parseInt($(this).attr('id').split('-')[1]);
+        currentimage = parseInt($(this).attr('id').split('-')[1]);
         
         
         /*  
@@ -187,15 +185,31 @@ $(function(){
         window.clearInterval(slideshowtimer);
     }
 
+    // Function responsible for swapping the current lightbox image
+    // it wraps on start and end, and preloads 3 images in the current 
+    // scrolling direction
     var navigateImage = function(c) {
-      window.currentimage = c;
+      console.log('C', c);
+          // we are at the start, figure out the amount of items and
+          // go to the end
+          c = $('.item').length-1;
+      }else if (c >= ($('.item').length -1)) {
+          c = 1; // Lua starts at 1 :)
+       }
       var image_href = $('#image-'+c).attr('href');
       setLBimage(image_href);
+      var cone = c+1, ctwo = c+2 , cthree = c+3;
+      // We are going backwards
+      if (c - currentimage) {
+          cone = c-1, ctwo = c-2, cthree = c-3;
+      }
       $([
-          $('#image-'+String(parseInt(c+1))).attr('href'),
-          $('#image-'+String(parseInt(c+2))).attr('href'),
-          $('#image-'+String(parseInt(c+3))).attr('href')
+          $('#image-'+String(parseInt(cone))).attr('href'),
+          $('#image-'+String(parseInt(ctwo))).attr('href'),
+          $('#image-'+String(parseInt(cthree))).attr('href')
       ]).preload();
+
+      currentimage = c;
     }
 
 
@@ -211,7 +225,7 @@ $(function(){
               c = currentimage - 1;
           }
           else if (e.keyCode == 39) {
-              c = window.currentimage + 1;
+              c = currentimage + 1;
           }
           navigateImage(c);
           return false;
