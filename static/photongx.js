@@ -7,9 +7,9 @@ $(window).smartresize(function(){
     $('.item').css('max-width', ($(document).width()/3)-8 + 'px');
     $('.item img').css('width', ($(document).width()/3)-8 + 'px');
     $container.isotope({
+        itemSelector: '.item',
         resizable: false, // disable normal resizing
-        animationEngine: 'css' // Must use css, or no animation at all
-
+        animationEngine: 'css' // We want css, or no animation at all
     });
 });
 
@@ -30,9 +30,9 @@ $(function(){
     
     $container.imagesLoaded(function( $images, $proper, $broken ) {
         $container.isotope({
+            itemSelector: '.item',
             resizable: false, // disable normal resizing
-            animationEngine: 'css' // Must use css, or no animation at all
-
+            animationEngine: 'css' // We want css, or no animation at all
         });
     });
     
@@ -74,7 +74,7 @@ $(function(){
                 '<a id="hideLB" href="#"><i class="icon-remove"></i></a></p>' +
                 '<a href="#prev" id="prev"><div><i class="icon-chevron-left"></i></div></a>' +
                     '<div id="content">' + //insert clicked link's href into img src
-                        '<img src="' + image_href +'" />' +
+                        '<img id="lbimg" src="' + image_href +'" />' +
                     '</div>' +  
                 '<a href="#next" id="next"><div><i class="icon-chevron-right"></i></div></a>' +
             '</div>';
@@ -130,12 +130,17 @@ $(function(){
     });
     var setLBimage = function(image_href) {
         //place href as img src value
-        $('#content').html('<img src="' + image_href + '" />');
+        $('#content').html('<img class="lbimg" id="lbimg" src="' + image_href + '" />');
         // Count the viewing
         $.getJSON('/photongx/api/img/click/', { 'img':image_href}, function(data) {
             //console.log(data);
         });
-        // FIXME scrollto
+
+        // TODO scrollto background pos img
+
+        //$("#lbimg").addClass('trans').bind('animationend webkitAnimationEnd MSAnimationEnd oAnimationEnd', function(e){
+        //    $('#lbimg').css('opacity', '5');
+        //});
     };
     var showLB = function() {
         $('#content').imagesLoaded(function( $images, $proper, $broken ) {

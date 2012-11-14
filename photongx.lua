@@ -148,13 +148,15 @@ end
 local function index()
     local albums = getalbums()
 
-    images = {}
+    local images = {}
     tags  = {}
+    local imagecount = 0
 
     -- Fetch a cover img
     for i, album in ipairs(albums) do
         -- FIXME, only get 1 image
         local theimages, err = red:zrange(album, 0, -1)
+        imagecount = imagecount + #theimages
         if err then
             ngx.say(err)
             return
@@ -169,7 +171,11 @@ local function index()
 
     -- load template
     local page = tload('main.html')
-    local context = ctx{albums = albums, images = images, bodyclass = 'gallery'}
+    local context = ctx{
+        albums = albums, 
+        imagecount = imagecount,
+        images = images, 
+        bodyclass = 'gallery'}
     -- render template with counter as context
     -- and return it to nginx
     ngx.print( page(context) )

@@ -112,6 +112,9 @@ body.gallery {
     background: black;
 }
 
+.transition {
+    transition: all 500ms cubic-bezier(0.250, 0.100, 0.250, 1.000); /* ease (default) */
+}
 
 #content {
     position:fixed; /* keeps the lightbox window in the current viewport */
@@ -244,3 +247,51 @@ body.gallery {
     display: none;
 }
 
+/* TRANSITION */
+.te-perspective{ 
+    -webkit-perspective: 1000;
+}
+.te-cover,
+.te-transition{
+    -webkit-transform-style: preserve-3d;
+}
+.te-cover.te-hide,
+.te-transition,
+.te-images{ display: none; }
+.te-transition.te-show{ display: block; }
+.te-cube-face{
+    position: absolute;
+    display: block;
+    overflow: hidden;
+}
+.te-back,
+.te-front{
+    position: absolute;
+    -webkit-backface-visibility: hidden;
+}
+.te-front{ z-index: 2; }
+.te-back{ z-index: 1; }
+
+/***************** Cube4 ********************/
+.te-cube4 .te-cube-front{
+    -webkit-transform: scale3d(.858,.858,.858) translate3d(0,0,164px);
+}
+.te-cube4 .te-cube-left{
+    -webkit-transform: scale3d(.858,.858,.858) rotate3d(0,1,0,-90deg) translate3d(0,0,164px);
+}
+.te-cube4 .te-cube-right{
+    -webkit-transform: scale3d(.858,.858,.858) rotate3d(0,1,0,90deg) translate3d(0,0,164px);
+}
+.te-cube4 .te-cube-top{
+    -webkit-transform: scale3d(.858,.858,.858) rotate3d(1,0,0,90deg) translate3d(0,0,164px);
+}
+.te-cube4 .te-cube-bottom{
+    -webkit-transform: scale3d(.858,.858,.858) rotate3d(0,1,0,-90deg) translate3d(0,0,164px);
+}
+.te-cube4.te-show{
+    -webkit-animation: cube4 0.5s ease-in-out;
+}
+@-webkit-keyframes cube4{
+    0% { -webkit-transform: rotate3d(0,1,0,0); }
+    100% { -webkit-transform: rotate3d(0,1,0,90deg); }
+}

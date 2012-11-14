@@ -1,17 +1,38 @@
     {( "header.html" )}
 
+    <div class="container-fluid">
+        <div class="row-fluid">
+            <div class="span12">
+                <h1><span class="blue">Photo Engine X</span><small class="pull-right">{{ imagecount}} images in {{ #albums }} albums</small></h1>
+            </div>
+        </div>
+    </div>
+
     <div class="items">
+        <!--
+        <div style="width:480px; height: 340px; float: right; background: rgba(255, 255, 255, 0.4);" class="corner-stamp">
+            <h1>Photo Engine X</h1>
+            <p> Hello! </p>
+            <p> Welcome to my gallery </p>
+            
+            <div class="album-label">
+                <a href="{{ BASE}}/">
+                    <i class="icon-picture"></i> Photo Engine X
+                </a>
+            </div>
+        </div>
+        -->
     {% for i, album in ipairs(albums) do %}
     <div class="item">
         <a href="{{ BASE}}{{ tags[album] }}/{{ album }}/">
-            <img src="{{ BASE}}img/{{ tags[album] }}/{{ images[album] }}"></a>
-    </a>
-    <div class="album-label">
-        <a href="{{ BASE}}{{tags[album]}}/{{ album }}/">
-            <i class="icon-camera-retro"></i> {{ album }}
+            <img src="{{ BASE}}img/{{ tags[album] }}/{{ images[album] }}">
         </a>
+        <div class="album-label">
+            <a href="{{ BASE}}{{tags[album]}}/{{ album }}/">
+                <i class="icon-camera-retro"></i> {{ album }}
+            </a>
+        </div>
     </div>
-</div>
     {% end %}
     </div>
 
