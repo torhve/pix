@@ -99,6 +99,7 @@ $(function(){
 
         // Handle clicks on the fs link
         $('#goFS').bind('click', function(e) {
+            e.preventDefault();
             goFS();
             return false;
         });
@@ -112,6 +113,7 @@ $(function(){
                 $('#play i').removeClass('icon-pause').addClass('icon-play');
                 pause();
             }
+            e.preventDefault();
             return false;
         });
 
@@ -119,9 +121,6 @@ $(function(){
         $('#lightbox').bind('click', function(e) {
             var target = $(e.target);
             var id = target.attr('id');
-            if ('id' == 'goFS') {
-                goFS();
-            }
             hideLB();
             return false;
         });
@@ -150,27 +149,42 @@ $(function(){
     };
         
     var hideLB = function() {
+        if($('#goFS i').hasClass('icon-resize-small')) {
+            document.cancelFullScreen();
+        }
         // effects for background
         $('.items').removeClass('backgrounded');
         //$('#lightbox').hide();
         $('#lightbox').hide();
     };
     
-    //Click anywhere on the page to get rid of lightbox window
-   // $('#lightbox').live('click', hideLB);  //must use live, as the lightbox element is inserted into the DOM
-    //
+    document.cancelFullScreen = document.webkitExitFullscreen || document.mozCancelFullScreen || document.exitFullscreen;
     
-    var goFS = function() {
+    var goFS = function(e) {
         console.log('Going Fullscreen');
-        var elem = document.getElementById('lightbox');
+        if($('#goFS i').hasClass('icon-fullscreen')) {
 
-        if (elem.requestFullScreen) {
-            elem.requestFullScreen();
-        } else if (elem.mozRequestFullScreen) {
-            elem.mozRequestFullScreen();
-        } else if (elem.webkitRequestFullScreen) {
-            elem.webkitRequestFullScreen();
+            var elem = document.getElementById('lightbox');
+
+            if (elem.requestFullScreen) {
+                elem.requestFullScreen();
+            } else if (elem.mozRequestFullScreen) {
+                elem.mozRequestFullScreen();
+            } else if (elem.webkitRequestFullScreen) {
+                elem.webkitRequestFullScreen();
+            }
+            elem.onwebkitfullscreenchange = onFullScreenExit;
+            elem.onmozfullscreenchange = onFullScreenExit;
+
+            $('#goFS i').removeClass('icon-fullscreen').addClass('icon-resize-small');
+        }else {
+            document.cancelFullScreen();
+            $('#goFS i').removeClass('icon-resize-small').addClass('icon-fullscreen');
         }
+    }
+    var onFullScreenExit = function() {
+        console.log('onFSExit');
+        //$('#goFS i').removeClass('icon-resize-small').addClass('icon-fullscreen');
     }
     
     var slideshowtimer;
@@ -189,27 +203,27 @@ $(function(){
     // it wraps on start and end, and preloads 3 images in the current 
     // scrolling direction
     var navigateImage = function(c) {
-      console.log('C', c);
-          // we are at the start, figure out the amount of items and
-          // go to the end
-          c = $('.item').length-1;
-      }else if (c >= ($('.item').length -1)) {
-          c = 1; // Lua starts at 1 :)
-       }
-      var image_href = $('#image-'+c).attr('href');
-      setLBimage(image_href);
-      var cone = c+1, ctwo = c+2 , cthree = c+3;
-      // We are going backwards
-      if (c - currentimage) {
-          cone = c-1, ctwo = c-2, cthree = c-3;
-      }
-      $([
-          $('#image-'+String(parseInt(cone))).attr('href'),
-          $('#image-'+String(parseInt(ctwo))).attr('href'),
-          $('#image-'+String(parseInt(cthree))).attr('href')
-      ]).preload();
+        if (c == 0) {
+            // we are at the start, figure out the amount of items and
+            // go to the end
+            c = $('.item').length-1;
+        }else if (c >= ($('.item').length -1)) {
+            c = 1; // Lua starts at 1 :)
+        }
+        var image_href = $('#image-'+c).attr('href');
+        setLBimage(image_href);
+        var cone = c+1, ctwo = c+2 , cthree = c+3;
+        // We are going backwards
+        if (c - currentimage) {
+            cone = c-1, ctwo = c-2, cthree = c-3;
+        }
+        $([
+                $('#image-'+String(parseInt(cone))).attr('href'),
+                $('#image-'+String(parseInt(ctwo))).attr('href'),
+                $('#image-'+String(parseInt(cthree))).attr('href')
+                ]).preload();
 
-      currentimage = c;
+        currentimage = c;
     }
 
 
@@ -232,6 +246,9 @@ $(function(){
       }
       else if (e.keyCode == 70) {
           goFS();
+      }
+      else if (e.keyCode == 32) {
+          $('#play').click();
       }
     });
 
