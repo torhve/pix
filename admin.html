@@ -15,14 +15,17 @@
             <div class="span3">
                 <div class="well sidebar-nav">
                     <ul class="nav nav-list">
-                        <li class="nav-header">Albums</li>
+                        <li class="nav-header">New album</li>
                         <li>
                             <form class="form-inline" action="{{ BASE }}upload/"> 
                                 <label >New album</label>
-                                <input id="albumname" text="text" name="album" placeholder="Name">
-                                <button type="submit" class="button-add-album btn pull-right btn-primary btn-mini"><i class="icon-plus"></i></button>
+                                <div class="input-append">
+                                    <input id="albumname" text="text" class"input-small" name="album" placeholder="Name">
+                                    <button type="submit" class="button-add-album btn pull-right btn-primary btn-mini"><i class="icon-plus"></i></button>
+                                </div>
                             </form>
                         </li>
+                        <li class="nav-header">Albums</li>
                         {% for i, album in ipairs(albums) do %}
                         <li>
                             <div class="btn-group pull-right">
