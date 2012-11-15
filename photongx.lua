@@ -12,7 +12,7 @@ ngx.header.content_type = 'text/html';
 -- the db global
 red = nil
 BASE = '/photongx/'
-IMGPATH = '/home/simeng/photongx/img/'
+IMGPATH = '/home/xt/src/photongx/img/'
 
 -- Default context helper
 function ctx(ctx)
@@ -194,9 +194,16 @@ local function album()
     local album = ngx.re.match(ngx.var.uri, '/(\\w+)/$')[1]
     local imagelist, err = red:zrange(album, 0, -1)
     local tag, err = red:hget(album .. 'h', 'tag')
-    local images = {}
+    local thumbs = {}
     for i, image in ipairs(imagelist) do
-        images[image] = red:hmget(image, 'itag', 'thumb_name', 'file_name', 'thumb_w', 'thumb_h')
+        local itag = red:hget(image, 'itag')
+        -- Get thumb if key exists
+        -- set to full size if it doesn't exist
+        if red:hexists(image, 'thumb_name') == 1 then
+            thumbs[image] = itag .. '/' .. red:hget(image, 'thumb_name')
+        else
+            thumbs[image] = itag .. '/' .. red:hget(image, 'file_name')
+        end
     end
     
     -- load template
@@ -205,7 +212,7 @@ local function album()
         album = album,
         tag = tag,
         imagelist = imagelist,
-        images = images,
+        thumbs = thumbs,
         bodyclass = 'gallery',
     }
     -- render template with counter as context
