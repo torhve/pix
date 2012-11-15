@@ -261,12 +261,13 @@ $(function(){
         if (c - currentimage) {
             cone = c-1, ctwo = c-2, cthree = c-3;
         }
+        // Only load 1 image, faster swapping 
         $([
-                $('#image-'+String(parseInt(cone))).attr('href'),
-                $('#image-'+String(parseInt(ctwo))).attr('href'),
-                $('#image-'+String(parseInt(cthree))).attr('href')
-                ]).preload();
+            $('#image-'+String(parseInt(cone))).attr('href'),
+            ]).preload();
 
+            //$('#image-'+String(parseInt(ctwo))).attr('href'),
+            //$('#image-'+String(parseInt(cthree))).attr('href')
         currentimage = c;
     }
 
