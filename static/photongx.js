@@ -7,7 +7,7 @@ var setColumnwidth = function() {
     // people with huge screens can tolerate more columns
     if (docwidth > 2500) 
         columns = 5;
-    else if (docwidth > 1500) 
+    else if (docwidth > 1900) 
         columns = 4;
     else if (docwidth > 1000) 
         columns = 3;
