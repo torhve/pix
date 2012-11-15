@@ -160,9 +160,9 @@ end
 
 
 -- 
--- Index view
+-- Albums view
 --
-local function index()
+local function albums()
     local albums = getalbums()
 
     local images = {}
@@ -187,12 +187,26 @@ local function index()
     end
 
     -- load template
-    local page = tload('main.html')
+    local page = tload('albums.html')
     local context = ctx{
         albums = albums, 
         imagecount = imagecount,
         images = images, 
         bodyclass = 'gallery'}
+    -- render template with counter as context
+    -- and return it to nginx
+    ngx.print( page(context) )
+end
+
+-- 
+-- About view
+--
+local function index()
+    -- load template
+    local page = tload('main.html')
+    local context = ctx{
+        bodyclass = 'gallery',
+    }
     -- render template with counter as context
     -- and return it to nginx
     ngx.print( page(context) )
@@ -548,19 +562,20 @@ end
 
 -- mapping patterns to views
 local routes = {
-    ['^/photongx/(\\w+)/(\\w+)/$']= album,
-    ['^/photongx/$']              = index,
-    ['^/photongx/admin/$']        = admin,
-    ['^/photongx/upload/$']       = upload,
-    ['^/photongx/upload/post/?$'] = upload_post,
-    ['^/photongx/api/img/?$']     = img,
-    ['^'..BASE..'api/img/click/$'] = api_img_click,
-    ['^'..BASE..'api/img/remove/(\\.*)'] = api_img_remove,
-    ['^'..BASE..'api/album/remove/(\\.*)'] = api_album_remove,
+    ['(\\w+)/(\\w+)/$']= album,
+    ['$']              = albums,
+    ['about/$']         = index,
+    ['admin/$']        = admin,
+    ['upload/$']       = upload,
+    ['upload/post/?$'] = upload_post,
+    ['api/img/?$']     = img,
+    ['api/img/click/$'] = api_img_click,
+    ['api/img/remove/(\\.*)'] = api_img_remove,
+    ['api/album/remove/(\\.*)'] = api_album_remove,
 }
 -- iterate route patterns and find view
 for pattern, view in pairs(routes) do
-    if ngx.re.match(ngx.var.uri, pattern, "o") then -- regex mather in compile mode
+    if ngx.re.match(ngx.var.uri, '^' .. BASE .. pattern, "o") then -- regex mather in compile mode
         init_db()
         view()
         end_db()

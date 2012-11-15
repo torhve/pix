@@ -25,6 +25,39 @@ a:hover {
 .container {
     background: white;
 }
+#about {
+    position: fixed;
+    top: 10%;
+    text-align: center;
+}
+    #about .row-fluid {
+        margin-bottom: 80px;
+    }
+    #about h1, h2, li {
+        color: white;
+        text-shadow: none;
+    }
+    #about h2 {
+        color: #999;
+    }
+    #about ul {
+        margin: 10%;
+        text-align: justify;
+    }
+    #about li {
+        font-size: 34px;
+        line-height: 40px;
+    }
+    #about .actions {
+        text-align: justify;
+    }
+    #about .btn {
+        margin-right: 5px;
+    }
+    #about .footer {
+        text-align: left;
+        color: #999;
+    }
 .admin-label {
     color: white;
     position: absolute;
