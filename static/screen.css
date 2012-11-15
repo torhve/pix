@@ -43,6 +43,7 @@ body.gallery {
     }
 .items {
     width: 100%;
+    position: relative;
 }
     .backgrounded {
 		-webkit-filter: blur(6px);
