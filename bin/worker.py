@@ -14,7 +14,8 @@ import json
 from time import time
 import signal
 from optparse import OptionParser
-from subprocess import check_call as run
+#from subprocess import check_call as run
+from subprocess import call as run
 
 class Worker:
     def __init__(self, config):
@@ -100,12 +101,17 @@ if __name__ == '__main__':
         print "Generating " + outfile,
         t = time()
         sys.stdout.flush()
-        thumb = w.thumbnail(infile, outfile, size=thumb_max_size)        
-        print "done (%d ms)" % ((time() - t) * 1000)
+        try:
+            thumb = w.thumbnail(infile, outfile, size=thumb_max_size)
+            print "done (%d ms)" % ((time() - t) * 1000)
 
-        update = { 'thumb_w': thumb['width'], \
-                   'thumb_h': thumb['height'], \
-                   'thumb_name': image['thumb_name'] }
+            update = { 'thumb_w': thumb['width'], \
+                       'thumb_h': thumb['height'], \
+                       'thumb_name': image['thumb_name'] }
 
-        w.save_image_info(key, update)
+            w.save_image_info(key, update)
+        except Exception, e:
+            print "ERROR", e
+            print "Infile:", infile
+            print "Outfile:", outfile
 
