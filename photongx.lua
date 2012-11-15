@@ -145,6 +145,18 @@ function getalbums()
     return albums
 end
 
+-- Function to transform a potienially unsecure filename to a secure one
+function secure_filename(filename)
+    filename = string.gsub(filename, '/', '')
+    filename = string.gsub(filename, '%.%.', '')
+    return filename
+end
+
+--
+--
+-- ******* VIEWS ******* 
+--
+
 
 
 -- 
@@ -326,6 +338,9 @@ local function upload_post()
     local album      = h['X-Album']
     local tag        = h['X-Tag']
     local itag       = generate_tag()  -- Image tag
+
+    -- None unsecure shall pass
+    file_name = secure_filename(file_name)
 
     -- Check if tag is OK
     local albumhkey =  album .. 'h' -- album metadata
