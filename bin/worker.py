@@ -52,7 +52,10 @@ class Worker:
         #image = Image(infile)
         #image.resize(size)
         #image.write(outfile)
-        resize = run(['/usr/bin/convert', '-strip',  '-thumbnail',  size, infile, outfile])
+        if infile.endswith('.gif'):
+            resize = run(['/usr/bin/convert', '-strip',  '-thumbnail',  size+'>"', infile, outfile])
+        else:
+            resize = run(['/usr/bin/convert', '-strip',  '-thumbnail',  size, infile, outfile])
         image = Image(outfile)
 
         return { 'width': image.size().width(), \
