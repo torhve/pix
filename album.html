@@ -3,12 +3,19 @@
     <div class="album-label">
         <i class="icon-camera-retro"></i> {{ album}}
     </div>
-
     <div id="items" class="items">
-        {% for i, image in ipairs(images) do %}
+        {% for i, image in ipairs(imagelist) do %}
+        {% local itag = images[image][1]
+           local thumb = images[image][2]
+           if thumb then 
+            thumb = itag .. '/' .. thumb
+           else
+            thumb = image
+           end
+        %}
         <div class="item">
             <a id="image-{{ i }}" href="{{ BASE }}img/{{tag}}/{{ image }}" class="lb">
-                <img src="{{ BASE }}img/{{tag}}/{{ image }}">
+                <img src="{{ BASE }}img/{{tag}}/{{ thumb }}">
             </a>
         </div>
         {% end %}

@@ -192,15 +192,20 @@ end
 local function album()
 
     local album = ngx.re.match(ngx.var.uri, '/(\\w+)/$')[1]
-    local images, err = red:zrange(album, 0, -1)
+    local imagelist, err = red:zrange(album, 0, -1)
     local tag, err = red:hget(album .. 'h', 'tag')
+    local images = {}
+    for i, image in ipairs(imagelist) do
+        images[image] = red:hmget(image, 'itag', 'thumb_name', 'file_name', 'thumb_w', 'thumb_h')
+    end
     
     -- load template
     local page = tload('album.html')
     local context = ctx{ 
         album = album,
-        images = images,
         tag = tag,
+        imagelist = imagelist,
+        images = images,
         bodyclass = 'gallery',
     }
     -- render template with counter as context
