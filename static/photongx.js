@@ -57,6 +57,8 @@ $(function(){
     var slideshow = false;
     var $container = $('.items');
     var currentimage = 0;
+    var slideshowtimer;
+    var interval = 3000;
     
     $container.imagesLoaded(function( $images, $proper, $broken ) {
         /*
@@ -149,10 +151,8 @@ $(function(){
         // Handle clicks on the play link
         $('#play').bind('click', function(e) {
             if($('#play i').hasClass('icon-play')) {
-                $('#play i').removeClass('icon-play').addClass('icon-pause');
                 play();
             }else {
-                $('#play i').removeClass('icon-pause').addClass('icon-play');
                 pause();
             }
             e.preventDefault();
@@ -200,6 +200,7 @@ $(function(){
             $('#lightbox').removeClass('hidden').show();
             // We are loaded, so hide the spinner
             $('.spinner').addClass('hidden');
+            $('#img-front').opacity(1);
         });
     };
         
@@ -211,12 +212,13 @@ $(function(){
         $('.items').removeClass('backgrounded');
         //$('#lightbox').hide();
         $('#lightbox').hide();
+        // Stop any running slideshow;
+        pause();
     };
     
     document.cancelFullScreen = document.webkitExitFullscreen || document.mozCancelFullScreen || document.exitFullscreen;
     
     var goFS = function(e) {
-        console.log('Going Fullscreen');
         if($('#goFS i').hasClass('icon-fullscreen')) {
 
             var elem = document.getElementById('lightbox');
@@ -242,16 +244,16 @@ $(function(){
         //$('#goFS i').removeClass('icon-resize-small').addClass('icon-fullscreen');
     }
     
-    var slideshowtimer;
 
     // Slideshow
     var play = function() {
+        $('#play i').removeClass('icon-play').addClass('icon-pause');
         slideshow = true;
-        var interval = 3000;
         slideshowtimer = setInterval(function(){ $('#next').click(); }, interval);
     }
     // Slideshow
     var pause = function() {
+        $('#play i').removeClass('icon-pause').addClass('icon-play');
         slideshow = false;
         window.clearInterval(slideshowtimer);
     }
