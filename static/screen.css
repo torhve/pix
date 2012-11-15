@@ -248,6 +248,9 @@ body.gallery {
 .adminthumb.hidden {
     display: none;
 }
+#admincontent {
+    position: relative;
+}
 
 /* TRANSITION */
 .te-perspective{ 

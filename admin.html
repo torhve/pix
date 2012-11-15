@@ -30,6 +30,7 @@
                                 <a href="{{ BASE}}api/album/remove/{{ tags[album]}}/{{album}}" class="link-album-remove btn btn-mini btn-danger"><i class="icon-remove"></i></a>
                             </div>
                             <a href="{{ BASE}}{{ tags[album] }}/{{ album }}/">
+                                <i class="icon-picture"></i>
                                 {{ album }}
                             </a>
                         </li>
@@ -38,7 +39,6 @@
                     </div><!--/.well -->
                 </div><!--/span-->
                 <div id="admincontent" class="span9">
-
                 </div>
             </div>
         </div>
@@ -76,12 +76,12 @@
     </div>
 <div id="albumcontainer">
 {% for i, albumname in ipairs(albums) do %}
-<div id="album-{{albumname}}" class="adminalbum hidden">
+<div id="album-{{albumname}}" class="items adminalbum hidden">
     {% for i, image in ipairs(images[albumname]) do %}
     {% local tag = tags[albumname] %}
     <div class="item">
-        <a id="image-{{ i }}" href="{{ BASE }}img/{{tag}}/{{ ngx.re.sub(image, '_', '/fs/') }}" class="lb">
-            <img class="adminthumb" _src="{{ BASE }}img/{{tag}}/{{ ngx.re.sub(image, '_', '/') }}">
+        <a id="image-{{ i }}" href="{{ BASE }}img/{{tag}}/{{ image }}" class="lb">
+            <img class="adminthumb" _src="{{ BASE }}img/{{tag}}/{{ thumbs[albumname][image] }}">
         </a>
         <div class="admin-label">
             <a class="btn btn-mini btn-danger link-image-remove" href="{{ BASE}}/api/img/remove/{{albumname}}/{{ image }}">

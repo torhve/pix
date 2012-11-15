@@ -240,6 +240,7 @@ local function admin()
     local albums = getalbums()
     local tags  = {}
     local images = {}
+    local thumbs = {}
     local imagecount = 0
 
     -- Fetch a cover img
@@ -249,6 +250,17 @@ local function admin()
         tags[album] = tag
         images[album] = theimages
         imagecount = imagecount + #theimages
+        thumbs[album] = {}
+        for i, image in ipairs(theimages) do
+            local itag = red:hget(image, 'itag')
+            -- Get thumb if key exists
+            -- set to full size if it doesn't exist
+            if red:hexists(image, 'thumb_name') == 1 then
+                thumbs[album][image] = itag .. '/' .. red:hget(image, 'thumb_name')
+            else
+                thumbs[album][image] = itag .. '/' .. red:hget(image, 'file_name')
+            end
+        end
     end
 
     -- load template
@@ -264,6 +276,7 @@ local function admin()
         albums = albums,
         tags = tags,
         images = images,
+        thumbs = thumbs,
         imagesjs = cjson.encode(images),
         albumsjs = cjson.encode(albums),
         tagsjs   = cjson.encode(tags),
