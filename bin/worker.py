@@ -14,6 +14,7 @@ import json
 from time import time
 import signal
 from optparse import OptionParser
+from subprocess import check_call as run
 
 class Worker:
     def __init__(self, config):
@@ -48,9 +49,11 @@ class Worker:
             self.redis.hset(imagekey, key, value)
 
     def thumbnail(self, infile, outfile, size):
-        image = Image(infile)
-        image.resize(size)
-        image.write(outfile)
+        #image = Image(infile)
+        #image.resize(size)
+        #image.write(outfile)
+        resize = run(['/usr/bin/convert', '-strip',  '-thumbnail',  size, infile, outfile])
+        image = Image(outfile)
 
         return { 'width': image.size().width(), \
                  'height': image.size().height() }
