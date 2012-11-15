@@ -40,8 +40,6 @@ $(window).smartresize(function(){
 });
 
 
-var $container = $('.items');
-var currentimage = 0;
 
 $.fn.preload = function() {
     this.each(function(){
@@ -55,6 +53,10 @@ $.fn.preload = function() {
 
 $(function(){
     setColumnwidth();
+
+    var slideshow = false;
+    var $container = $('.items');
+    var currentimage = 0;
     
     $container.imagesLoaded(function( $images, $proper, $broken ) {
         /*
@@ -113,13 +115,14 @@ $(function(){
                 '<a id="hideLB" href="#"><i class="icon-remove"></i></a></p>' +
                 '<a href="#prev" id="prev"><div><i class="icon-chevron-left"></i></div></a>' +
                     '<div id="content">' + //insert clicked link's href into img src
-                        '<img id="lbimg" src="' + image_href +'" />' +
+                        '<img class="lbimg" id="img-front" src="' + image_href +'">' +
                     '</div>' +  
                 '<a href="#next" id="next"><div><i class="icon-chevron-right"></i></div></a>' +
             '</div>';
                 
             //insert lightbox HTML into page
             $('body').append(lightbox);
+
             // Run the set here to, to trigger click
             setLBimage(image_href);
         }
@@ -168,18 +171,26 @@ $(function(){
 
     });
     var setLBimage = function(image_href) {
-        //place href as img src value
-        $('#content').html('<img class="lbimg" id="lbimg" src="' + image_href + '" />');
+        /* ANIM slideshow */
+        if(slideshow) {
+
+            $('#img-front').css('opacity', 0).bind("transitionend webkitTransitionEnd oTransitionEnd MSTransitionEnd", function(){ 
+                $('#content').html('<img class="lbimg" id="img-front" src="' + image_href +'">');
+                $('#img-front').css('opacity', 0.999).bind("transitionend webkitTransitionEnd oTransitionEnd MSTransitionEnd", function(){ 
+                    $('#img-front').css('opacity', 1);
+                });
+
+            });
+        }else {
+            $('#img-front').attr('src', image_href);
+        }
+
         // Count the viewing
         $.getJSON('/photongx/api/img/click/', { 'img':image_href}, function(data) {
             //console.log(data);
         });
-
         // TODO scrollto background pos img
 
-        //$("#lbimg").addClass('trans').bind('animationend webkitAnimationEnd MSAnimationEnd oAnimationEnd', function(e){
-        //    $('#lbimg').css('opacity', '5');
-        //});
     };
     var showLB = function() {
         $('#content').imagesLoaded(function( $images, $proper, $broken ) {
@@ -235,11 +246,13 @@ $(function(){
 
     // Slideshow
     var play = function() {
+        slideshow = true;
         var interval = 3000;
         slideshowtimer = setInterval(function(){ $('#next').click(); }, interval);
     }
     // Slideshow
     var pause = function() {
+        slideshow = false;
         window.clearInterval(slideshowtimer);
     }
 
