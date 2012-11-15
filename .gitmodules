@@ -10,3 +10,6 @@
 [submodule "static/wookmark"]
 	path = static/wookmark
 	url = git://github.com/GBKS/Wookmark-jQuery.git
+[submodule "static/smartresize"]
+	path = static/smartresize
+	url = https://github.com/louisremi/jquery-smartresize

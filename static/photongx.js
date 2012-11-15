@@ -1,64 +1,63 @@
-// calculate and set optimal column size
-var setColumnwidth = function() {
-    var docwidth = $(document).width();
-    var cwidth = 0;
-    var columns = 0;
-    // Decide on the best column width depending on docwidth
-    // people with huge screens can tolerate more columns
-    if (docwidth > 2500) 
-        columns = 5;
-    else if (docwidth > 1900) 
-        columns = 4;
-    else if (docwidth > 1000) 
-        columns = 3;
-    else if (docwidth >= 790)
-        columns = 2;
-    else if (docwidth < 790)
-        columns = 1;
-
-    // also subtract 3*columns, since every item got 6 px margin, 3 on each side
-    cwidth = (docwidth / columns) - (4*columns); 
-    $('.item').css('max-width', cwidth + 'px');
-    $('.item img').css('width', cwidth + 'px');
-    console.log('Decided on ', columns, ' columns with docwidth ', docwidth);
-}
-
-$(window).smartresize(function(){
-    setColumnwidth();
-    /*
-    $container.isotope({
-        itemSelector: '.item',
-        resizable: false, // disable normal resizing
-        animationEngine: 'css' // We want css, or no animation at all
-    });
-    */
-        $('.item').wookmark({
-            container: $('.items'),
-            autoResize: false,
-            offset: 6
-        });
-});
-
-
-
-$.fn.preload = function() {
-    this.each(function(){
-        // Check if url starts with /
-        if (this[0] == '/') {
-            //console.log(String(this));
-            $('<img>')[0].src = this;
-        }
-    });
-}
-
 $(function(){
-    setColumnwidth();
+    $.fn.preload = function() {
+        this.each(function(){
+            // Check if url starts with /
+            if (this[0] == '/') {
+                //console.log(String(this));
+                $('<img>')[0].src = this;
+            }
+        });
+    }
+    $(window).on("debouncedresize", function(event) {
+        setColumnwidth();
+        /*
+        $container.isotope({
+            itemSelector: '.item',
+            resizable: false, // disable normal resizing
+            animationEngine: 'css' // We want css, or no animation at all
+        });
+        */
+            $('.item').wookmark({
+                container: $('.items'),
+                autoResize: false,
+                offset: 6
+            });
+    });
+
 
     var slideshow = false;
     var $container = $('.items');
     var currentimage = 0;
     var slideshowtimer;
     var interval = 3000;
+
+
+    // calculate and set optimal column size
+    var setColumnwidth = function() {
+        var docwidth = $(document).width();
+        var cwidth = 0;
+        var columns = 0;
+        // Decide on the best column width depending on docwidth
+        // people with huge screens can tolerate more columns
+        if (docwidth > 2500) 
+            columns = 5;
+        else if (docwidth > 1900) 
+            columns = 4;
+        else if (docwidth > 1000) 
+            columns = 3;
+        else if (docwidth >= 790)
+            columns = 2;
+        else if (docwidth < 790)
+            columns = 1;
+
+        // also subtract 3*columns, since every item got 6 px margin, 3 on each side
+        cwidth = (docwidth / columns) - (4*columns); 
+        $('.item').css('max-width', cwidth + 'px');
+        $('.item img').css('width', cwidth + 'px');
+        console.log('Decided on ', columns, ' columns with docwidth ', docwidth);
+    }
+
+    setColumnwidth();
     
     $container.imagesLoaded(function( $images, $proper, $broken ) {
         /*
@@ -73,7 +72,6 @@ $(function(){
             autoResize: false,
             offset: 6
         });
-
 
         // We are loaded, so hide the spinner
         $('.spinner').addClass('hidden');
