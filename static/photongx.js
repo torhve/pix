@@ -61,9 +61,15 @@ var photongx = (function() {
         $('.spinner').addClass('hidden');
     });
 
+    // We got a new browser state from pressing prev or next buttons
     window.addEventListener("popstate", function (evt) {
         var base_parts = window.location.href.split("/");
         var path_end = base_parts[base_parts.length-2];
+
+        // TODO: Use evt.state aswell and push view state using arg2 @ pushState
+        //       so we don't have to parse the url.
+
+        // If the end part of the url is an int we assume we're showing an image
         if (path_end == parseInt(path_end)) {
             currentimage = path_end;
             navigateImage(currentimage);
@@ -87,6 +93,7 @@ var photongx = (function() {
         // Save the current image
         currentimage = parseInt($(this).attr('id').split('-')[1]);
         
+        // Push inn <albumurl>/<image_id>/ to history
         history.pushState(null, null, window.location.href + currentimage + "/");
         
         /*  
@@ -302,23 +309,33 @@ var photongx = (function() {
     }
 
     $(document).on('next_image', function (evt) {
+        // Get image number corrected for skipping passed last image
         var image_num = clampSkip(currentimage + 1);
+
+        // Cut out the image number we are at and replace with next image
         var base_parts = window.location.href.split("/");
         if (base_parts[base_parts.length-2] == currentimage)
             base = base_parts.slice(0, base_parts.length - 2).join("/") + "/";
         else
             base = window.location.href;
+
+        // Push new url for to history for the image we are about to display
         history.pushState(null, null, base + image_num + "/");
         navigateImage(image_num);
     });
 
     $(document).on('prev_image', function (evt) {
+        // Get image number corrected for skipping passed first image
         var image_num = clampSkip(currentimage - 1);
+        
+        // Cut out the image number we are at and replace with next image
         var base_parts = window.location.href.split("/");
         if (base_parts[base_parts.length-2] == currentimage)
             base = base_parts.slice(0, base_parts.length - 2).join("/") + "/";
         else
             base = window.location.href;
+    
+        // Push new url for to history for the image we are about to display
         history.pushState(null, null, base + image_num + "/");
         navigateImage(image_num);
     });
