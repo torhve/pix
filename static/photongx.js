@@ -220,9 +220,10 @@ var photongx = (function() {
 
         // Push away image number path
         var base_parts = window.location.href.split("/");
-        if (base_parts[base_parts.length-2] == currentimage)
+        if (base_parts[base_parts.length-2] == currentimage) {
             base = base_parts.slice(0, base_parts.length - 2).join("/") + "/";
-        history.pushState(null, null, base);
+            history.pushState(null, null, base);
+        }
     };
     
     document.cancelFullScreen = document.webkitExitFullscreen || document.mozCancelFullScreen || document.exitFullscreen;
