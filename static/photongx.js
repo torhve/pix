@@ -324,6 +324,7 @@ var photongx = (function() {
     });
 
     $(document).keydown(function(e){
+        if (e.shiftKey || e.altKey || e.ctrlKey) return true;
         if (e.keyCode == 27) { 
             hideLB();
             return false;
