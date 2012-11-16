@@ -13,6 +13,7 @@ ngx.header.content_type = 'text/html';
 red = nil
 BASE = '/photongx/'
 IMGPATH = '/home/xt/src/photongx/img/'
+TAGLENGTH = 6
 
 -- Default context helper
 function ctx(ctx)
@@ -117,11 +118,16 @@ function tload(name)
 end
 
 
+
+
 -- KEY SCHEME
--- albums z: zalbums       = set('albumname', 'albumname2', ... )
--- tags   h: albumnameh    = 'tag'
--- album  z: albumname     = set('itag_filename', 'itag2_filename2', ...)
--- images h: itag/filename = {album: 'albumname', timestamp: ... ... }
+-- albums            z: zalbums                    = set('albumname', 'albumname2', ... )
+-- tags              h: albumnameh                 = 'tag'
+-- album             z: albumname                  = set('itag/filename', 'itag2/filename2', ...)
+-- images            h: itag/filename              = {album: 'albumname', timestamp: ... ... }
+-- album image tags  s: album:albumname:imagetags  = ['asdf90', 'bsdf90', 'cabcdef', ...]
+-- album access tags s: album:albumname:accesstags = ['bsdf88,  'asoid1', '198mxoi', ...]
+-- album access tag  h: album:albumname:ebsdf88    = {granted: date, expires: date, accessed: counter}
 --
 
 -- Upload Queue
@@ -133,6 +139,10 @@ end
 -- /base/atag/itag/img01.jpg
 -- /base/atag/itag/img01.fs.jpg
 -- /base/atag/itag/img01.t.jpg
+
+
+
+
 -- helpers
 
 -- Fetch all albums
@@ -151,6 +161,31 @@ function secure_filename(filename)
     filename = string.gsub(filename, '%.%.', '')
     return filename
 end
+
+-- Function to generate a simple tag 
+function generate_tag()
+    ascii = 'abcdefgihjklmnopqrstuvxyz'
+    digits = '1234567890'
+    pool = ascii .. digits
+
+    res = {}
+    while #res < TAGLENGTH do
+        local choice = math.floor(math.random()*#pool)+1
+        table.insert(res, string.sub(pool, choice, choice))
+    end
+    res = table.concat(res, '')
+
+    return res
+end
+
+-- Check if any given tag is up to snuff
+function verify_tag(tag)
+    if not tag then return false end
+    if #tag < TAGLENGTH then return false end
+    if not ngx.re.match(tag, '^[a-zA-Z0-9]+$') then return false end
+    return true
+end
+
 
 --
 --
@@ -330,9 +365,11 @@ local function add_file_to_db(album, itag, h)
     local albumkey   =  album    -- image set
     local albumhkey  =  album .. 'h' -- album metadata
     local imagekey   =  imgh['itag'] .. '/' .. h['x-file-name']
+    local itagkey    =  'album:' .. album .. ':imagetags'
 
     red:zadd(albumskey, timestamp, albumkey) -- add album to albumset
     red:zadd(albumkey , timestamp, imagekey) -- add imey to imageset
+    red:sadd(itagkey, itag)                  -- add itag to set of used itags
     red:hmset(imagekey, imgh)                -- add imagehash
     -- only set tag if not exist
     red:hsetnx(albumhkey, 'tag', h['X-tag'])
@@ -345,8 +382,9 @@ end
 -- View that recieves data from upload page
 --
 local function upload_post()
-    ngx.req.read_body()
 
+    -- Read body from nginx so file is available for consumption
+    ngx.req.read_body()
 
     local h          = ngx.req.get_headers()
     local md5        = h['content-md5'] -- FIXME check this with ngx.md5
@@ -358,6 +396,13 @@ local function upload_post()
 
     -- None unsecure shall pass
     file_name = secure_filename(file_name)
+
+    -- Tags needs to be checked too
+    if not verify_tag(tag) then
+        ngx.status = 403
+        ngx.say('Invalid tag specified')
+        return
+    end
 
     -- Check if tag is OK
     local albumhkey =  album .. 'h' -- album metadata
@@ -377,21 +422,28 @@ local function upload_post()
         os.execute('mkdir -p ' .. albumpath)
     end
 
-    -- FIXME Check if tag already in use
+    -- Find unused tag if already in use
+    while red:sismember('album:' .. album .. ':imagetags', itag) == 1 do
+        itag = generate_tag()
+    end
+
     local imagepath = path .. tag .. '/' .. itag .. '/'
     if not os.rename(imagepath, imagepath) then
         os.execute('mkdir -p ' .. imagepath)
     end
-
-    --local data = ngx.req.get_body_data()
+    
     local req_body_file_name = ngx.req.get_body_file()
     if not req_body_file_name then
-        return ngx.say('No filename')
+        ngx.status = 403
+        ngx.say('No file found in request')
+        return
     end
     -- check if filename is image
     local pattern = '\\.(jpe?g|gif|png)$'
     if not ngx.re.match(file_name, pattern, "i") then
-        return ngx.exit(ngx.HTTP_FORBIDDEN) -- unsupported media type
+        ngx.status = 403
+        ngx.say('Filename must be of image type')
+        return
     end
 
     tmpfile = io.open(req_body_file_name)
@@ -477,6 +529,8 @@ local function api_img_remove()
     tag = red:hget(album..'h', 'tag')
     -- delete image hash
     res['image'] = red:del(itag .. '/' .. img)
+    -- delete itag from itag set
+    res['itags'] = red:srem('album:' .. album .. ':imagetags', itag)
     -- delete image from album set
     res['images'] = red:zrem(album, itag .. '/' .. img)
     -- delete image and dir from file
@@ -504,7 +558,6 @@ local function api_album_remove()
         album = album,
     }
 
-
     local images, err = red:zrange(album, 0, -1)
     --res['images'] = images
 
@@ -512,6 +565,13 @@ local function api_album_remove()
         local imgh, err = red:del(image)
         res[image] = imgh
     end
+
+    res['imagetags'] = red:del('album:'..album..':imagetags')
+    for i, member in ipars(red:smembers('album:' .. album .. ':accesstags')) do
+        local accesstagkey = 'album:' .. album .. ':' .. member
+        red[accesstagkey] = red:del(accesstagkey)
+    end
+    res['accesstags'] = red:del('album:'..album..':accesstags')
     res['album'] = red:del(album)
     res[album..'h'] = red:del(album..'h')
 
@@ -519,21 +579,6 @@ local function api_album_remove()
     res['command'] = "rm -rf "..IMGPATH..'/'..tag
     os.execute(res['command'])
     ngx.print( cjson.encode ( res ) )
-end
-
-function generate_tag()
-    ascii = 'abcdefgihjklmnopqrstuvxyz'
-    digits = '1234567890'
-    pool = ascii .. digits
-
-    res = {}
-    while #res < 6 do
-        local choice = math.floor(math.random()*#pool)+1
-        table.insert(res, string.sub(pool, choice, choice))
-    end
-    res = table.concat(res, '')
-
-    return res
 end
 
 
