@@ -563,8 +563,8 @@ end
 -- mapping patterns to views
 local routes = {
     ['(\\w+)/(\\w+)/$']= album,
-    ['$']              = albums,
-    ['about/$']         = index,
+    ['albums/$']       = albums,
+    ['$']              = index,
     ['admin/$']        = admin,
     ['upload/$']       = upload,
     ['upload/post/?$'] = upload_post,
