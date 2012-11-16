@@ -628,7 +628,6 @@ local routes = {
     ['api/album/remove/(\\.*)'] = api_album_remove,
 }
 -- iterate route patterns and find view
-ngx.log(ngx.ERR, 'uri:' .. ngx.var.uri)
 for pattern, view in pairs(routes) do
     if ngx.re.match(ngx.var.uri, '^' .. BASE .. pattern, "o") then -- regex mather in compile mode
         init_db()
