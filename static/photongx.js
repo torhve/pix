@@ -130,12 +130,14 @@ $(function(){
 
         // Handle clicks on the next link
         $('#next').bind('click', function(e) {
-            navigateImage(currentimage + 1);
+            pause(); play(); // Reset timer so we don't doubleskip
+            $(document).trigger("next_image");
             return false;
         });
         // Handle clicks on the prev link
         $('#prev').bind('click', function(e) {
-            navigateImage(currentimage - 1);
+            pause(); play(); // Reset timer so we don't doubleskip
+            $(document).trigger("prev_image");
             return false;
         });
 
@@ -198,7 +200,7 @@ $(function(){
             $('#lightbox').removeClass('hidden').show();
             // We are loaded, so hide the spinner
             $('.spinner').addClass('hidden');
-            $('#img-front').opacity(1);
+            $('#img-front').css('opacity', 1);
         });
     };
         
@@ -247,7 +249,7 @@ $(function(){
     var play = function() {
         $('#play i').removeClass('icon-play').addClass('icon-pause');
         slideshow = true;
-        slideshowtimer = setInterval(function(){ $('#next').click(); }, interval);
+        slideshowtimer = setInterval(function(){ $(document).trigger("next_image"); }, interval);
     }
     // Slideshow
     var pause = function() {
@@ -264,7 +266,7 @@ $(function(){
             // we are at the start, figure out the amount of items and
             // go to the end
             c = $('.item').length-1;
-        }else if (c >= ($('.item').length -1)) {
+        }else if (c > ($('.item').length)) {
             c = 1; // Lua starts at 1 :)
         }
         var image_href = $('#image-'+c).attr('href');
@@ -284,6 +286,13 @@ $(function(){
         currentimage = c;
     }
 
+    $(document).on('next_image', function (evt) {
+        navigateImage(currentimage + 1);
+    });
+
+    $(document).on('prev_image', function (evt) {
+        navigateImage(currentimage - 1);
+    });
 
 
     $(document).keydown(function(e){
@@ -292,14 +301,13 @@ $(function(){
           return false;
       }
       else if (e.keyCode == 37 || e.keyCode == 39) {
-          var c;
+          pause(); play(); // Reset timer so we don't doubleskip
           if (e.keyCode == 37) {
-              c = currentimage - 1;
+              $(document).trigger("prev_image");
           }
           else if (e.keyCode == 39) {
-              c = currentimage + 1;
+              $(document).trigger("next_image");
           }
-          navigateImage(c);
           return false;
       }
       else if (e.keyCode == 70) {
