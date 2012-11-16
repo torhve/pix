@@ -10,27 +10,18 @@ $(function(){
     }
     $(window).on("debouncedresize", function(event) {
         setColumnwidth();
-        /*
-        $container.isotope({
-            itemSelector: '.item',
-            resizable: false, // disable normal resizing
-            animationEngine: 'css' // We want css, or no animation at all
+        $('.item').wookmark({
+            container: $('.items'),
+            autoResize: false,
+            offset: 6
         });
-        */
-            $('.item').wookmark({
-                container: $('.items'),
-                autoResize: false,
-                offset: 6
-            });
     });
-
 
     var slideshow = false;
     var $container = $('.items');
     var currentimage = 0;
     var slideshowtimer;
     var interval = 3000;
-
 
     // calculate and set optimal column size
     var setColumnwidth = function() {
@@ -60,13 +51,6 @@ $(function(){
     setColumnwidth();
     
     $container.imagesLoaded(function( $images, $proper, $broken ) {
-        /*
-        $container.isotope({
-            itemSelector: '.item',
-            resizable: false, // disable normal resizing
-            animationEngine: 'css' // We want css, or no animation at all
-        });
-        */
         $('.item').wookmark({
             container: $('.items'),
             autoResize: false,
@@ -174,6 +158,7 @@ $(function(){
 
             $('#img-front').css('opacity', 0).bind("transitionend webkitTransitionEnd oTransitionEnd MSTransitionEnd", function(){ 
                 $('#content').html('<img class="lbimg" id="img-front" src="' + image_href +'">');
+                //$('#img-front').attr('src', image_href);
                 $('#img-front').css('opacity', 0.999).bind("transitionend webkitTransitionEnd oTransitionEnd MSTransitionEnd", function(){ 
                     $('#img-front').css('opacity', 1);
                 });
@@ -198,7 +183,7 @@ $(function(){
             $('#lightbox').removeClass('hidden').show();
             // We are loaded, so hide the spinner
             $('.spinner').addClass('hidden');
-            $('#img-front').opacity(1);
+            $('#img-front').css('opacity', 1);
         });
     };
         
@@ -283,8 +268,6 @@ $(function(){
             //$('#image-'+String(parseInt(cthree))).attr('href')
         currentimage = c;
     }
-
-
 
     $(document).keydown(function(e){
       if (e.keyCode == 27) { 
