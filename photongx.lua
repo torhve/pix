@@ -11,13 +11,14 @@ ngx.header.content_type = 'text/html';
 
 -- the db global
 red = nil
-BASE = '/photongx/'
+BASE = '/'
 IMGPATH = '/home/xt/src/photongx/img/'
 TAGLENGTH = 6
 
 -- Default context helper
 function ctx(ctx)
     ctx['BASE'] = BASE
+    ctx['IMGBASE'] = ngx.var.imgbase
     return ctx
 end
 
@@ -638,5 +639,5 @@ for pattern, view in pairs(routes) do
     end
 end
 -- no match, log and return 404
-ngx.log(ngx.ERR, '404 with requested URI:' .. ngx.var.uri)
+ngx.log(ngx.ERR, '---***---: 404 with requested URI:' .. ngx.var.uri)
 ngx.exit( ngx.HTTP_NOT_FOUND )
