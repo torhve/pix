@@ -1,4 +1,4 @@
-$(function(){
+var photongx = (function() {
     $.fn.preload = function() {
         this.each(function(){
             // Check if url starts with /
@@ -60,6 +60,19 @@ $(function(){
         // We are loaded, so hide the spinner
         $('.spinner').addClass('hidden');
     });
+
+    window.addEventListener("popstate", function (evt) {
+        var base_parts = window.location.href.split("/");
+        var path_end = base_parts[base_parts.length-2];
+        if (path_end == parseInt(path_end)) {
+            currentimage = path_end;
+            navigateImage(currentimage);
+        }
+        else {
+            // Assume we got an url that doesn't show an image
+            hideLB();
+        }
+    });
     
     $('.lb').click(function(e) {
         // Show spinner
@@ -74,6 +87,7 @@ $(function(){
         // Save the current image
         currentimage = parseInt($(this).attr('id').split('-')[1]);
         
+        history.pushState(null, null, window.location.href + currentimage + "/");
         
         /*  
         If the lightbox window HTML already exists in document, 
@@ -83,13 +97,15 @@ $(function(){
         (This will only happen the first time around)
         */
         
-        if ($('#lightbox').length > 0) { // #lightbox exists
+        createLB();
 
-            setLBimage(image_href);
-            
+        setLBimage(image_href);
 
-        } else { //#lightbox does not exist - create and insert (runs 1st time only)
-            
+        showLB();
+    });
+
+    this.createLB = function() {
+        if ($('#lightbox').length == 0) { // #lightbox does not exist
             //create HTML markup for lightbox window
             var lightbox = 
             '<div id="lightbox" class="hidden">' +
@@ -99,7 +115,7 @@ $(function(){
                 '<a id="hideLB" href="#"><i class="icon-remove"></i></a></p>' +
                 '<a href="#prev" id="prev"><div><i class="icon-chevron-left"></i></div></a>' +
                     '<div id="content">' + //insert clicked link's href into img src
-                        '<img class="lbimg" id="img-front" src="' + image_href +'">' +
+                        '<img class="lbimg" id="img-front" src="">' +
                     '</div>' +  
                 '<a href="#next" id="next"><div><i class="icon-chevron-right"></i></div></a>' +
             '</div>';
@@ -108,50 +124,54 @@ $(function(){
             $('body').append(lightbox);
 
             // Run the set here to, to trigger click
-            setLBimage(image_href);
+            $('#next').bind('click', function(e) {
+                // Reset timer so we don't doubleskip
+                if (slideshow) {
+                    pause(); 
+                    play(); 
+                }
+                $(document).trigger("next_image");
+                return false;
+            });
+            // Handle clicks on the prev link
+            $('#prev').bind('click', function(e) {
+                if (slideshow) {
+                    // Reset timer so we don't doubleskip
+                    pause();
+                    play(); 
+                }
+                $(document).trigger("prev_image");
+                return false;
+            });
+
+            // Handle clicks on the fs link
+            $('#goFS').bind('click', function(e) {
+                e.preventDefault();
+                goFS();
+                return false;
+            });
+
+            // Handle clicks on the play link
+            $('#play').bind('click', function(e) {
+                if($('#play i').hasClass('icon-play')) {
+                    play();
+                }else {
+                    pause();
+                }
+                e.preventDefault();
+                return false;
+            });
+
+            // Handle all clicks in lb-mode
+            $('#lightbox').bind('click', function(e) {
+                var target = $(e.target);
+                var id = target.attr('id');
+                hideLB();
+                return false;
+            });
         }
+    }
 
-
-        // Handle clicks on the next link
-        $('#next').bind('click', function(e) {
-            navigateImage(currentimage + 1);
-            return false;
-        });
-        // Handle clicks on the prev link
-        $('#prev').bind('click', function(e) {
-            navigateImage(currentimage - 1);
-            return false;
-        });
-
-        // Handle clicks on the fs link
-        $('#goFS').bind('click', function(e) {
-            e.preventDefault();
-            goFS();
-            return false;
-        });
-
-        // Handle clicks on the play link
-        $('#play').bind('click', function(e) {
-            if($('#play i').hasClass('icon-play')) {
-                play();
-            }else {
-                pause();
-            }
-            e.preventDefault();
-            return false;
-        });
-
-        // Handle all clicks in lb-mode
-        $('#lightbox').bind('click', function(e) {
-            var target = $(e.target);
-            var id = target.attr('id');
-            hideLB();
-            return false;
-        });
-
-        showLB();
-
-    });
     var setLBimage = function(image_href) {
         /* ANIM slideshow */
         if(slideshow) {
@@ -175,7 +195,7 @@ $(function(){
         // TODO scrollto background pos img
 
     };
-    var showLB = function() {
+    this.showLB = function() {
         $('#content').imagesLoaded(function( $images, $proper, $broken ) {
             // effects for background
             $('.items').addClass('backgrounded');
@@ -197,6 +217,12 @@ $(function(){
         $('#lightbox').hide();
         // Stop any running slideshow;
         pause();
+
+        // Push away image number path
+        var base_parts = window.location.href.split("/");
+        if (base_parts[base_parts.length-2] == currentimage)
+            base = base_parts.slice(0, base_parts.length - 2).join("/") + "/";
+        history.pushState(null, null, base);
     };
     
     document.cancelFullScreen = document.webkitExitFullscreen || document.mozCancelFullScreen || document.exitFullscreen;
@@ -232,7 +258,7 @@ $(function(){
     var play = function() {
         $('#play i').removeClass('icon-play').addClass('icon-pause');
         slideshow = true;
-        slideshowtimer = setInterval(function(){ $('#next').click(); }, interval);
+        slideshowtimer = setInterval(function(){ $(document).trigger("next_image"); }, interval);
     }
     // Slideshow
     var pause = function() {
@@ -241,19 +267,25 @@ $(function(){
         window.clearInterval(slideshowtimer);
     }
 
-    // Function responsible for swapping the current lightbox image
-    // it wraps on start and end, and preloads 3 images in the current 
-    // scrolling direction
-    var navigateImage = function(c) {
+    // Clamp skip to images available
+    var clampSkip = function (c) {
         if (c == 0) {
             // we are at the start, figure out the amount of items and
             // go to the end
-            c = $('.item').length-1;
-        }else if (c >= ($('.item').length -1)) {
+            c = $('.item').length;
+        }else if (c > ($('.item').length)) {
             c = 1; // Lua starts at 1 :)
         }
+
+        return c;
+    }
+    // Function responsible for swapping the current lightbox image
+    // it wraps on start and end, and preloads 3 images in the current 
+    // scrolling direction
+    this.navigateImage = function(c) {
         var image_href = $('#image-'+c).attr('href');
         setLBimage(image_href);
+
         var cone = c+1, ctwo = c+2 , cthree = c+3;
         // We are going backwards
         if (c - currentimage) {
@@ -269,28 +301,54 @@ $(function(){
         currentimage = c;
     }
 
-    $(document).keydown(function(e){
-      if (e.keyCode == 27) { 
-          hideLB();
-          return false;
-      }
-      else if (e.keyCode == 37 || e.keyCode == 39) {
-          var c;
-          if (e.keyCode == 37) {
-              c = currentimage - 1;
-          }
-          else if (e.keyCode == 39) {
-              c = currentimage + 1;
-          }
-          navigateImage(c);
-          return false;
-      }
-      else if (e.keyCode == 70) {
-          goFS();
-      }
-      else if (e.keyCode == 32) {
-          $('#play').click();
-      }
+    $(document).on('next_image', function (evt) {
+        var image_num = clampSkip(currentimage + 1);
+        var base_parts = window.location.href.split("/");
+        if (base_parts[base_parts.length-2] == currentimage)
+            base = base_parts.slice(0, base_parts.length - 2).join("/") + "/";
+        else
+            base = window.location.href;
+        history.pushState(null, null, base + image_num + "/");
+        navigateImage(image_num);
     });
 
+    $(document).on('prev_image', function (evt) {
+        var image_num = clampSkip(currentimage - 1);
+        var base_parts = window.location.href.split("/");
+        if (base_parts[base_parts.length-2] == currentimage)
+            base = base_parts.slice(0, base_parts.length - 2).join("/") + "/";
+        else
+            base = window.location.href;
+        history.pushState(null, null, base + image_num + "/");
+        navigateImage(image_num);
+    });
+
+    $(document).keydown(function(e){
+        console.log("keydebug");
+        if (e.keyCode == 27) { 
+            hideLB();
+            return false;
+        }
+        else if (e.keyCode == 37 || e.keyCode == 39) {
+            if (slideshow) {
+                // Reset timer so we don't doubleskip
+                pause(); 
+                play(); 
+            }
+            if (e.keyCode == 37) {
+                $(document).trigger("prev_image");
+            }
+            else if (e.keyCode == 39) {
+                $(document).trigger("next_image");
+            }
+            return false;
+        }
+        else if (e.keyCode == 70) {
+            goFS();
+        }
+        else if (e.keyCode == 32) {
+            $('#play').click();
+        }
+    });
+    return this;
 });

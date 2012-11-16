@@ -217,7 +217,9 @@ end
 -- 
 local function album()
 
-    local album = ngx.re.match(ngx.var.uri, '/(\\w+)/$')[1]
+    local path_vars = ngx.re.match(ngx.var.uri, '/(\\w+)/(\\d+)?/?$')
+    local album = path_vars[1]
+    local image_num = path_vars[2]
     local imagelist, err = red:zrange(album, 0, -1)
     local tag, err = red:hget(album .. 'h', 'tag')
     local thumbs = {}
@@ -240,6 +242,7 @@ local function album()
         imagelist = imagelist,
         thumbs = thumbs,
         bodyclass = 'gallery',
+        showimage = image_num,
     }
     -- render template with counter as context
     -- and return it to nginx
@@ -563,6 +566,7 @@ end
 -- mapping patterns to views
 local routes = {
     ['(\\w+)/(\\w+)/$']= album,
+    ['(\\w+)/(\\w+)/(\\d+)/$']= album,
     ['albums/$']       = albums,
     ['$']              = index,
     ['admin/$']        = admin,
