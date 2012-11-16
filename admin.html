@@ -87,7 +87,7 @@
             <img class="adminthumb" _src="{{ BASE }}img/{{tag}}/{{ thumbs[albumname][image] }}">
         </a>
         <div class="admin-label">
-            <a class="btn btn-mini btn-danger link-image-remove" href="{{ BASE}}/api/img/remove/{{albumname}}/{{ image }}">
+            <a class="btn btn-mini btn-danger link-image-remove" href="{{ BASE}}/api/img/remove/?album={{albumname}}&amp;image={{ image }}">
             <i class="icon-remove"></i> 
         </a>
     </div>

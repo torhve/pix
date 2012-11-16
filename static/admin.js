@@ -25,8 +25,12 @@ $('.link-image-remove').bind('click', function(ev) {
     ev.stopPropagation();
     ev.preventDefault();
     // CALL API
-    $(this).closest('.item').remove();
-    console.log('Remove res:', $.getJSON($(this).attr('href'), function(data) { console.log(data); }));
+    $.getJSON($(this).attr('href'), function(data) { 
+        if(data) {
+            $(this).closest('.item').remove();
+        }
+        console.log(data); 
+    });
     return false;
 });
 $('form').submit(function(ev) {

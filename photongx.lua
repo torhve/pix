@@ -518,14 +518,15 @@ end
 --
 local function api_img_remove()
     ngx.header.content_type = 'application/json'
-    local match = ngx.re.match(ngx.var.uri, '^/.*/(\\w+)/(\\w+)/(.+)$', 'a')
+    local args = ngx.req.get_uri_args()
+    local album = args['album']
+    match = ngx.re.match(args['image'], '(.*)/(.*)')
     if not match then
         return ngx.print('Faulty image')
     end
     res = {}
-    album = match[1]
-    itag = match[2]
-    img = match[3]
+    itag = match[1]
+    img = match[2]
     tag = red:hget(album..'h', 'tag')
     -- delete image hash
     res['image'] = red:del(itag .. '/' .. img)
@@ -534,7 +535,10 @@ local function api_img_remove()
     -- delete image from album set
     res['images'] = red:zrem(album, itag .. '/' .. img)
     -- delete image and dir from file
-    res['rmimg'] = os.execute('rm ' .. IMGPATH .. tag .. '/' .. itag .. '/' .. img)
+    res['rmimg'] = os.execute('rm "' .. IMGPATH .. tag .. '/' .. itag .. '/' .. img .. '"')
+    -- FIXME get real thumbnail filenames?
+    -- delete thumbnail
+    res['rmimg'] = os.execute('rm "' .. IMGPATH .. tag .. '/' .. itag .. '/t640.' .. img .. '"')
     res['rmdir'] = os.execute('rmdir ' .. IMGPATH .. tag .. '/' .. itag .. '/')
 
     res['album'] = album
@@ -567,7 +571,7 @@ local function api_album_remove()
     end
 
     res['imagetags'] = red:del('album:'..album..':imagetags')
-    for i, member in ipars(red:smembers('album:' .. album .. ':accesstags')) do
+    for i, member in ipairs(red:smembers('album:' .. album .. ':accesstags')) do
         local accesstagkey = 'album:' .. album .. ':' .. member
         red[accesstagkey] = red:del(accesstagkey)
     end
@@ -623,6 +627,7 @@ local routes = {
     ['api/album/remove/(\\.*)'] = api_album_remove,
 }
 -- iterate route patterns and find view
+ngx.log(ngx.ERR, 'uri:' .. ngx.var.uri)
 for pattern, view in pairs(routes) do
     if ngx.re.match(ngx.var.uri, '^' .. BASE .. pattern, "o") then -- regex mather in compile mode
         init_db()
