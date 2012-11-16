@@ -13,28 +13,25 @@ BASE = '/'
 --ngx.log(ngx.ERR, cjson.encode(match))
 
 local match = ngx.re.match(ngx.var.uri, "^/(album|img)/(\\w+)/(\\w+)/(\\w+)/(.*)?", "o")
-if not match then 
-    ngx.log(ngx.ERR, '404 in rewrite.lua')
-    ngx.exit(404) 
-end
+if match then 
+    local urltype = match[1]
+    local key     = match[2]
+    local tag     = match[3]
+    local album   = match[4]
 
-local urltype = match[1]
-local key     = match[2]
-local tag     = match[3]
-local album   = match[4]
-
-if verify_access_key(key, album) then
-    if urltype == 'album' then
-        local uri = BASE .. tag .. '/' .. album .. '/'
-        ngx.var.IMGBASE = '/img/' .. key .. '/' .. tag .. '/' .. album .. '/'
-        ngx.req.set_uri(uri)
-    elseif urltype == 'img' then
-        local uri = ngx.var.IMGBASE .. match[5]
-        ngx.req.set_uri(uri)
-    else
-        ngx.exit(404)
+    if verify_access_key(key, album) then
+        if urltype == 'album' then
+            local uri = BASE .. tag .. '/' .. album .. '/'
+            ngx.var.IMGBASE = '/img/' .. key .. '/' .. tag .. '/' .. album .. '/'
+            ngx.req.set_uri(uri)
+        elseif urltype == 'img' then
+            local uri = ngx.var.IMGBASE .. match[5]
+            ngx.req.set_uri(uri)
+        else
+            ngx.exit(404)
+        end
+    else 
+        ngx.exit(410)
     end
-else 
-    ngx.exit(410)
 end
 --ngx.exit(404) 
