@@ -1,0 +1,23 @@
+===============================
+ How to install Photo Engine X
+===============================
+
+REQUIRED SOFTWARE
+
+- openresty (nginx+lua)
+- redis
+
+REQUIRED PACKAGES
+
+- python-pyexiv2
+- python-redis    
+- python-pythonmagick
+
+PREPARATIONS
+
+- Set $INSTALL_ROOT/img/ folder writable by webserver user.
+- Check out submodules using: git submodule update --init
+- Bootstrap css needs to be downloaded seperately or generated using 
+  their provided makefile
+- Update $INSTALL_ROOT/etc/config.json to reflect your settings
+
