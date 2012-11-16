@@ -324,7 +324,6 @@ var photongx = (function() {
     });
 
     $(document).keydown(function(e){
-        console.log("keydebug");
         if (e.keyCode == 27) { 
             hideLB();
             return false;
