@@ -11,10 +11,10 @@
             img.attr('src', img.attr('_src'));
         });
         $('#admincontent').imagesLoaded(function() {
-
-            $('#admincontent .items').isotope({
-                resizable: true, // disable normal resizing
-                animationEngine: 'css' // Must use css, or no animation at all
+            $('.item').wookmark({
+                container: $('.items'),
+                autoResize: false,
+                offset: 6
             });
         });
         return false;
