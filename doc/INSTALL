@@ -6,6 +6,7 @@ REQUIRED SOFTWARE
 
 - openresty (nginx+lua)
 - redis
+- imagemagick convert utility
 
 REQUIRED PACKAGES
 
