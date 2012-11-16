@@ -340,7 +340,7 @@ var photongx = (function() {
 
 
     $(document).keydown(function(e){
-        if (evt.shiftKey || evt.altKey || evt.ctrlKey) return true;
+        if (e.shiftKey || e.altKey || e.ctrlKey) return true;
         if (e.keyCode == 27) { 
             hideLB();
             return false;
