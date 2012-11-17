@@ -302,6 +302,7 @@ local function album(path_vars)
     local context = ctx{ 
         album = album,
         tag = tag,
+        albumtitle = ngx.re.gsub(album, '_', ' '),
         imagelist = imagelist,
         thumbs = thumbs,
         bodyclass = 'gallery',
