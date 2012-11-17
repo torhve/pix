@@ -5,7 +5,7 @@
         <div class="span12">
     
         <div class="hero-unit">
-            <h1>Upload<small>to album <a href="{{BASE}}{{tag}}/{{album}}/">{{ album }}</a></h1>
+            <h1>Upload<small>to album <a href="{{BASE}}album/{{tag}}/{{album}}/">{{ album }}</a></h1>
                 <div class="small pull-right"><a href="#" id="fileSelect-show"> Alternate upload</a></div>
         </div>
          
@@ -254,7 +254,7 @@
               upload.addEventListener("error", function (ev) {console.log(ev);}, false);
               xhr.open(
                   "POST",
-                  "/photongx/upload/post"
+                  "/upload/post/"
               );
               xhr.setRequestHeader("Cache-Control", "no-cache");
               xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
