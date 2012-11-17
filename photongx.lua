@@ -386,11 +386,11 @@ end
 
 
 
-local function add_file_to_db(album, itag, file_name, h)
+local function add_file_to_db(album, itag, atag, file_name, h)
     local imgh       = {}
     local timestamp  = ngx.time() -- FIXME we could use header for this
     imgh['album']    = album
-    imgh['atag']     = h['X-tag']
+    imgh['atag']     = atag
     imgh['itag']     = itag
     imgh['timestamp']= timestamp
     imgh['client']   = ngx.var.remote_addr
@@ -444,6 +444,7 @@ local function upload_post()
     -- Check if tag is OK
     local albumhkey =  album .. 'h' -- album metadata
     red:hsetnx(albumhkey, 'tag', h['X-tag'])
+
     -- FIXME verify correct tag
     local tag, err = red:hget(albumhkey, 'tag')
 
@@ -496,7 +497,7 @@ local function upload_post()
     realfile:close()
 
     -- Save meta data to DB
-    add_file_to_db(album, itag, file_name, h)
+    add_file_to_db(album, itag, tag, file_name, h)
 
     -- load template
     local page = tload('uploaded.html')
