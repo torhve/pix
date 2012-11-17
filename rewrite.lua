@@ -4,7 +4,15 @@ local function verify_access_key(key, album)
     local red = redis:new()
     local ok  = red:connect("unix:/var/run/redis/redis.sock")
     local exists = red:exists(accesskey) == 1
+
+    if exists then -- set correct expire headres
+        local ttl = red:ttl(accesskey)
+        ngx.header["Expires"] = ngx.http_time( ngx.time() + ttl)
+        ngx.header["Cache-Control"] = "max-age=" .. ttl
+    end
+
     local ok, err = red:set_keepalive(0, 100)
+
     return exists
 end
 
@@ -34,4 +42,6 @@ if match then
         ngx.exit(410)
     end
 end
+-- 1 week cache
+ngx.header["Expires"] = ngx.http_time( ngx.time() + 86400*7 )
 --ngx.exit(404) 
