@@ -146,12 +146,24 @@ end
 
 -- helpers
 
--- Fetch all albums
-function getalbums() 
-    local albums, err = red:zrange("zalbums", 0, -1)
+-- Get albums
+function getalbums(accesskey) 
+    local allalbums, err = red:zrange("zalbums", 0, -1)
+
     if err then
         ngx.say(err)
         ngx.exit(ngx.HTTP_INTERNAL_SERVER_ERROR)
+    end
+
+    local albums = {}
+    if accesskey then
+        for i, album in ipairs(allalbums) do
+            if verify_access_key(accesskey, album) then
+                table.insert(albums, album)
+            end
+        end
+    else
+        albums = allalbums
     end
     return albums
 end
@@ -187,6 +199,12 @@ function verify_tag(tag)
     return true
 end
 
+function verify_access_key(key, album)
+    local accesskey = 'album:' .. album .. ':' .. key
+    local exists = red:exists(accesskey) == 1
+    return exists
+end
+
 
 --
 --
@@ -198,8 +216,9 @@ end
 -- 
 -- Albums view
 --
-local function albums()
-    local albums = getalbums()
+local function albums(match)
+    local accesskey = match[1]
+    local albums = getalbums(accesskey)
 
     local images = {}
     tags  = {}
@@ -615,9 +634,10 @@ end
 
 -- mapping patterns to views
 local routes = {
+    ['albums/(\\w+)/'] = albums,
+    ['albums/$']       = albums,
     ['(\\w+)/(\\w+)/$']= album,
     ['(\\w+)/(\\w+)/(\\d+)/$']= album,
-    ['albums/$']       = albums,
     ['$']              = index,
     ['admin/$']        = admin,
     ['upload/$']       = upload,
@@ -629,9 +649,10 @@ local routes = {
 }
 -- iterate route patterns and find view
 for pattern, view in pairs(routes) do
-    if ngx.re.match(ngx.var.uri, '^' .. BASE .. pattern, "o") then -- regex mather in compile mode
+    local match = ngx.re.match(ngx.var.uri, '^' .. BASE .. pattern, "o") -- regex mather in compile mode
+    if match then
         init_db()
-        view()
+        view(match)
         end_db()
         -- return OK, since we called a view
         ngx.exit( ngx.HTTP_OK )

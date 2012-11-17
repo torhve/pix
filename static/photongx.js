@@ -131,7 +131,7 @@ var photongx = (function() {
             $('body').append(lightbox);
 
             // Run the set here to, to trigger click
-            $('#next').bind('click', function(e) {
+            $('#next').bind('click touchstart', function(e) {
                 // Reset timer so we don't doubleskip
                 if (slideshow) {
                     pause(); 
@@ -141,7 +141,7 @@ var photongx = (function() {
                 return false;
             });
             // Handle clicks on the prev link
-            $('#prev').bind('click', function(e) {
+            $('#prev').bind('click touchstart', function(e) {
                 if (slideshow) {
                     // Reset timer so we don't doubleskip
                     pause();
