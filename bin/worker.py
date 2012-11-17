@@ -29,7 +29,7 @@ class Worker:
 
     def fetch_thumb_job(self):
         if self.config['fetch_mode'] == 'queue':
-            return self.redis.blpop('queue:thumb')[1]
+            return self.redis.brpop('queue:thumb')[1]
         else:
             if self.work_list == None:
                 self.work_list = []
