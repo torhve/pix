@@ -172,6 +172,8 @@ end
 function secure_filename(filename)
     filename = string.gsub(filename, '/', '')
     filename = string.gsub(filename, '%.%.', '')
+    -- Filenames with spaces are just a hassle
+    filename = string.gsub(filename, ' ', '_')
     return filename
 end
 
@@ -217,8 +219,8 @@ end
 -- Albums view
 --
 local function albums(match)
-    local accesskey = match[1]
-    local albums = getalbums(accesskey)
+    local accesstag = match[1]
+    local albums = getalbums(accesstag)
 
     local images = {}
     tags  = {}
@@ -247,6 +249,7 @@ local function albums(match)
         albums = albums, 
         imagecount = imagecount,
         images = images, 
+        accesstag = accesstag,
         bodyclass = 'gallery'}
     -- render template with counter as context
     -- and return it to nginx
@@ -270,13 +273,18 @@ end
 --
 -- View for a single album
 -- 
-local function album()
+local function album(path_vars)
 
-    local path_vars = ngx.re.match(ngx.var.uri, '/(\\w+)/(\\d+)?/?$')
-    local album = path_vars[1]
-    local image_num = path_vars[2]
+    local tag = path_vars[1]
+    local album = path_vars[2]
+    local image_num = path_vars[3]
+    -- Verify tag
+    local dbtag, err = red:hget(album .. 'h', 'tag')
+    if dbtag ~= tag then
+        ngx.exit(410)
+    end
+
     local imagelist, err = red:zrange(album, 0, -1)
-    local tag, err = red:hget(album .. 'h', 'tag')
     local thumbs = {}
     for i, image in ipairs(imagelist) do
         local itag = red:hget(image, 'itag')
@@ -377,7 +385,7 @@ end
 
 
 
-local function add_file_to_db(album, itag, h)
+local function add_file_to_db(album, itag, file_name, h)
     local imgh       = {}
     local timestamp  = ngx.time() -- FIXME we could use header for this
     imgh['album']    = album
@@ -385,11 +393,11 @@ local function add_file_to_db(album, itag, h)
     imgh['itag']     = itag
     imgh['timestamp']= timestamp
     imgh['client']   = ngx.var.remote_addr
-    imgh['file_name']= h['x-file-name'] -- FIXME escaping
+    imgh['file_name']= file_name
     local albumskey  = 'zalbums' -- albumset
     local albumkey   =  album    -- image set
     local albumhkey  =  album .. 'h' -- album metadata
-    local imagekey   =  imgh['itag'] .. '/' .. h['x-file-name']
+    local imagekey   =  imgh['itag'] .. '/' .. imgh['file_name']
     local itagkey    =  'album:' .. album .. ':imagetags'
 
     red:zadd(albumskey, timestamp, albumkey) -- add album to albumset
@@ -428,6 +436,9 @@ local function upload_post()
         ngx.say('Invalid tag specified')
         return
     end
+
+    -- We want safe album names too
+    album = secure_filename(album)
 
     -- Check if tag is OK
     local albumhkey =  album .. 'h' -- album metadata
@@ -484,7 +495,7 @@ local function upload_post()
     realfile:close()
 
     -- Save meta data to DB
-    add_file_to_db(album, itag, h)
+    add_file_to_db(album, itag, file_name, h)
 
     -- load template
     local page = tload('uploaded.html')
@@ -574,9 +585,8 @@ local function api_img_remove()
     ngx.print( cjson.encode ( res ) )
 end
 
-local function api_album_remove()
+local function api_album_remove(match)
     ngx.header.content_type = 'application/json';
-    local match = ngx.re.match(ngx.var.uri, '/(\\w+)/(\\w+)$')
     local tag = match[1]
     local album = match[2]
     if not tag or not album then
@@ -640,8 +650,8 @@ end
 -- mapping patterns to views
 local routes = {
     ['albums/(\\w+)/'] = albums,
-    ['(\\w+)/(\\w+)/$']= album,
-    ['(\\w+)/(\\w+)/(\\d+)/$']= album,
+    ['album/(\\w+)/(.+)/$']  = album,
+    ['album/(\\w+)/(\\w+)/(\\d+)/$']= album,
     ['$']              = index,
     ['admin/$']        = admin,
     ['upload/$']       = upload,
@@ -649,7 +659,7 @@ local routes = {
     ['api/img/?$']     = img,
     ['api/img/click/$'] = api_img_click,
     ['api/img/remove/(\\.*)'] = api_img_remove,
-    ['api/album/remove/(\\.*)'] = api_album_remove,
+    ['api/album/remove/(\\w+)/(.+)'] = api_album_remove,
 }
 -- iterate route patterns and find view
 for pattern, view in pairs(routes) do

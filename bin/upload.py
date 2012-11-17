@@ -26,8 +26,12 @@ class Upper(object):
     def calcMD5(self, filename):
         return hashlib.md5(open(filename, 'r').read()).hexdigest()
 
-    def upload(self, album, filename):
+    def upload(self, filename, album=None):
         fs = os.path.getsize(filename)
+        fd = open(filename, 'r')
+        if not album:
+            album = os.path.dirname(fd.name).split('/')[-1]
+
         c = pycurl.Curl()
         values = [
           "x-file-name: "+os.path.basename(filename),
@@ -38,11 +42,11 @@ class Upper(object):
         ]
         c.setopt(pycurl.HTTPHEADER, values)
 
-        c.setopt(c.URL, self.host + "/photongx/upload/post/")
+        c.setopt(c.URL, self.host + "/upload/post/")
         c.setopt(c.POST, 1)
 #        c.setopt(c.INFILESIZE, int(fs))
         c.setopt(pycurl.POSTFIELDSIZE, fs)
-        c.setopt(pycurl.READFUNCTION, open(filename, 'r').read)
+        c.setopt(pycurl.READFUNCTION, fd.read)
 
 #        c.setopt(c.VERBOSE, 1)
 
@@ -62,10 +66,8 @@ if __name__ == '__main__':
     if len(args) < 2:
         parser.error("incorrect number of arguments")
 
-    if not options.album:
-        parser.error("required arg album not set")
-
-
     u = Upper(host='http://pex.hveem.no')
-
-    u.upload(options.album, args[1])
+    if not options.album:
+        u.upload(args[1])
+    else:
+        u.upload(args[1], options.album)
