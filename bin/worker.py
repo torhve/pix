@@ -122,5 +122,5 @@ if __name__ == '__main__':
             print "ERROR", e
             print "Infile:", infile
             print "Outfile:", outfile
-            raise
+#3            raise
 
