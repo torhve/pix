@@ -104,7 +104,6 @@ a:hover {
                 opacity: 0.2;
     }
 .item {
-    margin: 3px;
     padding: 0;
     background: #211e27;
     position: relative;
@@ -324,7 +323,6 @@ a:hover {
     display: none;
 }
 #admincontent {
-    position: relative;
 }
 
 /* TRANSITION */

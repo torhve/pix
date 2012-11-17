@@ -326,13 +326,17 @@ local function admin()
     local images = {}
     local thumbs = {}
     local imagecount = 0
+    local accesskeys = {}
+    -- album access tags s: album:albumname:accesstags = ['bsdf88,  'asoid1', '198mxoi', ...]
+    -- album access tag  h: album:albumname:ebsdf88    = {granted: date, expires: date, accessed: counter}
 
-    -- Fetch a cover img
     for i, album in ipairs(albums) do
         local theimages, err = red:zrange(album, 0, -1)
         local tag,       err = red:hget(album .. 'h', 'tag')
+        local accesskeyl, err = red:smembers('album:' ..album .. ':accesstags')
         tags[album] = tag
         images[album] = theimages
+        accesskeys[album] = accesskeyl
         imagecount = imagecount + #theimages
         thumbs[album] = {}
         for i, image in ipairs(theimages) do
@@ -361,6 +365,7 @@ local function admin()
         tags = tags,
         images = images,
         thumbs = thumbs,
+        accesskeys = accesskeys,
         imagesjs = cjson.encode(images),
         albumsjs = cjson.encode(albums),
         tagsjs   = cjson.encode(tags),
@@ -635,7 +640,6 @@ end
 -- mapping patterns to views
 local routes = {
     ['albums/(\\w+)/'] = albums,
-    ['albums/$']       = albums,
     ['(\\w+)/(\\w+)/$']= album,
     ['(\\w+)/(\\w+)/(\\d+)/$']= album,
     ['$']              = index,

@@ -79,20 +79,29 @@
     </div>
 <div id="albumcontainer">
 {% for i, albumname in ipairs(albums) do %}
-<div id="album-{{albumname}}" class="items adminalbum hidden">
-    {% for i, image in ipairs(images[albumname]) do %}
+<div id="album-{{albumname}}" class="adminalbum hidden">
     {% local tag = tags[albumname] %}
-    <div class="item">
-        <a id="image-{{ i }}" href="{{ BASE }}img/{{tag}}/{{ image }}" class="lb">
-            <img class="adminthumb" _src="{{ BASE }}img/{{tag}}/{{ thumbs[albumname][image] }}">
-        </a>
-        <div class="admin-label">
-            <a class="btn btn-mini btn-danger link-image-remove" href="{{ BASE}}/api/img/remove/?album={{albumname}}&amp;image={{ image }}">
-            <i class="icon-remove"></i> 
-        </a>
+    <h5>Access tags:</h5>
+    <ul class="unstyled">
+        {% for i, key in ipairs(accesskeys[albumname]) do %}
+        <li class="badge badge-success">{{key}}</li>
+        {% end %}
+        <li class=""><a class="btn btn-success" href="#"><i class="icon-plus"></i></a>
+    </ul>
+    <div class="items">
+        {% for i, image in ipairs(images[albumname]) do %}
+        <div class="item">
+            <a id="image-{{ i }}" href="{{ BASE }}img/{{tag}}/{{ image }}" class="lb">
+                <img class="adminthumb" _src="{{ BASE }}img/{{tag}}/{{ thumbs[albumname][image] }}">
+            </a>
+            <div class="admin-label">
+                <a class="btn btn-mini btn-danger link-image-remove" href="{{ BASE}}/api/img/remove/?album={{albumname}}&amp;image={{ image }}">
+                <i class="icon-remove"></i> 
+                </a>
+            </div>
+        </div>
+        {% end %}
     </div>
-    </div>
-    {% end %}
 </div>
 {% end %}
 </div>
