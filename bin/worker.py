@@ -67,6 +67,8 @@ if __name__ == '__main__':
     parser = OptionParser()
     parser.add_option('-a', '--all', dest="all", action="store_true", 
             help="worker will ignore queue, process all images in database and exit")
+    parser.add_option('-m', '--missing', dest="missing", action="store_true", 
+            help="only generate for missing thumbnails")
     (options, args) = parser.parse_args(sys.argv)
 
     BASE_DIR = os.path.dirname(__file__) + "/.."
@@ -79,7 +81,6 @@ if __name__ == '__main__':
         config['fetch_mode'] = 'all'
     else:
         config['fetch_mode'] = 'queue'
-
 
     w = Worker(config)
     photoconf = config['photos']
@@ -101,6 +102,10 @@ if __name__ == '__main__':
         infile = BASE_DIR + sep + relbase + image['file_name']
         outfile = BASE_DIR + sep + relbase + image['thumb_name']
 
+        if options.missing and os.path.exists(outfile):
+            print 'Skipping existing thumbnail %s' %outfile
+            continue
+
         print "Generating " + outfile,
         t = time()
         sys.stdout.flush()
@@ -117,4 +122,5 @@ if __name__ == '__main__':
             print "ERROR", e
             print "Infile:", infile
             print "Outfile:", outfile
+            raise
 
