@@ -12,7 +12,7 @@ local function verify_access_key(red, key, album)
     return exists
 end
 
-local function exit(status)
+local function exit(red, status)
     local ok, err = red:set_keepalive(0, 100)
     ngx.exit(status)
 end
@@ -23,7 +23,7 @@ BASE = '/'
 local redis = require "resty.redis"
 local red = redis:new()
 
-local match = ngx.re.match(ngx.var.uri, "^/(album|img)/(\\w+)/(\\w+)/(.*)?", "o")
+local match = ngx.re.match(ngx.var.uri, "^/(album|img)/(\\w+)/([a-zA-Z0-9-_\\.]+)/(.*)?", "o")
 if match then 
     local urltype = match[1]
     local key     = match[2]
@@ -48,10 +48,10 @@ if match then
             ngx.req.set_uri(uri)
         else
             ngx.log(ngx.ERR, '---***---: 404 in rewriter with requested URI:' .. ngx.var.uri)
-            exit(404)
+            exit(red, 404)
         end
     else 
-        exit(410)
+        exit(red, 410)
     end
 end
 local ok, err = red:set_keepalive(0, 100)
