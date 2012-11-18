@@ -1,13 +1,13 @@
     {( "header.html" )}
 
     <div class="album-label">
-        <i class="icon-camera-retro"></i> {{ album}}
+        <i class="icon-camera-retro"></i> {{ albumtitle }}
     </div>
     <div id="items" class="items">
         {% for i, image in ipairs(imagelist) do %}
         <div class="item">
-            <a id="image-{{ i }}" href="{{ BASE }}img/{{tag}}/{{ image }}" class="lb">
-                <img src="{{ BASE }}img/{{tag}}/{{ thumbs[image] }}">
+            <a id="image-{{ i }}" href="{{ IMGBASE }}{{tag}}/{{ image }}" class="lb">
+                <img src="{{ IMGBASE }}{{tag}}/{{ thumbs[image] }}">
             </a>
         </div>
         {% end %}

@@ -29,7 +29,7 @@ class Worker:
 
     def fetch_thumb_job(self):
         if self.config['fetch_mode'] == 'queue':
-            return self.redis.blpop('queue:thumb')[1]
+            return self.redis.brpop('queue:thumb')[1]
         else:
             if self.work_list == None:
                 self.work_list = []
@@ -49,14 +49,15 @@ class Worker:
         for key, value in data.items():
             self.redis.hset(imagekey, key, value)
 
-    def thumbnail(self, infile, outfile, size):
+    def thumbnail(self, infile, outfile, size, quality):
         #image = Image(infile)
         #image.resize(size)
         #image.write(outfile)
+        quality = str(quality)
         if infile.endswith('.gif'):
-            resize = run(['/usr/bin/convert', '-strip',  '-thumbnail',  size+'>"', infile, outfile])
+            resize = run(['/usr/bin/convert', '-quality', quality, '-strip',  '-thumbnail',  size+'>"', infile, outfile])
         else:
-            resize = run(['/usr/bin/convert', '-strip',  '-thumbnail',  size, infile, outfile])
+            resize = run(['/usr/bin/convert', '-quality', quality, '-strip',  '-thumbnail',  size, infile, outfile])
         image = Image(outfile)
 
         return { 'width': image.size().width(), \
@@ -66,6 +67,8 @@ if __name__ == '__main__':
     parser = OptionParser()
     parser.add_option('-a', '--all', dest="all", action="store_true", 
             help="worker will ignore queue, process all images in database and exit")
+    parser.add_option('-m', '--missing', dest="missing", action="store_true", 
+            help="only generate for missing thumbnails")
     (options, args) = parser.parse_args(sys.argv)
 
     BASE_DIR = os.path.dirname(__file__) + "/.."
@@ -81,6 +84,8 @@ if __name__ == '__main__':
 
     w = Worker(config)
     photoconf = config['photos']
+    thumb_max_size = "%dx%d" % ( photoconf['thumb_max'], photoconf['thumb_max'] )
+    quality = '%d' % (photoconf['quality'] )
 
     while True:
         try:
@@ -90,7 +95,6 @@ if __name__ == '__main__':
 
         image = w.get_image_info(key)
 
-        thumb_max_size = "%dx%d" % ( photoconf['thumb_max'], photoconf['thumb_max'] )
         image['thumb_name'] = "t%d.%s" % ( photoconf['thumb_max'], image['file_name'] )
 
         relbase = "img" + sep + image['atag'] + sep + image['itag'] + sep
@@ -98,11 +102,15 @@ if __name__ == '__main__':
         infile = BASE_DIR + sep + relbase + image['file_name']
         outfile = BASE_DIR + sep + relbase + image['thumb_name']
 
+        if options.missing and os.path.exists(outfile):
+            print 'Skipping existing thumbnail %s' %outfile
+            continue
+
         print "Generating " + outfile,
         t = time()
         sys.stdout.flush()
         try:
-            thumb = w.thumbnail(infile, outfile, size=thumb_max_size)
+            thumb = w.thumbnail(infile, outfile, thumb_max_size, quality)
             print "done (%d ms)" % ((time() - t) * 1000)
 
             update = { 'thumb_w': thumb['width'], \
@@ -114,4 +122,5 @@ if __name__ == '__main__':
             print "ERROR", e
             print "Infile:", infile
             print "Outfile:", outfile
+#3            raise
 

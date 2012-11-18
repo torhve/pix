@@ -1,3 +1,4 @@
+$(document).ready(function () {
     $('.albummodify').bind('click', function() {
         console.log(this, 'clicked');
         var albumname = $(this).attr('id').split('-')[1];
@@ -10,7 +11,7 @@
             var img = $(img);
             img.attr('src', img.attr('_src'));
         });
-        $('#admincontent').imagesLoaded(function() {
+    $('#admincontent').imagesLoaded(function() {
             $('.item').wookmark({
                 container: $('.items'),
                 autoResize: false,
@@ -20,16 +21,41 @@
         return false;
     });
 
-$('.link-image-remove').bind('click', function(ev) {
-    console.log(this, 'clicked');
-    ev.stopPropagation();
-    ev.preventDefault();
-    // CALL API
-    $(this).closest('.item').remove();
-    console.log('Remove res:', $.getJSON($(this).attr('href'), function(data) { console.log(data); }));
-    return false;
-});
-$('form').submit(function(ev) {
+    $('.albumtemp').bind('click', function() {
+        console.log(this, 'temp clicked');
+        var albumname = $(this).attr('id').split('-')[1];
+        console.log(albumname, 'clicked');
+        $('#input-album-name').val(albumname);
+        $('.modal').modal('show');
+        return false;
+    });
+
+    $('#form-ttl').submit(function(ev) {
+        ev.stopPropagation();
+        ev.preventDefault();
+        var formData = $(this).serialize();
+        //var formUrl = BASE+"admin/api/albumttl/create/";
+        var formUrl = "/admin/api/albumttl/create/";
+        $.getJSON(formUrl, formData, function(data) { 
+            console.log(data);
+        });
+        return false;
+    });
+
+    $('.link-image-remove').bind('click', function(ev) {
+        console.log(this, 'clicked');
+        ev.stopPropagation();
+        ev.preventDefault();
+        // CALL API
+        $.getJSON($(this).attr('href'), function(data) { 
+            if(data) {
+                $(this).closest('.item').remove();
+            }
+            console.log(data); 
+        });
+        return false;
+    });
+$('.uploadform').submit(function(ev) {
     ev.stopPropagation();
     ev.preventDefault();
     album = $('#albumname').val();
@@ -241,3 +267,4 @@ $('form').submit(function(ev) {
     $('#fileSelect').toggleClass('hidden');
     return false;
   });
+});

@@ -123,7 +123,7 @@ var photongx = (function() {
             $('body').append(lightbox);
 
             // Run the set here to, to trigger click
-            $('#next').bind('click', function(e) {
+            $('#next').bind('click touchstart', function(e) {
                 // Reset timer so we don't doubleskip
                 if (slideshow) {
                     pause(); 
@@ -133,7 +133,7 @@ var photongx = (function() {
                 return false;
             });
             // Handle clicks on the prev link
-            $('#prev').bind('click', function(e) {
+            $('#prev').bind('click touchstart', function(e) {
                 if (slideshow) {
                     // Reset timer so we don't doubleskip
                     pause();
@@ -188,7 +188,7 @@ var photongx = (function() {
         }
 
         // Count the viewing
-        $.getJSON('/photongx/api/img/click/', { 'img':image_href}, function(data) {
+        $.getJSON('/api/img/click/', { 'img':image_href}, function(data) {
             //console.log(data);
         });
         // TODO scrollto background pos img
@@ -219,9 +219,10 @@ var photongx = (function() {
 
         // Push away image number path
         var base_parts = window.location.href.split("/");
-        if (base_parts[base_parts.length-2] == currentimage)
+        if (base_parts[base_parts.length-2] == currentimage) {
             base = base_parts.slice(0, base_parts.length - 2).join("/") + "/";
-        history.pushState({ image: null }, null, base);
+            history.pushState({ image: null }, null, base);
+        }
     };
     
     document.cancelFullScreen = document.webkitExitFullscreen || document.mozCancelFullScreen || document.exitFullscreen;
@@ -333,7 +334,7 @@ var photongx = (function() {
     });
 
     $(document).keydown(function(e){
-        if (e.shiftKey || e.altKey || e.ctrlKey) return true;
+        if (e.shiftKey || e.altKey || e.ctrlKey || e.metaKey ) return true;
         if (e.keyCode == 27) { 
             hideLB();
             return false;

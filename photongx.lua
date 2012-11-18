@@ -11,12 +11,14 @@ ngx.header.content_type = 'text/html';
 
 -- the db global
 red = nil
-BASE = '/photongx/'
+BASE = '/'
 IMGPATH = '/home/xt/src/photongx/img/'
+TAGLENGTH = 6
 
 -- Default context helper
 function ctx(ctx)
     ctx['BASE'] = BASE
+    ctx['IMGBASE'] = ngx.var.imgbase
     return ctx
 end
 
@@ -117,11 +119,16 @@ function tload(name)
 end
 
 
+
+
 -- KEY SCHEME
--- albums z: zalbums       = set('albumname', 'albumname2', ... )
--- tags   h: albumnameh    = 'tag'
--- album  z: albumname     = set('itag_filename', 'itag2_filename2', ...)
--- images h: itag/filename = {album: 'albumname', timestamp: ... ... }
+-- albums            z: zalbums                    = set('albumname', 'albumname2', ... )
+-- tags              h: albumnameh                 = 'tag'
+-- album             z: albumname                  = set('itag/filename', 'itag2/filename2', ...)
+-- images            h: itag/filename              = {album: 'albumname', timestamp: ... ... }
+-- album image tags  s: album:albumname:imagetags  = ['msdf90', 'bsdf90', 'cabcdef', ...]
+-- album access tags s: album:albumname:accesstags = ['bsdf88,  'asoid1', '198mxoi', ...]
+-- album access tag  h: album:albumname:ebsdf88    = {granted: date, expires: date, accessed: counter}
 --
 
 -- Upload Queue
@@ -133,14 +140,30 @@ end
 -- /base/atag/itag/img01.jpg
 -- /base/atag/itag/img01.fs.jpg
 -- /base/atag/itag/img01.t.jpg
+
+
+
+
 -- helpers
 
--- Fetch all albums
-function getalbums() 
-    local albums, err = red:zrange("zalbums", 0, -1)
+-- Get albums
+function getalbums(accesskey) 
+    local allalbums, err = red:zrange("zalbums", 0, -1)
+
     if err then
         ngx.say(err)
         ngx.exit(ngx.HTTP_INTERNAL_SERVER_ERROR)
+    end
+
+    local albums = {}
+    if accesskey then
+        for i, album in ipairs(allalbums) do
+            if verify_access_key(accesskey, album) then
+                table.insert(albums, album)
+            end
+        end
+    else
+        albums = allalbums
     end
     return albums
 end
@@ -149,8 +172,41 @@ end
 function secure_filename(filename)
     filename = string.gsub(filename, '/', '')
     filename = string.gsub(filename, '%.%.', '')
+    -- Filenames with spaces are just a hassle
+    filename = string.gsub(filename, ' ', '_')
     return filename
 end
+
+-- Function to generate a simple tag 
+function generate_tag()
+    ascii = 'abcdefgihjklmnopqrstuvxyz'
+    digits = '1234567890'
+    pool = ascii .. digits
+
+    res = {}
+    while #res < TAGLENGTH do
+        local choice = math.floor(math.random()*#pool)+1
+        table.insert(res, string.sub(pool, choice, choice))
+    end
+    res = table.concat(res, '')
+
+    return res
+end
+
+-- Check if any given tag is up to snuff
+function verify_tag(tag)
+    if not tag then return false end
+    if #tag < TAGLENGTH then return false end
+    if not ngx.re.match(tag, '^[a-zA-Z0-9]+$') then return false end
+    return true
+end
+
+function verify_access_key(key, album)
+    local accesskey = 'album:' .. album .. ':' .. key
+    local exists = red:exists(accesskey) == 1
+    return exists
+end
+
 
 --
 --
@@ -162,26 +218,43 @@ end
 -- 
 -- Albums view
 --
-local function albums()
-    local albums = getalbums()
+local function albums(match)
+    local accesstag = match[1]
+    local albums = getalbums(accesstag)
 
     local images = {}
-    tags  = {}
+    local tags  = {}
+    local atags = {}
     local imagecount = 0
 
     -- Fetch a cover img
     for i, album in ipairs(albums) do
         -- FIXME, only get 1 image
-        local theimages, err = red:zrange(album, 0, -1)
+        local theimages, err = red:zrange(album, 0, 1)
         imagecount = imagecount + #theimages
         if err then
             ngx.say(err)
             return
         end
         local tag, err = red:hget(album .. 'h', 'tag')
+        -- If accesstag is set, we use that as access for every album
+        if accesstag then 
+            atags[album] = accesstag
+        else
+            local tag, err = red:hget(album .. 'h', 'tag')
+            atags[album] = tag
+        end
         tags[album] = tag
         for i, image in ipairs(theimages) do
-            images[album] = image
+            local itag = red:hget(image, 'itag')
+            -- Get thumb if key exists
+            -- set to full size if it doesn't exist
+            local img = ngx.var.IMGBASE .. accesstag .. '/' .. album .. '/' .. tag .. '/' ..  itag .. '/'  
+            if red:hexists(image, 'thumb_name') == 1 then
+                images[album] = img .. red:hget(image, 'thumb_name')
+            else
+                images[album] = img .. red:hget(image, 'file_name')
+            end
             break
         end
     end
@@ -192,6 +265,9 @@ local function albums()
         albums = albums, 
         imagecount = imagecount,
         images = images, 
+        atags = atags,
+        tags = tags,
+        accesstag = accesstag,
         bodyclass = 'gallery'}
     -- render template with counter as context
     -- and return it to nginx
@@ -215,13 +291,18 @@ end
 --
 -- View for a single album
 -- 
-local function album()
+local function album(path_vars)
 
-    local path_vars = ngx.re.match(ngx.var.uri, '/(\\w+)/(\\d+)?/?$')
-    local album = path_vars[1]
-    local image_num = path_vars[2]
+    local tag = path_vars[1]
+    local album = path_vars[2]
+    local image_num = path_vars[3]
+    -- Verify tag
+    local dbtag, err = red:hget(album .. 'h', 'tag')
+    if dbtag ~= tag then
+        ngx.exit(410)
+    end
+
     local imagelist, err = red:zrange(album, 0, -1)
-    local tag, err = red:hget(album .. 'h', 'tag')
     local thumbs = {}
     for i, image in ipairs(imagelist) do
         local itag = red:hget(image, 'itag')
@@ -239,6 +320,7 @@ local function album()
     local context = ctx{ 
         album = album,
         tag = tag,
+        albumtitle = ngx.re.gsub(album, '_', ' '),
         imagelist = imagelist,
         thumbs = thumbs,
         bodyclass = 'gallery',
@@ -271,13 +353,15 @@ local function admin()
     local images = {}
     local thumbs = {}
     local imagecount = 0
+    local accesskeys = {}
 
-    -- Fetch a cover img
     for i, album in ipairs(albums) do
         local theimages, err = red:zrange(album, 0, -1)
         local tag,       err = red:hget(album .. 'h', 'tag')
+        local accesskeyl, err = red:smembers('album:' ..album .. ':accesstags')
         tags[album] = tag
         images[album] = theimages
+        accesskeys[album] = accesskeyl
         imagecount = imagecount + #theimages
         thumbs[album] = {}
         for i, image in ipairs(theimages) do
@@ -306,6 +390,7 @@ local function admin()
         tags = tags,
         images = images,
         thumbs = thumbs,
+        accesskeys = accesskeys,
         imagesjs = cjson.encode(images),
         albumsjs = cjson.encode(albums),
         tagsjs   = cjson.encode(tags),
@@ -315,24 +400,56 @@ local function admin()
     ngx.print( page(context) )
 end
 
+-- 
+-- Admin API json
+--
+local function admin_api_albumttl()
+    local args = ngx.req.get_uri_args()
+    local album = args['album']
+    local accesstag = args['name']
+    if not verify_tag(accesstag) then
+        accesstag = generate_tag()
+    end
+
+    local ttl = tonumber(args['ttl'])
+
+    h = {}
+    h['granted'] = ngx.now()
+    h['expires'] = ttl
+
+    local ok1, err1 = red:sadd(  'album:' .. album .. ':accesstags')
+    local ok2, err2 = red:hmset( 'album:' .. album .. ':' .. accesstag, h)
+    local ok3, err3 = red:expire('album:' .. album .. ':' .. accesstag, ttl)
+
+    res = {
+        sadd  = ok1,
+        hmset = ok2,
+        expire= ok3,
+    }
+
+    ngx.print( cjson.encode(args) )
+end
 
 
-local function add_file_to_db(album, itag, h)
+
+local function add_file_to_db(album, itag, atag, file_name, h)
     local imgh       = {}
     local timestamp  = ngx.time() -- FIXME we could use header for this
     imgh['album']    = album
-    imgh['atag']     = h['X-tag']
+    imgh['atag']     = atag
     imgh['itag']     = itag
     imgh['timestamp']= timestamp
     imgh['client']   = ngx.var.remote_addr
-    imgh['file_name']= h['x-file-name'] -- FIXME escaping
+    imgh['file_name']= file_name
     local albumskey  = 'zalbums' -- albumset
     local albumkey   =  album    -- image set
     local albumhkey  =  album .. 'h' -- album metadata
-    local imagekey   =  imgh['itag'] .. '/' .. h['x-file-name']
+    local imagekey   =  imgh['itag'] .. '/' .. imgh['file_name']
+    local itagkey    =  'album:' .. album .. ':imagetags'
 
     red:zadd(albumskey, timestamp, albumkey) -- add album to albumset
     red:zadd(albumkey , timestamp, imagekey) -- add imey to imageset
+    red:sadd(itagkey, itag)                  -- add itag to set of used itags
     red:hmset(imagekey, imgh)                -- add imagehash
     -- only set tag if not exist
     red:hsetnx(albumhkey, 'tag', h['X-tag'])
@@ -345,8 +462,9 @@ end
 -- View that recieves data from upload page
 --
 local function upload_post()
-    ngx.req.read_body()
 
+    -- Read body from nginx so file is available for consumption
+    ngx.req.read_body()
 
     local h          = ngx.req.get_headers()
     local md5        = h['content-md5'] -- FIXME check this with ngx.md5
@@ -359,9 +477,20 @@ local function upload_post()
     -- None unsecure shall pass
     file_name = secure_filename(file_name)
 
+    -- Tags needs to be checked too
+    if not verify_tag(tag) then
+        ngx.status = 403
+        ngx.say('Invalid tag specified')
+        return
+    end
+
+    -- We want safe album names too
+    album = secure_filename(album)
+
     -- Check if tag is OK
     local albumhkey =  album .. 'h' -- album metadata
     red:hsetnx(albumhkey, 'tag', h['X-tag'])
+
     -- FIXME verify correct tag
     local tag, err = red:hget(albumhkey, 'tag')
 
@@ -377,21 +506,28 @@ local function upload_post()
         os.execute('mkdir -p ' .. albumpath)
     end
 
-    -- FIXME Check if tag already in use
+    -- Find unused tag if already in use
+    while red:sismember('album:' .. album .. ':imagetags', itag) == 1 do
+        itag = generate_tag()
+    end
+
     local imagepath = path .. tag .. '/' .. itag .. '/'
     if not os.rename(imagepath, imagepath) then
         os.execute('mkdir -p ' .. imagepath)
     end
-
-    --local data = ngx.req.get_body_data()
+    
     local req_body_file_name = ngx.req.get_body_file()
     if not req_body_file_name then
-        return ngx.say('No filename')
+        ngx.status = 403
+        ngx.say('No file found in request')
+        return
     end
     -- check if filename is image
     local pattern = '\\.(jpe?g|gif|png)$'
     if not ngx.re.match(file_name, pattern, "i") then
-        return ngx.exit(ngx.HTTP_FORBIDDEN) -- unsupported media type
+        ngx.status = 403
+        ngx.say('Filename must be of image type')
+        return
     end
 
     tmpfile = io.open(req_body_file_name)
@@ -407,7 +543,7 @@ local function upload_post()
     realfile:close()
 
     -- Save meta data to DB
-    add_file_to_db(album, itag, h)
+    add_file_to_db(album, itag, tag, file_name, h)
 
     -- load template
     local page = tload('uploaded.html')
@@ -466,21 +602,27 @@ end
 --
 local function api_img_remove()
     ngx.header.content_type = 'application/json'
-    local match = ngx.re.match(ngx.var.uri, '^/.*/(\\w+)/(\\w+)/(.+)$', 'a')
+    local args = ngx.req.get_uri_args()
+    local album = args['album']
+    match = ngx.re.match(args['image'], '(.*)/(.*)')
     if not match then
         return ngx.print('Faulty image')
     end
     res = {}
-    album = match[1]
-    itag = match[2]
-    img = match[3]
+    itag = match[1]
+    img = match[2]
     tag = red:hget(album..'h', 'tag')
     -- delete image hash
     res['image'] = red:del(itag .. '/' .. img)
+    -- delete itag from itag set
+    res['itags'] = red:srem('album:' .. album .. ':imagetags', itag)
     -- delete image from album set
     res['images'] = red:zrem(album, itag .. '/' .. img)
     -- delete image and dir from file
-    res['rmimg'] = os.execute('rm ' .. IMGPATH .. tag .. '/' .. itag .. '/' .. img)
+    res['rmimg'] = os.execute('rm "' .. IMGPATH .. tag .. '/' .. itag .. '/' .. img .. '"')
+    -- FIXME get real thumbnail filenames?
+    -- delete thumbnail
+    res['rmimg'] = os.execute('rm "' .. IMGPATH .. tag .. '/' .. itag .. '/t640.' .. img .. '"')
     res['rmdir'] = os.execute('rmdir ' .. IMGPATH .. tag .. '/' .. itag .. '/')
 
     res['album'] = album
@@ -491,9 +633,8 @@ local function api_img_remove()
     ngx.print( cjson.encode ( res ) )
 end
 
-local function api_album_remove()
+local function api_album_remove(match)
     ngx.header.content_type = 'application/json';
-    local match = ngx.re.match(ngx.var.uri, '/(\\w+)/(\\w+)$')
     local tag = match[1]
     local album = match[2]
     if not tag or not album then
@@ -504,7 +645,6 @@ local function api_album_remove()
         album = album,
     }
 
-
     local images, err = red:zrange(album, 0, -1)
     --res['images'] = images
 
@@ -512,6 +652,13 @@ local function api_album_remove()
         local imgh, err = red:del(image)
         res[image] = imgh
     end
+
+    res['imagetags'] = red:del('album:'..album..':imagetags')
+    for i, member in ipairs(red:smembers('album:' .. album .. ':accesstags')) do
+        local accesstagkey = 'album:' .. album .. ':' .. member
+        red[accesstagkey] = red:del(accesstagkey)
+    end
+    res['accesstags'] = red:del('album:'..album..':accesstags')
     res['album'] = red:del(album)
     res[album..'h'] = red:del(album..'h')
 
@@ -519,21 +666,6 @@ local function api_album_remove()
     res['command'] = "rm -rf "..IMGPATH..'/'..tag
     os.execute(res['command'])
     ngx.print( cjson.encode ( res ) )
-end
-
-function generate_tag()
-    ascii = 'abcdefgihjklmnopqrstuvxyz'
-    digits = '1234567890'
-    pool = ascii .. digits
-
-    res = {}
-    while #res < 6 do
-        local choice = math.floor(math.random()*#pool)+1
-        table.insert(res, string.sub(pool, choice, choice))
-    end
-    res = table.concat(res, '')
-
-    return res
 end
 
 
@@ -565,28 +697,30 @@ end
 
 -- mapping patterns to views
 local routes = {
-    ['(\\w+)/(\\w+)/$']= album,
-    ['(\\w+)/(\\w+)/(\\d+)/$']= album,
-    ['albums/$']       = albums,
-    ['$']              = index,
-    ['admin/$']        = admin,
-    ['upload/$']       = upload,
-    ['upload/post/?$'] = upload_post,
-    ['api/img/?$']     = img,
+    ['albums/(\\w+)/'] = albums,
+    ['album/(\\w+)/(.+)/$']  = album,
+    ['album/(\\w+)/(.+)/(\\d+)/$']= album,
+    ['$']               = index,
+    ['admin/$']         = admin,
+    ['upload/$']        = upload,
+    ['upload/post/?$']  = upload_post,
     ['api/img/click/$'] = api_img_click,
-    ['api/img/remove/(\\.*)'] = api_img_remove,
-    ['api/album/remove/(\\.*)'] = api_album_remove,
+    ['admin/api/img/?$']= img,
+    ['admin/api/img/remove/(.*)'] = api_img_remove,
+    ['admin/api/album/remove/(\\w+)/(.+)'] = api_album_remove,
+    ['admin/api/albumttl/create(.*)'] = admin_api_albumttl,
 }
 -- iterate route patterns and find view
 for pattern, view in pairs(routes) do
-    if ngx.re.match(ngx.var.uri, '^' .. BASE .. pattern, "o") then -- regex mather in compile mode
+    local match = ngx.re.match(ngx.var.uri, '^' .. BASE .. pattern, "o") -- regex mather in compile mode
+    if match then
         init_db()
-        view()
+        view(match)
         end_db()
         -- return OK, since we called a view
         ngx.exit( ngx.HTTP_OK )
     end
 end
 -- no match, log and return 404
-ngx.log(ngx.ERR, '404 with requested URI:' .. ngx.var.uri)
+ngx.log(ngx.ERR, '---***---: 404 with requested URI:' .. ngx.var.uri)
 ngx.exit( ngx.HTTP_NOT_FOUND )

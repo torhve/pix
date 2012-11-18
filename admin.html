@@ -17,7 +17,7 @@
                     <ul class="nav nav-list">
                         <li class="nav-header">New album</li>
                         <li>
-                            <form class="form-inline" action="{{ BASE }}upload/"> 
+                            <form class="uploadform" class="form-inline" action="{{ BASE }}upload/"> 
                                 <label >New album</label>
                                 <div class="input-append">
                                     <input id="albumname" text="text" class"input-small" name="album" placeholder="Name">
@@ -29,10 +29,12 @@
                         {% for i, album in ipairs(albums) do %}
                         <li>
                             <div class="btn-group pull-right">
+                                <a id="talbum-{{album}}" href="#" class="albumtemp   btn btn-mini" title="Create expirable album link">
+                                    <i class="icon-time"></i></a>
                                 <a id="lalbum-{{album}}" href="#" class="albummodify btn btn-mini           "><i class="icon-pencil"></i></a>
-                                <a href="{{ BASE}}api/album/remove/{{ tags[album]}}/{{album}}" class="link-album-remove btn btn-mini btn-danger"><i class="icon-remove"></i></a>
+                                <a href="{{ BASE}}admin/api/album/remove/{{ tags[album]}}/{{album}}" class="link-album-remove btn btn-mini btn-danger"><i class="icon-remove"></i></a>
                             </div>
-                            <a href="{{ BASE}}{{ tags[album] }}/{{ album }}/">
+                            <a href="{{ BASE}}album/{{ tags[album] }}/{{ album }}/">
                                 <i class="icon-picture"></i>
                                 {{ album }}
                             </a>
@@ -79,23 +81,83 @@
     </div>
 <div id="albumcontainer">
 {% for i, albumname in ipairs(albums) do %}
-<div id="album-{{albumname}}" class="items adminalbum hidden">
-    {% for i, image in ipairs(images[albumname]) do %}
+<div id="album-{{albumname}}" class="adminalbum hidden">
     {% local tag = tags[albumname] %}
-    <div class="item">
-        <a id="image-{{ i }}" href="{{ BASE }}img/{{tag}}/{{ image }}" class="lb">
-            <img class="adminthumb" _src="{{ BASE }}img/{{tag}}/{{ thumbs[albumname][image] }}">
-        </a>
-        <div class="admin-label">
-            <a class="btn btn-mini btn-danger link-image-remove" href="{{ BASE}}/api/img/remove/{{albumname}}/{{ image }}">
-            <i class="icon-remove"></i> 
-        </a>
+    <h5>Access tags:</h5>
+    <ul class="unstyled">
+        {% for i, key in ipairs(accesskeys[albumname]) do %}
+        <li class="badge badge-success">{{key}}</li>
+        {% end %}
+        <li class=""><a class="btn btn-success" href="#"><i class="icon-plus"></i></a>
+    </ul>
+    <div class="items">
+        {% for i, image in ipairs(images[albumname]) do %}
+        <div class="item">
+            <a id="image-{{ i }}" href="{{ BASE }}img/{{tag}}/{{ image }}" class="lb">
+                <img class="adminthumb" _src="{{ BASE }}img/{{tag}}/{{ thumbs[albumname][image] }}">
+            </a>
+            <div class="admin-label">
+                <a class="btn btn-mini btn-danger link-image-remove" href="{{ BASE}}/admin/api/img/remove/?album={{albumname}}&amp;image={{ image }}">
+                <i class="icon-remove"></i> 
+                </a>
+            </div>
+        </div>
+        {% end %}
     </div>
-    </div>
-    {% end %}
 </div>
 {% end %}
 </div>
+
+<div class="modal hide fade">
+    <form id="form-ttl" method="GET" class="form-horizontal">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h3>Create expirable album link</h3>
+    </div>
+    <div class="modal-body">
+        <p>Create a link that expires after a time</p>
+
+            <div class="control-group">
+                <label class="control-label" for="ttl">Time to live</label>
+                <div class="controls">
+                    <select name="ttl" class="input-xlarge" id="ttl">
+                        <option value="3600"
+                        >One hour</option>
+                        <option value="86400"
+                        selected="selected"
+                        >One day (default)</option>
+                        <option value="604800"
+                        >One week</option>
+                        <option value="18748800"
+                        >One month</option>
+                        <option value="112492800"
+                        >Six months</option>
+                        <option value="31536000"
+                        >One year</option>
+                        <option value="forever"
+                        >Forever</option>
+                    </select>
+
+                    <p class="help-block">The link will automatically be inaccessible if <i>time to live</i> is exceeded.</p>
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="name">Name the link</label>
+                <div class="controls">
+                    <input type="text" name="name" placeholder="Name">
+                    <p class="help-block">The name will be used in the link.</p>
+                </div>
+            </div>
+
+            <input id="input-album-name" type="hidden" name="album"></input>
+    </div>
+    <div class="modal-footer">
+        <!--<a href="#" class="btn">Close</a>-->
+        <button type="submit" class="btn btn-primary">Create link</a>
+    </div>
+    </form>
+</div>
+
 
 <script src="{{BASE}}static/md5.js"></script>
 <script>
@@ -106,6 +168,7 @@
     var tag = '{{ tag }}';
     var BASE = '{{ BASE }}';
 </script>
+<script src="{{BASE}}static/bootstrap/js/bootstrap-modal.js"></script>
 <script src="{{BASE}}static/admin.js"></script>
 
 
