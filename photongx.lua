@@ -126,7 +126,7 @@ end
 -- tags              h: albumnameh                 = 'tag'
 -- album             z: albumname                  = set('itag/filename', 'itag2/filename2', ...)
 -- images            h: itag/filename              = {album: 'albumname', timestamp: ... ... }
--- album image tags  s: album:albumname:imagetags  = ['asdf90', 'bsdf90', 'cabcdef', ...]
+-- album image tags  s: album:albumname:imagetags  = ['msdf90', 'bsdf90', 'cabcdef', ...]
 -- album access tags s: album:albumname:accesstags = ['bsdf88,  'asoid1', '198mxoi', ...]
 -- album access tag  h: album:albumname:ebsdf88    = {granted: date, expires: date, accessed: counter}
 --
@@ -223,22 +223,38 @@ local function albums(match)
     local albums = getalbums(accesstag)
 
     local images = {}
-    tags  = {}
+    local tags  = {}
+    local atags = {}
     local imagecount = 0
 
     -- Fetch a cover img
     for i, album in ipairs(albums) do
         -- FIXME, only get 1 image
-        local theimages, err = red:zrange(album, 0, -1)
+        local theimages, err = red:zrange(album, 0, 1)
         imagecount = imagecount + #theimages
         if err then
             ngx.say(err)
             return
         end
         local tag, err = red:hget(album .. 'h', 'tag')
+        -- If accesstag is set, we use that as access for every album
+        if accesstag then 
+            atags[album] = accesstag
+        else
+            local tag, err = red:hget(album .. 'h', 'tag')
+            atags[album] = tag
+        end
         tags[album] = tag
         for i, image in ipairs(theimages) do
-            images[album] = image
+            local itag = red:hget(image, 'itag')
+            -- Get thumb if key exists
+            -- set to full size if it doesn't exist
+            local img = ngx.var.IMGBASE .. accesstag .. '/' .. album .. '/' .. tag .. '/' ..  itag .. '/'  
+            if red:hexists(image, 'thumb_name') == 1 then
+                images[album] = img .. red:hget(image, 'thumb_name')
+            else
+                images[album] = img .. red:hget(image, 'file_name')
+            end
             break
         end
     end
@@ -249,6 +265,8 @@ local function albums(match)
         albums = albums, 
         imagecount = imagecount,
         images = images, 
+        atags = atags,
+        tags = tags,
         accesstag = accesstag,
         bodyclass = 'gallery'}
     -- render template with counter as context
@@ -336,8 +354,6 @@ local function admin()
     local thumbs = {}
     local imagecount = 0
     local accesskeys = {}
-    -- album access tags s: album:albumname:accesstags = ['bsdf88,  'asoid1', '198mxoi', ...]
-    -- album access tag  h: album:albumname:ebsdf88    = {granted: date, expires: date, accessed: counter}
 
     for i, album in ipairs(albums) do
         local theimages, err = red:zrange(album, 0, -1)
@@ -382,6 +398,36 @@ local function admin()
     }
     -- and return it to nginx
     ngx.print( page(context) )
+end
+
+-- 
+-- Admin API json
+--
+local function admin_api_albumttl()
+    local args = ngx.req.get_uri_args()
+    local album = args['album']
+    local accesstag = args['name']
+    if not verify_tag(accesstag) then
+        accesstag = generate_tag()
+    end
+
+    local ttl = tonumber(args['ttl'])
+
+    h = {}
+    h['granted'] = ngx.now()
+    h['expires'] = ttl
+
+    local ok1, err1 = red:sadd(  'album:' .. album .. ':accesstags')
+    local ok2, err2 = red:hmset( 'album:' .. album .. ':' .. accesstag, h)
+    local ok3, err3 = red:expire('album:' .. album .. ':' .. accesstag, ttl)
+
+    res = {
+        sadd  = ok1,
+        hmset = ok2,
+        expire= ok3,
+    }
+
+    ngx.print( cjson.encode(args) )
 end
 
 
@@ -653,15 +699,16 @@ end
 local routes = {
     ['albums/(\\w+)/'] = albums,
     ['album/(\\w+)/(.+)/$']  = album,
-    ['album/(\\w+)/(\\w+)/(\\d+)/$']= album,
-    ['$']              = index,
-    ['admin/$']        = admin,
-    ['upload/$']       = upload,
-    ['upload/post/?$'] = upload_post,
-    ['api/img/?$']     = img,
+    ['album/(\\w+)/(.+)/(\\d+)/$']= album,
+    ['$']               = index,
+    ['admin/$']         = admin,
+    ['upload/$']        = upload,
+    ['upload/post/?$']  = upload_post,
     ['api/img/click/$'] = api_img_click,
-    ['api/img/remove/(\\.*)'] = api_img_remove,
-    ['api/album/remove/(\\w+)/(.+)'] = api_album_remove,
+    ['admin/api/img/?$']= img,
+    ['admin/api/img/remove/(.*)'] = api_img_remove,
+    ['admin/api/album/remove/(\\w+)/(.+)'] = api_album_remove,
+    ['admin/api/albumttl/create(.*)'] = admin_api_albumttl,
 }
 -- iterate route patterns and find view
 for pattern, view in pairs(routes) do

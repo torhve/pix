@@ -1,8 +1,5 @@
-local function verify_access_key(key, album)
-    local redis = require "resty.redis"
+local function verify_access_key(red, key, album)
     local accesskey = 'album:' .. album .. ':' .. key
-    local red = redis:new()
-    local ok  = red:connect("unix:/var/run/redis/redis.sock")
     local exists = red:exists(accesskey) == 1
 
     if exists then -- set correct expire headres
@@ -11,37 +8,53 @@ local function verify_access_key(key, album)
         ngx.header["Cache-Control"] = "max-age=" .. ttl
     end
 
-    local ok, err = red:set_keepalive(0, 100)
 
     return exists
+end
+
+local function exit(status)
+    local ok, err = red:set_keepalive(0, 100)
+    ngx.exit(status)
 end
 
 BASE = '/'
 --local cjson = require "cjson"
 --ngx.log(ngx.ERR, cjson.encode(match))
+local redis = require "resty.redis"
+local red = redis:new()
 
-local match = ngx.re.match(ngx.var.uri, "^/(album|img)/(\\w+)/(\\w+)/(\\w+)/(.*)?", "o")
+local match = ngx.re.match(ngx.var.uri, "^/(album|img)/(\\w+)/(\\w+)/(.*)?", "o")
 if match then 
     local urltype = match[1]
     local key     = match[2]
-    local tag     = match[3]
-    local album   = match[4]
+    --local tag     = match[3]
+    local album   = match[3]
+    local img     = match[4]
 
-    if verify_access_key(key, album) then
+    local ok  = red:connect("unix:/var/run/redis/redis.sock")
+    
+    local verified = verify_access_key(red, key, album) 
+
+    if verified then
+        local tag = red:hget(album .. 'h', 'tag')
         if urltype == 'album' then
-            local uri = BASE .. tag .. '/' .. album .. '/'
-            ngx.var.IMGBASE = '/img/' .. key .. '/' .. tag .. '/' .. album .. '/'
+            local uri = BASE .. 'album/' .. tag .. '/' .. album .. '/'
+            ngx.var.IMGBASE = '/img/' .. key .. '/'  .. album .. '/'
+            ngx.log(ngx.ERR, '---***---: rewrote URI:' .. ngx.var.uri .. '=>' .. uri)
             ngx.req.set_uri(uri)
         elseif urltype == 'img' then
-            local uri = ngx.var.IMGBASE .. match[5]
+            local uri = ngx.var.IMGBASE .. img
+            ngx.log(ngx.ERR, '---***---: rewrote URI:' .. ngx.var.uri .. '=>' .. uri)
             ngx.req.set_uri(uri)
         else
-            ngx.exit(404)
+            ngx.log(ngx.ERR, '---***---: 404 in rewriter with requested URI:' .. ngx.var.uri)
+            exit(404)
         end
     else 
-        ngx.exit(410)
+        exit(410)
     end
 end
+local ok, err = red:set_keepalive(0, 100)
 -- 1 week cache
 ngx.header["Expires"] = ngx.http_time( ngx.time() + 86400*7 )
 --ngx.exit(404) 

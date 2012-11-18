@@ -196,7 +196,7 @@ var photongx = (function() {
         }
 
         // Count the viewing
-        $.getJSON('/photongx/api/img/click/', { 'img':image_href}, function(data) {
+        $.getJSON('/api/img/click/', { 'img':image_href}, function(data) {
             //console.log(data);
         });
         // TODO scrollto background pos img
