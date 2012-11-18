@@ -55,9 +55,8 @@ class Worker:
         #image.write(outfile)
         quality = str(quality)
         if infile.endswith('.gif'):
-            resize = run(['/usr/bin/convert', '-quality', quality, '-strip',  '-thumbnail',  size+'>"', infile, outfile])
-        else:
-            resize = run(['/usr/bin/convert', '-quality', quality, '-strip',  '-thumbnail',  size, infile, outfile])
+            size = size+'>"'
+        resize = run(['/usr/bin/convert', '-interlace', "Plane", '-quality', quality, '-strip',  '-thumbnail',  size, infile, outfile])
         image = Image(outfile)
 
         return { 'width': image.size().width(), \
