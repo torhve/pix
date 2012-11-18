@@ -63,16 +63,8 @@ var photongx = (function() {
 
     // We got a new browser state from pressing prev or next buttons
     window.addEventListener("popstate", function (evt) {
-        var base_parts = window.location.href.split("/");
-        var path_end = base_parts[base_parts.length-2];
-
-        // TODO: Use evt.state aswell and push view state using arg2 @ pushState
-        //       so we don't have to parse the url.
-
-        // If the end part of the url is an int we assume we're showing an image
-        if (path_end == parseInt(path_end)) {
-            currentimage = path_end;
-            navigateImage(currentimage);
+        if (evt.state && evt.state.image) {
+            navigateImage(evt.state.image);
         }
         else {
             // Assume we got an url that doesn't show an image
@@ -94,7 +86,7 @@ var photongx = (function() {
         currentimage = parseInt($(this).attr('id').split('-')[1]);
         
         // Push inn <albumurl>/<image_id>/ to history
-        history.pushState(null, null, window.location.href + currentimage + "/");
+        history.pushState({ image: currentimage }, null, window.location.href + currentimage + "/");
         
         /*  
         If the lightbox window HTML already exists in document, 
@@ -229,7 +221,7 @@ var photongx = (function() {
         var base_parts = window.location.href.split("/");
         if (base_parts[base_parts.length-2] == currentimage) {
             base = base_parts.slice(0, base_parts.length - 2).join("/") + "/";
-            history.pushState(null, null, base);
+            history.pushState({ image: null }, null, base);
         }
     };
     
@@ -321,7 +313,7 @@ var photongx = (function() {
             base = window.location.href;
 
         // Push new url for to history for the image we are about to display
-        history.pushState(null, null, base + image_num + "/");
+        history.pushState({ image: image_num }, null, base + image_num + "/");
         navigateImage(image_num);
     });
 
@@ -337,7 +329,7 @@ var photongx = (function() {
             base = window.location.href;
     
         // Push new url for to history for the image we are about to display
-        history.pushState(null, null, base + image_num + "/");
+        history.pushState({ image: image_num }, null, base + image_num + "/");
         navigateImage(image_num);
     });
 
