@@ -32,8 +32,15 @@ if match then
     local img     = match[4]
 
     local ok  = red:connect("unix:/var/run/redis/redis.sock")
-    
-    local verified = verify_access_key(red, key, album) 
+
+    local verified = nil
+  
+    -- IP based admin access
+    if ngx.var.remote_addr == "172.16.36.100" then
+        verified = true
+    else
+        verified = verify_access_key(red, key, album) 
+    end
 
     if verified then
         local tag = red:hget(album .. 'h', 'tag')
