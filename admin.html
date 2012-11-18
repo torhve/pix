@@ -28,16 +28,17 @@
                         <li class="nav-header">Albums</li>
                         {% for i, album in ipairs(albums) do %}
                         <li>
-                            <div class="btn-group pull-right">
-                                <a id="talbum/{{album}}" href="#" class="albumtemp   btn btn-mini" title="Create expirable album link">
-                                    <i class="icon-time"></i></a>
-                                <a id="lalbum/{{album}}" href="#" class="albummodify btn btn-mini           "><i class="icon-pencil"></i></a>
-                                <a href="{{ BASE}}admin/api/album/remove/{{ tags[album]}}/{{album}}" class="link-album-remove btn btn-mini btn-danger"><i class="icon-remove"></i></a>
-                            </div>
                             <a href="{{ BASE}}album/{{ tags[album] }}/{{ album }}/">
                                 <i class="icon-picture"></i>
                                 {{ album }}
                             </a>
+                            <div class="btn-group">
+                                <a class="btn btn-mini btn-success" href="#" title="Add more images to album"><i class="icon-plus"></i></a>
+                                <a id="talbum/{{album}}" href="#" class="albumtemp   btn btn-mini" title="Create expirable album link">
+                                    <i class="icon-time"></i></a>
+                                <a id="lalbum/{{album}}" href="#" class="albummodify btn btn-mini           "><i class="icon-pencil"></i></a>
+                                <a href="{{ BASE}}admin/api/album/remove/{{ tags[album]}}/{{album}}" title="Remove album and all images. Warning: No confirmation dialog"  class="link-album-remove btn btn-mini btn-danger"><i class="icon-remove"></i></a>
+                            </div>
                         </li>
                         {% end %}
                         </ul>

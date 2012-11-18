@@ -49,12 +49,17 @@ class Worker:
         for key, value in data.items():
             self.redis.hset(imagekey, key, value)
 
-    def thumbnail(self, infile, outfile, size, quality):
+    def rotate(self, infile):
+        ''' Lossless autoration based on exif using jhead/jpegtran '''
+        return run(['/usr/bin/jhead', '-autorot', infile])
+
+    def thumbnail(self, infile, outfile, size, quality, no_upscale=False):
         #image = Image(infile)
         #image.resize(size)
         #image.write(outfile)
+
         quality = str(quality)
-        if infile.endswith('.gif'):
+        if infile.endswith('.gif') or no_upscale:
             size = size+'>"'
         resize = run(['/usr/bin/convert', '-interlace', "Plane", '-quality', quality, '-strip',  '-thumbnail',  size, infile, outfile])
         image = Image(outfile)
@@ -84,6 +89,7 @@ if __name__ == '__main__':
     w = Worker(config)
     photoconf = config['photos']
     thumb_max_size = "%dx%d" % ( photoconf['thumb_max'], photoconf['thumb_max'] )
+    huge_max_size = "%dx%d" % ( photoconf['huge_max'], photoconf['huge_max'] )
     quality = '%d' % (photoconf['quality'] )
 
     while True:
@@ -95,31 +101,54 @@ if __name__ == '__main__':
         image = w.get_image_info(key)
 
         image['thumb_name'] = "t%d.%s" % ( photoconf['thumb_max'], image['file_name'] )
+        image['huge_name'] = "t%d.%s" % ( photoconf['huge_max'], image['file_name'] )
 
         relbase = "img" + sep + image['atag'] + sep + image['itag'] + sep
 
         infile = BASE_DIR + sep + relbase + image['file_name']
-        outfile = BASE_DIR + sep + relbase + image['thumb_name']
+        thumb_outfile = BASE_DIR + sep + relbase + image['thumb_name']
+        huge_outfile = BASE_DIR + sep + relbase + image['huge_name']
 
-        if options.missing and os.path.exists(outfile):
-            print 'Skipping existing thumbnail %s' %outfile
-            continue
-
-        print "Generating " + outfile,
-        t = time()
-        sys.stdout.flush()
         try:
-            thumb = w.thumbnail(infile, outfile, thumb_max_size, quality)
-            print "done (%d ms)" % ((time() - t) * 1000)
+            # First, rotate the original
+            success = w.rotate(infile)
 
-            update = { 'thumb_w': thumb['width'], \
-                       'thumb_h': thumb['height'], \
-                       'thumb_name': image['thumb_name'] }
+            if options.missing and os.path.exists(thumb_outfile):
+                print 'Skipping existing thumbnail %s' %thumb_outfile
+                continue
+            else:
+                print "Generating " + thumb_outfile,
+                t = time()
+                sys.stdout.flush()
+                thumb = w.thumbnail(infile, thumb_outfile, thumb_max_size, quality)
+                print "done (%d ms)" % ((time() - t) * 1000)
 
-            w.save_image_info(key, update)
+                update = { 'thumb_w': thumb['width'], \
+                           'thumb_h': thumb['height'], \
+                           'thumb_name': image['thumb_name'] }
+
+                w.save_image_info(key, update)
+
+            if options.missing and os.path.exists(huge_outfile):
+                print 'Skipping existing hugenail %s' %huge_outfile
+                continue
+            else:
+                print "Generating " + huge_outfile,
+                t = time()
+                sys.stdout.flush()
+                huge = w.thumbnail(infile, huge_outfile, huge_max_size, quality, no_upscale=True)
+                print "done (%d ms)" % ((time() - t) * 1000)
+
+                update = { 'huge_w': huge['width'], \
+                           'huge_h': huge['height'], \
+                           'huge_name': image['huge_name'] }
+
+                w.save_image_info(key, update)
+
         except Exception, e:
             print "ERROR", e
             print "Infile:", infile
-            print "Outfile:", outfile
+            print "Outfile:", thumb_outfile
+            print "Outfile:", huge_outfile
 #3            raise
 

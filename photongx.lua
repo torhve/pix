@@ -315,7 +315,8 @@ local function album(path_vars)
     end
 
     local imagelist, err = red:zrange(album, 0, -1)
-    local thumbs = {}
+    local images = {} -- Table holding full size images
+    local thumbs = {} -- Table holding thumbnails
     for i, image in ipairs(imagelist) do
         local itag = red:hget(image, 'itag')
         -- Get thumb if key exists
@@ -325,6 +326,12 @@ local function album(path_vars)
         else
             thumbs[image] = itag .. '/' .. red:hget(image, 'file_name')
         end
+        -- Get the huge iamge if it exists
+        if red:hexists(image, 'huge_name') == 1 then
+            images[image] = itag .. '/' .. red:hget(image, 'huge_name')
+        else 
+            images[image] = itag .. '/' .. red:hget(image, 'file_name')
+        end
     end
     
     -- load template
@@ -333,6 +340,7 @@ local function album(path_vars)
         album = album,
         tag = tag,
         albumtitle = ngx.re.gsub(album, '_', ' '),
+        images = images,
         imagelist = imagelist,
         thumbs = thumbs,
         bodyclass = 'gallery',
@@ -634,7 +642,10 @@ local function api_img_remove()
     res['rmimg'] = os.execute('rm "' .. IMGPATH .. tag .. '/' .. itag .. '/' .. img .. '"')
     -- FIXME get real thumbnail filenames?
     -- delete thumbnail
+    -- FIXME get thumb size from config
     res['rmimg'] = os.execute('rm "' .. IMGPATH .. tag .. '/' .. itag .. '/t640.' .. img .. '"')
+    -- FIXME get thumb size from config
+    res['rmimg'] = os.execute('rm "' .. IMGPATH .. tag .. '/' .. itag .. '/t2000.' .. img .. '"')
     res['rmdir'] = os.execute('rmdir ' .. IMGPATH .. tag .. '/' .. itag .. '/')
 
     res['album'] = album
@@ -689,10 +700,10 @@ local function init_db()
     red = redis:new()
     if config.redis.unix_socket_path then
         local ok, err = red:connect("unix:" .. config.redis.unix_socket_path)
-    end
-    if not ok then
-        ngx.say("failed to connect: ", err)
-        return
+        if not ok then
+            ngx.say("failed to connect: ", err)
+            return
+        end
     end
 end
 

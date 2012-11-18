@@ -244,7 +244,7 @@ $('.uploadform').submit(function(ev) {
               upload.addEventListener("error", function (ev) {console.log(ev);}, false);
               xhr.open(
                   "POST",
-                  "/photongx/upload/post"
+                  BASE + 'upload/post/'
               );
               xhr.setRequestHeader("Cache-Control", "no-cache");
               xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
