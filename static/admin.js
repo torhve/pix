@@ -1,7 +1,7 @@
 $(document).ready(function () {
     $('.albummodify').bind('click', function() {
         console.log(this, 'clicked');
-        var albumname = $(this).attr('id').split('-')[1];
+        var albumname = $(this).attr('id').split('/')[1];
         console.log(albumname, 'clicked');
 
         $('#admincontent .adminalbum').prependTo($('#albumcontainer').toggleClass('hidden'));
@@ -23,7 +23,7 @@ $(document).ready(function () {
 
     $('.albumtemp').bind('click', function() {
         console.log(this, 'temp clicked');
-        var albumname = $(this).attr('id').split('-')[1];
+        var albumname = $(this).attr('id').split('/')[1];
         console.log(albumname, 'clicked');
         $('#input-album-name').val(albumname);
         $('.modal').modal('show');
