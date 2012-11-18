@@ -20,5 +20,6 @@ PREPARATIONS
 - Check out submodules using: git submodule update --init
 - Bootstrap css needs to be downloaded seperately or generated using 
   their provided makefile
-- Update $INSTALL_ROOT/etc/config.json to reflect your settings
+- Copy $INSTALL_ROOT/etc/config.json.dist to $INSTALL_ROOT/etc/config.json and
+  update to reflect your settings
 

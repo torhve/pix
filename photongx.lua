@@ -1,7 +1,17 @@
--- use nginx $root variable for template dir
-local TEMPLATEDIR = ngx.var.root .. '/';
 local cjson = require("cjson")
 local math  = require("math")
+local ROOT_PATH = ngx.var.root
+local config = ngx.shared.config
+
+-- Only load config once. TODO Needs a /reload url to reload config / unset it.
+if not config then
+    local f = assert(io.open(ROOT_PATH .. "/etc/config.json", "r"))
+    local c = f:read("*all")
+    f:close()
+
+    config = cjson.decode(c)
+    ngx.shared.config = config
+end
 
 -- Load redis
 local redis = require "resty.redis"
@@ -9,16 +19,18 @@ local redis = require "resty.redis"
 -- Set the content type
 ngx.header.content_type = 'text/html';
 
+local TEMPLATEDIR = ROOT_PATH .. '/';
+
 -- the db global
 red = nil
-BASE = '/'
-IMGPATH = '/home/xt/src/photongx/img/'
+BASE = config.path.base
+IMGPATH = ROOT_PATH .. config.path.image .. '/'
 TAGLENGTH = 6
 
 -- Default context helper
 function ctx(ctx)
     ctx['BASE'] = BASE
-    ctx['IMGBASE'] = ngx.var.imgbase
+    ctx['IMGBASE'] = config.path.image .. '/'
     return ctx
 end
 
@@ -675,7 +687,9 @@ end
 local function init_db()
     -- Start redis connection
     red = redis:new()
-    local ok, err = red:connect("unix:/var/run/redis/redis.sock")
+    if config.redis.unix_socket_path then
+        local ok, err = red:connect("unix:" .. config.redis.unix_socket_path)
+    end
     if not ok then
         ngx.say("failed to connect: ", err)
         return
