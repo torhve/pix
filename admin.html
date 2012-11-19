@@ -15,6 +15,10 @@
             <div class="span3">
                 <div class="well sidebar-nav">
                     <ul class="nav nav-list">
+                        <li class="nav-header" title="When images are uploaded, they are processed in the background. Generation meta data and creating thumbnails and such. This counter shows you how many images are still waiting to be processed">Processing queue</li>
+                        <li id="li-queue">
+                        <span class="blue">0</span> images in the queue
+                        </li>
                         <li class="nav-header">New album</li>
                         <li>
                             <form class="uploadform" class="form-inline" action="{{ BASE }}upload/"> 
@@ -27,17 +31,18 @@
                         </li>
                         <li class="nav-header">Albums</li>
                         {% for i, album in ipairs(albums) do %}
-                        <li>
+                        <li class="li-nav-album">
                             <a href="{{ BASE}}album/{{ tags[album] }}/{{ album }}/">
+                                <span class="badge pull-right" title="Number of images in album">{{ #images[album] }}</span>
                                 <i class="icon-picture"></i>
                                 {{ album }}
                             </a>
-                            <div class="btn-group">
-                                <a class="btn btn-mini btn-success" href="#" title="Add more images to album"><i class="icon-plus"></i></a>
-                                <a id="talbum/{{album}}" href="#" class="albumtemp   btn btn-mini" title="Create expirable album link">
+                            <div class="hidden btn-group">
+                                <a class="btn  btn-success" href="#" title="Add more images to album"><i class="icon-plus"></i></a>
+                                <a id="talbum/{{album}}" href="#" class="albumtemp   btn " title="Create expirable album link">
                                     <i class="icon-time"></i></a>
-                                <a id="lalbum/{{album}}" href="#" class="albummodify btn btn-mini           "><i class="icon-pencil"></i></a>
-                                <a href="{{ BASE}}admin/api/album/remove/{{ tags[album]}}/{{album}}" title="Remove album and all images. Warning: No confirmation dialog"  class="link-album-remove btn btn-mini btn-danger"><i class="icon-remove"></i></a>
+                                <a id="lalbum/{{album}}" href="#" class="albummodify btn            "><i class="icon-pencil"></i></a>
+                                <a href="{{ BASE}}admin/api/album/remove/{{ tags[album]}}/{{album}}" title="Remove album and all images. Warning: No confirmation dialog"  class="link-album-remove btn  btn-danger"><i class="icon-remove"></i></a>
                             </div>
                         </li>
                         {% end %}
@@ -84,13 +89,34 @@
 {% for i, albumname in ipairs(albums) do %}
 <div id="album-{{albumname}}" class="adminalbum hidden">
     {% local tag = tags[albumname] %}
-    <h5>Access tags:</h5>
-    <ul class="unstyled">
+    <table class="table table-striped table-bordered table-hover">
+        <tr>
+            <th>tag</th>
+            <th>created</th>
+            <th>expires</th>
+            <th>album link</th>
+            <th>albums link</th>
+        </tr>
+
         {% for i, key in ipairs(accesskeys[albumname]) do %}
-        <li class="badge badge-success">{{key}}</li>
+        {% 
+            local h = accesskeysh[albumname][key]
+            local created = nil
+            local granted = nil
+            if h then
+                created = h[2]
+                granted = h[4]
+            end
+        %}
+        <tr>
+            <td>{{ key}}</td>
+            <td>{{ created }}</td>
+            <td>{{ granted }}</td>
+            <td><a href="{{BASE}}album/{{ key }}/{{albumname}}/">{{BASE}}album/{{ key }}/{{albumname}}/</td>
+            <td><a href="{{BASE}}albums/{{ key }}/{{albumname}}/">{{BASE}}albums/{{ key }}/</td>
+        </tr>
         {% end %}
-        <li class=""><a class="btn btn-success" href="#"><i class="icon-plus"></i></a>
-    </ul>
+    </table>
     <div class="items">
         {% for i, image in ipairs(images[albumname]) do %}
         <div class="item">
@@ -168,6 +194,9 @@
     var album = '{{ album }}';
     var tag = '{{ tag }}';
     var BASE = '{{ BASE }}';
+    $(document).on("ready", function (evt) {
+        pnxadmin = pnxadmin();
+    });
 </script>
 <script src="{{BASE}}static/bootstrap/js/bootstrap-modal.js"></script>
 <script src="{{BASE}}static/admin.js"></script>

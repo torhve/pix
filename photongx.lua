@@ -374,6 +374,7 @@ local function admin()
     local thumbs = {}
     local imagecount = 0
     local accesskeys = {}
+    local accesskeysh = {}
 
     for i, album in ipairs(albums) do
         local theimages, err = red:zrange(album, 0, -1)
@@ -382,6 +383,10 @@ local function admin()
         tags[album] = tag
         images[album] = theimages
         accesskeys[album] = accesskeyl
+        accesskeysh[album] = {}
+        for i, key in ipairs(accesskeyl) do 
+            accesskeysh[album][key] = red:hgetall('album:' .. album .. ':' .. key)
+        end
         imagecount = imagecount + #theimages
         thumbs[album] = {}
         for i, image in ipairs(theimages) do
@@ -404,13 +409,13 @@ local function admin()
     local tag = generate_tag()
 
     local context = ctx{
-        album=args['album'], 
         tag=tag,
         albums = albums,
         tags = tags,
         images = images,
         thumbs = thumbs,
         accesskeys = accesskeys,
+        accesskeysh = accesskeysh,
         imagesjs = cjson.encode(images),
         albumsjs = cjson.encode(albums),
         tagsjs   = cjson.encode(tags),
@@ -444,7 +449,7 @@ local function admin_api_albumttl()
     h['granted'] = ngx.now()
     h['expires'] = ttl
 
-    local ok1, err1 = red:sadd(  'album:' .. album .. ':accesstags')
+    local ok1, err1 = red:sadd(  'album:' .. album .. ':accesstags', accesstag)
     local ok2, err2 = red:hmset( 'album:' .. album .. ':' .. accesstag, h)
     local ok3, err3 = red:expire('album:' .. album .. ':' .. accesstag, ttl)
 
@@ -454,7 +459,7 @@ local function admin_api_albumttl()
         expire= ok3,
     }
 
-    ngx.print( cjson.encode(args) )
+    ngx.print( cjson.encode(res) )
 end
 
 
