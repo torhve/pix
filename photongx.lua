@@ -421,6 +421,13 @@ local function admin()
 end
 
 -- 
+-- Admin API json queue length
+--
+local function admin_api_queue_length()
+    ngx.print( cjson.encode{ counter = red:llen('queue:thumb') } )
+end
+
+-- 
 -- Admin API json
 --
 local function admin_api_albumttl()
@@ -734,6 +741,7 @@ local routes = {
     ['admin/api/img/remove/(.*)'] = api_img_remove,
     ['admin/api/album/remove/(\\w+)/(.+)'] = api_album_remove,
     ['admin/api/albumttl/create(.*)'] = admin_api_albumttl,
+    ['admin/api/queue/length/'] = admin_api_queue_length,
 }
 -- iterate route patterns and find view
 for pattern, view in pairs(routes) do
