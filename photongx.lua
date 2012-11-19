@@ -206,9 +206,10 @@ function generate_tag()
 end
 
 -- Check if any given tag is up to snuff
-function verify_tag(tag)
+function verify_tag(tag, length)
+    if not length then length = TAGLENGTH end
     if not tag then return false end
-    if #tag < TAGLENGTH then return false end
+    if #tag < length then return false end
     if not ngx.re.match(tag, '^[a-zA-Z0-9]+$') then return false end
     return true
 end
@@ -439,7 +440,7 @@ local function admin_api_albumttl()
     local args = ngx.req.get_uri_args()
     local album = args['album']
     local accesstag = args['name']
-    if not verify_tag(accesstag) then
+    if not verify_tag(accesstag, 3) then
         accesstag = generate_tag()
     end
 
@@ -451,6 +452,9 @@ local function admin_api_albumttl()
 
     local ok1, err1 = red:sadd(  'album:' .. album .. ':accesstags', accesstag)
     local ok2, err2 = red:hmset( 'album:' .. album .. ':' .. accesstag, h)
+
+    -- if the arg is forever, the ttl isn't a number, and the expire will fail
+    -- which means it will never expire
     local ok3, err3 = red:expire('album:' .. album .. ':' .. accesstag, ttl)
 
     res = {
