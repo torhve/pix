@@ -60,8 +60,8 @@ class Worker:
 
         quality = str(quality)
         if infile.endswith('.gif') or no_upscale:
-            size = size+'>"'
-        resize = run(['/usr/bin/convert', '-interlace', "Plane", '-quality', quality, '-strip',  '-thumbnail',  size, infile, outfile])
+            size = size+'>'
+        resize = run(['/usr/bin/convert', '-interlace', "Plane", '-quality', quality, '-strip',  '-thumbnail', size, infile, outfile])
         image = Image(outfile)
 
         return { 'width': image.size().width(), \
