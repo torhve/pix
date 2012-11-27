@@ -592,23 +592,63 @@ end
 --
 -- return images from db
 --
-local function img()
+local function admin_api_images()
     ngx.header.content_type = 'application/json';
     local albumskey = 'zalbums'
     local albums, err = red:zrange(albumskey, 0, -1)
     local res = {}
-    res['albums'] = albums
     res['images'] = {}
-
     for i, album in ipairs(albums) do
         local images, err = red:zrange(album, 0, -1)
-        res['images'] = images
         for i, image in ipairs(images) do
             local imgh, err = red:hgetall(image)
-            res[image] = imgh
+            res[image] = red:array_to_hash(imgh)
         end
     end
 
+    ngx.print( cjson.encode(res) )
+end
+--
+-- return image from db
+--
+local function admin_api_image(match)
+    ngx.header.content_type = 'application/json';
+    local image = match[1]
+    local res = {}
+    local imgh, err = red:hgetall(image)
+    res[image] = red:array_to_hash(imgh)
+    ngx.print( cjson.encode(res) )
+end
+
+--
+-- 
+--
+local function admin_api_albums()
+    ngx.header.content_type = 'application/json';
+    local albumskey = 'zalbums'
+    local albums = getalbums()
+    local res = {}
+    for i, album in ipairs(albums) do
+        local dbtag, err = red:hget(album .. 'h', 'tag')
+        table.insert(res, { 
+            name = album,
+            tag = dbtag,
+        })
+    end
+    ngx.print( cjson.encode(res) )
+end
+
+--
+-- 
+--
+local function admin_api_album(match)
+    ngx.header.content_type = 'application/json';
+    local album = match[1]
+    local dbtag, err = red:hget(album .. 'h', 'tag')
+    local res = { 
+        name = album,
+        tag = dbtag
+    }
     ngx.print( cjson.encode(res) )
 end
 
@@ -746,7 +786,10 @@ local routes = {
     ['upload/$']        = upload,
     ['upload/post/?$']  = upload_post,
     ['api/img/click/$'] = api_img_click,
-    ['admin/api/img/?$']= img,
+    ['admin/api/images/?$']= admin_api_images,
+    ['admin/api/image/(.+)/?$']= admin_api_image,
+    ['admin/api/albums/?$']= admin_api_albums,
+    ['admin/api/album/(.+)$']= admin_api_album,
     ['admin/api/img/remove/(.*)'] = api_img_remove,
     ['admin/api/album/remove/(\\w+)/(.+)'] = api_album_remove,
     ['admin/api/albumttl/create(.*)'] = admin_api_albumttl,
