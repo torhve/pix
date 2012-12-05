@@ -23,7 +23,7 @@ BASE = '/'
 local redis = require "resty.redis"
 local red = redis:new()
 
-local match = ngx.re.match(ngx.var.uri, "^/(album|img)/(\\w+)/([a-zA-Z0-9-_\\.]+)/(.*)?", "o")
+local match = ngx.re.match(ngx.var.uri, "^/(album|img)/(\\w+)/([a-zA-Z0-9-_\\.]+)/(.*)?/?", "o")
 if match then 
     local urltype = match[1]
     local key     = match[2]
@@ -46,6 +46,7 @@ if match then
         local tag = red:hget(album .. 'h', 'tag')
         if urltype == 'album' then
             local uri = BASE .. 'album/' .. tag .. '/' .. album .. '/'
+            if img then uri = uri ..  img end
             ngx.var.IMGBASE = '/img/' .. key .. '/'  .. album .. '/'
             ngx.log(ngx.ERR, '---***---: rewrote URI:' .. ngx.var.uri .. '=>' .. uri)
             ngx.req.set_uri(uri)
