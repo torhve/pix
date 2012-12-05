@@ -800,7 +800,6 @@ for pattern, view in pairs(routes) do
     local match = ngx.re.match(ngx.var.uri, '^' .. BASE .. pattern, "o") -- regex mather in compile mode
     if match then
         init_db()
-        ngx.log(ngx.ERR, '!!!!!' .. cjson.encode(match))
         view(match)
         end_db()
         -- return OK, since we called a view
