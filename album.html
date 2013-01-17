@@ -6,8 +6,8 @@
     <div id="items" class="items">
         {% for i, image in ipairs(imagelist) do %}
         <div class="item">
-            <a id="image-{{ i }}" href="{{ IMGBASE }}{{tag}}/{{ images[image] }}" class="lb">
-                <img src="{{ IMGBASE }}{{tag}}/{{ thumbs[image] }}">
+            <a id="image-{{ i }}" href="{{ BASE }}{{ IMGBASE }}{{tag}}/{{ images[image] }}" class="lb">
+                <img src="{{ BASE }}{{ IMGBASE }}{{tag}}/{{ thumbs[image] }}">
             </a>
         </div>
         {% end %}
