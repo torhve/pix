@@ -120,8 +120,8 @@
     <div class="items">
         {% for i, image in ipairs(images[albumname]) do %}
         <div class="item">
-            <a id="image-{{ i }}" href="{{ IMGBASE }}{{tag}}/{{ image }}" class="lb">
-                <img class="adminthumb" _src="{{ IMGBASE }}{{tag}}/{{ thumbs[albumname][image] }}">
+            <a id="image-{{ i }}" href="{{ BASE }}{{ IMGBASE }}{{tag}}/{{ image }}" class="lb">
+                <img class="adminthumb" _src="{{ BASE }}{{ IMGBASE }}{{tag}}/{{ thumbs[albumname][image] }}">
             </a>
             <div class="admin-label">
                 <a class="btn btn-mini btn-danger link-image-remove" href="{{ BASE}}/admin/api/img/remove/?album={{albumname}}&amp;image={{ image }}">
