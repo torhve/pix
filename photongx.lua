@@ -789,9 +789,9 @@ local routes = {
     ['admin/api/images/?$']= admin_api_images,
     ['admin/api/image/(.+)/?$']= admin_api_image,
     ['admin/api/albums/?$']= admin_api_albums,
+    ['admin/api/album/remove/(\\w+)/(.+)$'] = api_album_remove,
     ['admin/api/album/(.+)$']= admin_api_album,
     ['admin/api/img/remove/(.*)'] = api_img_remove,
-    ['admin/api/album/remove/(\\w+)/(.+)'] = api_album_remove,
     ['admin/api/albumttl/create(.*)'] = admin_api_albumttl,
     ['admin/api/queue/length/'] = admin_api_queue_length,
 }
