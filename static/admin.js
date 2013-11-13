@@ -72,6 +72,21 @@ function AlbumListCtrl($scope, $http, images) {
             upload.onclick = FileAPI.uploadQueue;
         });
     }
+    $scope.albumLink = function(album) {
+        $('#input-album-name').val(album);
+        $('.modal').modal('show');
+        return false;
+    }
+    $scope.submitAlbumLink = function() {
+        var formData = $('#form-ttl').serialize();
+        var formUrl = "/admin/api/albumttl/create/";
+        console.log($scope.linkAlbum);
+        $.getJSON(formUrl, formData, function(data) { 
+            console.log(data);
+            $scope.linkAlbum = '';
+            $('.modal').modal('hide');
+        });
+    };
 }
 
 
@@ -157,26 +172,6 @@ var pnxadmin = (function() {
         return false;
     });
 
-    $('.albumtemp').bind('click', function() {
-        console.log(this, 'temp clicked');
-        var albumname = $(this).attr('id').split('/')[1];
-        console.log(albumname, 'clicked');
-        $('#input-album-name').val(albumname);
-        $('.modal').modal('show');
-        return false;
-    });
-
-    $('#form-ttl').submit(function(ev) {
-        ev.stopPropagation();
-        ev.preventDefault();
-        var formData = $(this).serialize();
-        var formUrl = "/admin/api/albumttl/create/";
-        $.getJSON(formUrl, formData, function(data) { 
-            console.log(data);
-            $('.modal').modal('hide');
-        });
-        return false;
-    });
 
     $('.link-image-remove').bind('click', function(ev) {
         console.log(this, 'clicked');

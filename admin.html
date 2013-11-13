@@ -67,8 +67,7 @@
                             </a>
                             <div class="btn-group animate-show" ng-show="selectedAlbum==album">
                                 <a class="btn btn-success" href="#" title="Add more images to album"><i class="icon-plus"></i></a>
-                                <a id="talbum/{{album}}" href="#" class="albumtemp   btn " title="Create expirable album link">
-                                    <i class="icon-time"></i></a>
+                                <a href="#" class="btn" ng-click="albumLink(album)" title="Create expirable album link"><i class="icon-time"></i></a>
                                 <a id="lalbum/{{album}}" href="#" class="albummodify btn            "><i class="icon-pencil"></i></a>
                                 <a href="/admin/api/album/remove/{{ tags[album]}}/{{album}}" title="Remove album and all images. Warning: No confirmation dialog"  class="link-album-remove btn  btn-danger"><i class="icon-remove"></i></a>
                             </div>
@@ -165,7 +164,7 @@
     </div>
 
 <div class="modal hide fade">
-    <form id="form-ttl" method="GET" class="form-horizontal">
+  <form id="form-ttl" method="GET" class="form-horizontal" ng-submit="submitAlbumLink()">
     <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
         <h3>Create expirable album link</h3>
@@ -204,14 +203,13 @@
                     <p class="help-block">The name will be used in the link.</p>
                 </div>
             </div>
-
             <input id="input-album-name" type="hidden" name="album"></input>
     </div>
     <div class="modal-footer">
         <!--<a href="#" class="btn">Close</a>-->
         <button type="submit" class="btn btn-primary">Create link</a>
     </div>
-    </form>
+  </form>
 </div>
 
 
