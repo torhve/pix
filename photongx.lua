@@ -263,8 +263,9 @@ local function albums(match)
             -- Get thumb if key exists
             -- set to full size if it doesn't exist
             local img = ngx.var.IMGBASE .. accesstag .. '/' .. album .. '/' .. tag .. '/' ..  itag .. '/'  
-            if red:hexists(image, 'thumb_name') == 1 then
-                images[album] = img .. red:hget(image, 'thumb_name')
+            local thumb_name = red:hget(image, 'thumb_name')
+            if thumb_name ~= ngx.null then
+                images[album] = img .. thumb_name
             else
                 images[album] = img .. red:hget(image, 'file_name')
             end
@@ -322,8 +323,9 @@ local function album(path_vars)
         local itag = red:hget(image, 'itag')
         -- Get thumb if key exists
         -- set to full size if it doesn't exist
-        if red:hexists(image, 'thumb_name') == 1 then
-            thumbs[image] = itag .. '/' .. red:hget(image, 'thumb_name')
+        local thumb_name = red:hget(image, 'thumb_name')
+        if thumb_name ~= ngx.null then
+            thumbs[image] = itag .. '/' .. thumb_name
         else
             thumbs[image] = itag .. '/' .. red:hget(image, 'file_name')
         end
@@ -504,7 +506,7 @@ local function upload_post()
 
     local h          = ngx.req.get_headers()
     local md5        = h['content-md5'] -- FIXME check this with ngx.md5
-    local file_name  = h['x-file-name']
+    local file_name  = h['X-Filename']
     local referer    = h['referer']
     local album      = h['X-Album']
     local tag        = h['X-Tag']
@@ -608,6 +610,54 @@ local function admin_api_images()
 
     ngx.print( cjson.encode(res) )
 end
+
+--[
+-- Admin API all, api function to return all infos from db, tags, thumbs, images, accesskeys, imagecount, etc
+-- ]]
+local function admin_api_all()
+    ngx.header.content_type = 'application/json';
+    local albums = getalbums()
+    local tags  = {}
+    local images = {}
+    local thumbs = {}
+    local accesskeys = {}
+    local accesskeysh = {}
+
+    for i, album in ipairs(albums) do
+        local theimages, err = red:zrange(album, 0, -1)
+        local tag,       err = red:hget(album .. 'h', 'tag')
+        local accesskeyl, err = red:smembers('album:' ..album .. ':accesstags')
+        tags[album] = tag
+        images[album] = theimages
+        accesskeys[album] = accesskeyl
+        accesskeysh[album] = {}
+        for i, key in ipairs(accesskeyl) do 
+            accesskeysh[album][key] = red:hgetall('album:' .. album .. ':' .. key)
+        end
+        thumbs[album] = {}
+        for i, image in ipairs(theimages) do
+            local itag = red:hget(image, 'itag')
+            -- Get thumb if key exists
+            -- set to full size if it doesn't exist
+            local thumb_name = red:hget(image, 'thumb_name')
+            if thumb_name ~= ngx.null then
+                thumbs[album][image] = itag .. '/' .. thumb_name
+            else
+                thumbs[album][image] = itag .. '/' .. red:hget(image, 'file_name')
+            end
+        end
+    end
+    local res = {
+        albums = albums,
+        tags = tags,
+        images = images,
+        thumbs = thumbs,
+        accesskeys = accesskeys,
+        accesskeysh = accesskeysh,
+    }
+    ngx.print( cjson.encode(res) )
+end
+
 --
 -- return image from db
 --
@@ -747,6 +797,11 @@ local function api_album_remove(match)
     ngx.print( cjson.encode ( res ) )
 end
 
+local function admin_api_gentag(match) 
+    local tag = generate_tag()
+    ngx.print( cjson.encode { tag=tag } )
+end
+
 
 -- 
 -- Initialise db
@@ -791,6 +846,8 @@ local routes = {
     ['admin/api/albums/?$']= admin_api_albums,
     ['admin/api/album/remove/(\\w+)/(.+)$'] = api_album_remove,
     ['admin/api/album/(.+)$']= admin_api_album,
+    ['admin/api/all/?$']= admin_api_all,
+    ['admin/api/gentag/?$']= admin_api_gentag,
     ['admin/api/img/remove/(.*)'] = api_img_remove,
     ['admin/api/albumttl/create(.*)'] = admin_api_albumttl,
     ['admin/api/queue/length/'] = admin_api_queue_length,

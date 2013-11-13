@@ -1,10 +1,39 @@
-    {( "header.html" )}
+<!DOCTYPE html>
+<html lang="en" ng-app="PNXApp">
+  <head>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.0/angular.min.js"></script>
+    <script src="/static/fileapi.js"></script>
+    <script src="/static/admin.js"></script>
+    <meta charset="utf-8">
+    <title>Photo Engine X Administration</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Photo Engine X">
+    <meta name="author" content="Tor Hveem">
+
+    <link href='//fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link href="/static/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <link href="/static/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
+    <link href="/static/fa/css/font-awesome.css" rel="stylesheet">
+    <link href="/static/screen.css" rel="stylesheet">
+
+    <link rel="shortcut icon" type="image/png" href="/static/favicon.png">
+    <link rel="icon" type="image/png" href="/static/favicon.png">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+  </head>
+
+  <body class="{{ bodyclass }}" ng-controller="AlbumListCtrl">
 
     <div class="container-fluid">
         <div class="row-fluid">
             <div class="span12">
                 <div class="page-header">
-                    <h1><span class="blue">Photo Engine X</span> Administration <small class="pull-right">{{ imagecount}} images in {{ #albums }} albums</small></h1>
+                    <h1><span class="blue">Photo Engine X</span> Administration <small class="pull-right">{{ images.nrofimages }} images in {{ images.albums.length }} albums</small></h1>
                 </div>
             </div>
         </div>
@@ -17,123 +46,116 @@
                     <ul class="nav nav-list">
                         <li class="nav-header" title="When images are uploaded, they are processed in the background. Generation meta data and creating thumbnails and such. This counter shows you how many images are still waiting to be processed">Processing queue</li>
                         <li id="li-queue">
-                        <span class="blue">0</span> images in the queue
+                        <span class="blue" ng-bind="images.queueCount"></span> images in the queue
                         </li>
                         <li class="nav-header">New album</li>
                         <li>
-                            <form class="uploadform" class="form-inline" action="{{ BASE }}upload/"> 
+                            <form class="uploadform" ng-submit="submitNewAlbum()" class="form-inline"> 
                                 <label >New album</label>
                                 <div class="input-append">
-                                    <input id="albumname" text="text" class"input-small" name="album" placeholder="Name">
+                                    <input id="albumname" text="text" class="input-small" ng-model="albumname" name="album" placeholder="Name">
                                     <button type="submit" class="button-add-album btn pull-right btn-primary btn-mini"><i class="icon-plus"></i></button>
                                 </div>
                             </form>
                         </li>
                         <li class="nav-header">Albums</li>
-                        {% for i, album in ipairs(albums) do %}
-                        <li class="li-nav-album">
-                            <a href="{{ BASE}}album/{{ tags[album] }}/{{ album }}/">
-                                <span class="badge pull-right" title="Number of images in album">{{ #images[album] }}</span>
+                        <li class="li-nav-album" ng-repeat="album in images.albums" ng-mouseover="mouseOverAlbum(album)" ng-click="clickAlbum(album)">
+                            <a href="#">
+                                <span class="badge pull-right" title="Number of images in album">{{ images.imagecount[album] }}</span>
                                 <i class="icon-picture"></i>
                                 {{ album }}
                             </a>
-                            <div class="hidden btn-group">
-                                <a class="btn  btn-success" href="#" title="Add more images to album"><i class="icon-plus"></i></a>
+                            <div class="btn-group animate-show" ng-show="selectedAlbum==album">
+                                <a class="btn btn-success" href="#" title="Add more images to album"><i class="icon-plus"></i></a>
                                 <a id="talbum/{{album}}" href="#" class="albumtemp   btn " title="Create expirable album link">
                                     <i class="icon-time"></i></a>
                                 <a id="lalbum/{{album}}" href="#" class="albummodify btn            "><i class="icon-pencil"></i></a>
-                                <a href="{{ BASE}}admin/api/album/remove/{{ tags[album]}}/{{album}}" title="Remove album and all images. Warning: No confirmation dialog"  class="link-album-remove btn  btn-danger"><i class="icon-remove"></i></a>
+                                <a href="/admin/api/album/remove/{{ tags[album]}}/{{album}}" title="Remove album and all images. Warning: No confirmation dialog"  class="link-album-remove btn  btn-danger"><i class="icon-remove"></i></a>
                             </div>
                         </li>
-                        {% end %}
                         </ul>
                     </div><!--/.well -->
                 </div><!--/span-->
                 <div id="admincontent" class="span9">
-                </div>
-            </div>
-        </div>
-        <hr>
-
-        <div class="uploadcontainer hidden">
-            <div class="hero-unit">
-                <div class="small pull-right"><a href="#" id="fileSelect-show"> Alternate upload</a></div>
-            </div>
-
-            <div id="fileDrop">
-                <p>Drop files here to upload</p>
-            </div>
-
-
-            <div id="fileSelect" class="hidden">
-                <div class="small pull-right"><a href="#" id="fileSelect-hide">Hide alternate upload</a></div>
-                <p>
-                <form action="" method="post" enctype="multipart/form-data">
-                    <div class="controls">
-                        <input class="input-file" type="file" id="fileField" name="fileField" multiple value="Browse..."/>
-                    </div>
-                </form>
-                </p>
-                <p>
-                <a id="upload" class="btn" href="#" title="Upload all files in list">Upload files</a>
-                <a id="reset" class="btn" href="#" title="Remove all files from list">Clear list</a>
-                </p>
-            </div>
-
-            <div id="files">
-                <ul id="fileList"></ul>
-            </div>
-        </div>
-    </div>
+                  <div ng-hide="selectedAlbum">
+                    <h1>Welcome to the Admin pages</h1>
+                        Here you can
+                        <ul>
+                          <li>Create new albums</li>
+                          <li>Modify existing albums (delete pictures, etc)</li>
+                          <li>Delete albums</li>
+                          <li>Create new display links for guests</li>
+                        </ul>
+                        Please select an album in the left menu to start.
+                  </div>
 <div id="albumcontainer">
-{% for i, albumname in ipairs(albums) do %}
-<div id="album-{{albumname}}" class="adminalbum hidden">
-    {% local tag = tags[albumname] %}
+    <div class="uploadcontainer" ng-show="uploading">
+      <div class="small pull-right"><a href="#" ng-click="fileSelect = true">Alternate upload</a></div>
+
+      <div id="fileDrop">
+        <p>Drop files here to upload</p>
+      </div>
+
+
+      <div ng-show="fileSelect" id="fileSelect">
+        <div class="small pull-right"><a href="#" id="fileSelect-hide" ng-Click="fileSelect = false">Hide alternate upload</a></div>
+        <p>
+        <form action="" method="post" enctype="multipart/form-data">
+          <div class="controls">
+            <input class="input-file" type="file" id="fileField" name="fileField" multiple value="Browse..."/>
+          </div>
+        </form>
+        </p>
+        <p>
+        <a id="upload" class="btn" href="#" title="Upload all files in list">Upload files</a>
+        <a id="reset" class="btn" href="#" title="Remove all files from list">Clear list</a>
+        </p>
+      </div>
+
+      <h6><div id="fileCount"></div></h6>
+
+      <div id="files">
+        <ul id="fileList"></ul>
+      </div>
+
+    </div>
+<div class="adminalbum" ng-show="selectedAlbum">
     <table class="table table-striped table-bordered table-hover">
         <tr>
             <th>tag</th>
             <th>created</th>
             <th>expires</th>
-            <th>album link</th>
-            <th>albums link</th>
+            <th>album direct link</th>
+            <th>album portal link</th>
         </tr>
-
-        {% for i, key in ipairs(accesskeys[albumname]) do %}
-        {% 
-            local h = accesskeysh[albumname][key]
-            local created = nil
-            local granted = nil
-            if h then
-                created = h[2]
-                granted = h[4]
-            end
-        %}
-        <tr>
+        <tr ng-repeat="(key, val) in images.accesskeysh[selectedAlbum]">
             <td>{{ key}}</td>
-            <td>{{ created }}</td>
-            <td>{{ granted }}</td>
-            <td><a href="{{BASE}}album/{{ key }}/{{albumname}}/">{{BASE}}album/{{ key }}/{{albumname}}/</td>
-            <td><a href="{{BASE}}albums/{{ key }}/{{albumname}}/">{{BASE}}albums/{{ key }}/</td>
+            <td>{{ val[0] }}</td>
+            <td>{{ val[1] }}</td>
+            <td><a href="/album/{{ key }}/{{selectedAlbum}}/">/album/{{ key }}/{{selectedAlbum}}/</td>
+            <td><a href="/albums/{{ key }}/{{selectedAlbum}}/">/albums/{{ key }}/</td>
         </tr>
-        {% end %}
     </table>
     <div class="items">
-        {% for i, image in ipairs(images[albumname]) do %}
-        <div class="item">
-            <a id="image-{{ i }}" href="{{ BASE }}{{ IMGBASE }}{{tag}}/{{ image }}" class="lb">
-                <img class="adminthumb" _src="{{ BASE }}{{ IMGBASE }}{{tag}}/{{ thumbs[albumname][image] }}">
+        <div class="item" ng-repeat="(img, thumb) in images.thumbs[selectedAlbum]">
+            <a id="image-{{ i }}" href="/img/{{ images.all[img].atag }}/{{ img }}" class="lb">
+              <img class="adminthumb" src="/img/{{ images.all[img].atag }}/{{ thumb }}">
             </a>
             <div class="admin-label">
-                <a class="btn btn-mini btn-danger link-image-remove" href="{{ BASE}}/admin/api/img/remove/?album={{albumname}}&amp;image={{ image }}">
+                <a class="btn btn-mini btn-danger link-image-remove" href="/admin/api/img/remove/?album={{ selectedAlbum }}&amp;image={{ images.all[img].file_name }}">
                 <i class="icon-remove"></i> 
                 </a>
             </div>
         </div>
-        {% end %}
     </div>
 </div>
-{% end %}
 </div>
+                </div>
+            </div>
+        </div>
+        <hr>
+
+    </div>
 
 <div class="modal hide fade">
     <form id="form-ttl" method="GET" class="form-horizontal">
@@ -186,28 +208,28 @@
 </div>
 
 
-<script src="{{BASE}}static/md5.js"></script>
-<script>
-    var images = {{ imagesjs }};
-    var albums = {{ albumsjs }};
-    var tags = {{ tagsjs }};
-    var album = '{{ album }}';
-    var tag = '{{ tag }}';
-    var BASE = '{{ BASE }}';
-    $(document).on("ready", function (evt) {
+    <script src="/static/md5.js"></script>
+    <script>
         pnxadmin = pnxadmin();
-    });
-</script>
-<script src="{{BASE}}static/bootstrap/js/bootstrap-modal.js"></script>
-<script src="{{BASE}}static/admin.js"></script>
+    </script>
+    <script src="/static/bootstrap/js/bootstrap-modal.js"></script>
 
 
-<div class="container-fluid">
-    <div class="row-fluid">
-        <div class="span12">
-            &copy; 2012 Tor Hveem
+    <div class="container-fluid">
+        <div class="row-fluid">
+            <div class="span12">
+                &copy; 2012-2013 Tor Hveem
+            </div>
         </div>
     </div>
-</div>
-    {( "footer.html" )}
+    <footer>
+    </footer>
+
+    <!--<script src="/static/bootstrap/js/bootstrap.js"></script>-->
+    <script type="application/javascript" src="/static/smartresize/jquery.debouncedresize.js"></script>
+    <script type="application/javascript" src="/static/imagesloaded/jquery.imagesloaded.min.js"></script>
+    <script type="application/javascript" src="/static/wookmark/jquery.wookmark.min.js"></script>
+    <script type="application/javascript" src="/static/photongx.js?v=4"></script>
+  </body>
+</html>
 
