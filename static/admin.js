@@ -77,6 +77,11 @@ function AlbumListCtrl($scope, $http, images) {
         $('.modal').modal('show');
         return false;
     }
+    $scope.albumAdd = function(album) {
+        $scope.uploading = true;
+        $scope.selectedAlbum = false;
+        $scope.albumname = album;
+    }
     $scope.submitAlbumLink = function() {
         var formData = $('#form-ttl').serialize();
         var formUrl = "/admin/api/albumttl/create/";

@@ -33,12 +33,15 @@ a, a:hover {
         color: #999;
     }
     #about ul {
-        text-align: justify;
+        text-align: left;
         margin-bottom: 40px;
+        margin: none;
     }
     #about li {
         font-size: 34px;
         line-height: 40px;
+        list-style-type: none;
+        margin: 0;
     }
     #about .actions {
         text-align: justify;
@@ -435,12 +438,36 @@ a, a:hover {
 }
 .btn {
     padding: 8px;
-    color: white;
     border-radius: 5px;
-    background-color: #3ea8f4;
     text-shadow: 0px -1px 0px rgba(0, 0, 0, 0.25);
+    border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+}
+.btn-primary {
+    background-color: #3ea8f4;
+    color: white;
     background-color: #006DCC;
     background-image: linear-gradient(to bottom, rgb(0, 136, 204), rgb(0, 68, 204));
     background-repeat: repeat-x;
-    border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
 }
+.sidebar-nav {
+      list-style: none;
+  }
+.sidebar-nav li {
+    margin: 0;
+}
+
+.sidebar-nav li a {
+}
+.nav-header {
+  display: block;
+  font-size: 11px;
+  font-weight: bold;
+  line-height: 20px;
+  color: #999999;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  padding-top: 30px;
+}
+
+
+

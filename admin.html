@@ -12,9 +12,8 @@
     <meta name="author" content="Tor Hveem">
 
     <link href='//fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
-    <link href="/static/bootstrap/css/bootstrap.css" rel="stylesheet">
-    <link href="/static/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
-    <link href="/static/fa/css/font-awesome.css" rel="stylesheet">
+    <link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/fa/css/font-awesome.min.css" rel="stylesheet">
     <link href="/static/screen.css" rel="stylesheet">
 
     <link rel="shortcut icon" type="image/png" href="/static/favicon.png">
@@ -29,53 +28,53 @@
 
   <body class="{{ bodyclass }}" ng-controller="AlbumListCtrl">
 
-    <div class="container-fluid">
-        <div class="row-fluid">
-            <div class="span12">
-                <div class="page-header">
-                    <h1><span class="blue">Photo Engine X</span> Administration <small class="pull-right">{{ images.nrofimages }} images in {{ images.albums.length }} albums</small></h1>
-                </div>
-            </div>
-        </div>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="page-header">
+        <h1><span class="blue">Photo Engine X</span> Administration <small class="pull-right">{{ images.nrofimages }} images in {{ images.albums.length }} albums</small></h1>
+      </div>
     </div>
+  </div>
 
     <div class="container-fluid">
-        <div class="row-fluid">
-            <div class="span3">
-                <div class="well sidebar-nav">
-                    <ul class="nav nav-list">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="well">
+                    <ul class="sidebar-nav">
                         <li class="nav-header" title="When images are uploaded, they are processed in the background. Generation meta data and creating thumbnails and such. This counter shows you how many images are still waiting to be processed">Processing queue</li>
                         <li id="li-queue">
-                        <span class="blue" ng-bind="images.queueCount"></span> images in the queue
+                          <span class="blue" ng-bind="images.queueCount"></span> images in the queue
                         </li>
                         <li class="nav-header">New album</li>
                         <li>
-                            <form class="uploadform" ng-submit="submitNewAlbum()" class="form-inline"> 
-                                <label >New album</label>
-                                <div class="input-append">
-                                    <input id="albumname" text="text" class="input-small" ng-model="albumname" name="album" placeholder="Name">
-                                    <button type="submit" class="button-add-album btn pull-right btn-primary btn-mini"><i class="icon-plus"></i></button>
+                            <form class="form form-horizontal uploadform" ng-submit="submitNewAlbum()" class="form-inline"> 
+                              <div class="input-group">
+                                    <input id="albumname" text="text" class="form-control" ng-model="albumname" name="album" placeholder="Name">
+                                    <span class="input-group-btn">
+                                      <button type="submit" class="btn btn-primary btn-mini"><i class="fa fa-plus"></i></button>
+                                    </span>
                                 </div>
                             </form>
                         </li>
                         <li class="nav-header">Albums</li>
+                        <li ng-hide="images.albums.length" class=""><i class="fa fa-spin fa-spinner"></i> Loading all the things...</li>
                         <li class="li-nav-album" ng-repeat="album in images.albums" ng-mouseover="mouseOverAlbum(album)" ng-click="clickAlbum(album)">
                             <a href="#">
                                 <span class="badge pull-right" title="Number of images in album">{{ images.imagecount[album] }}</span>
-                                <i class="icon-picture"></i>
+                                <i class="fa fa-picture"></i>
                                 {{ album }}
                             </a>
                             <div class="btn-group animate-show" ng-show="hoverAlbum==album">
-                                <a class="btn btn-success" href="#" title="Add more images to album"><i class="icon-plus"></i></a>
-                                <a href="#" class="btn" ng-click="albumLink(album)" title="Create expirable album link"><i class="icon-time"></i></a>
-                                <a id="lalbum/{{album}}" href="#" class="albummodify btn            "><i class="icon-pencil"></i></a>
-                                <a href="/admin/api/album/remove/{{ tags[album]}}/{{album}}" title="Remove album and all images. Warning: No confirmation dialog"  class="link-album-remove btn  btn-danger"><i class="icon-remove"></i></a>
+                                <a class="btn btn-success" ng-click="albumAdd(album)" href="#" title="Add more images to album"><i class="fa fa-plus"></i></a>
+                                <a href="#" class="btn" ng-click="albumLink(album)" title="Create expirable album link"><i class="fa fa-clock-o"></i></a>
+                                <a id="lalbum/{{album}}" href="#" class="albummodify btn            "><i class="fa fa-pencil"></i></a>
+                                <a href="/admin/api/album/remove/{{ tags[album]}}/{{album}}" title="Remove album and all images. Warning: No confirmation dialog"  class="link-album-remove btn  btn-danger"><i class="fa fa-trash-o"></i></a>
                             </div>
                         </li>
                         </ul>
                     </div><!--/.well -->
                 </div><!--/span-->
-                <div id="admincontent" class="span9">
+                <div id="admincontent" class="col-md-9">
                   <div ng-hide="selectedAlbum">
                     <h1>Welcome to the Admin pages</h1>
                         Here you can
@@ -149,7 +148,7 @@
             </a>
             <div class="admin-label">
                 <a class="btn btn-mini btn-danger link-image-remove" href="/admin/api/img/remove/?album={{ selectedAlbum }}&amp;image={{ images.all[img].file_name }}">
-                <i class="icon-remove"></i> 
+                <i class="fa fa-trash-o"></i> 
                 </a>
             </div>
         </div>
