@@ -321,6 +321,7 @@ local function album(path_vars)
     local imagelist, err = red:zrange(album, 0, -1)
     local images = {} -- Table holding full size images
     local thumbs = {} -- Table holding thumbnails
+
     for i, image in ipairs(imagelist) do
         local itag = red:hget(image, 'itag')
         -- Get thumb if key exists
@@ -334,7 +335,7 @@ local function album(path_vars)
         -- Get the huge image if it exists
         local huge_name = red:hget(image, 'huge_name')
         if huge_name ~= ngx.null then
-            images[image] = itag .. '/'
+            images[image] = itag .. '/' .. huge_name
         else 
             images[image] = itag .. '/' .. red:hget(image, 'file_name')
         end
