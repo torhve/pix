@@ -1,5 +1,17 @@
-local cjson = require("cjson")
-local math  = require("math")
+--[
+--
+-- Photo Engine X
+-- (C) 2012-2013 Tor Hveem
+-- License: 3-clause BSD
+--
+-- This file includes part of the tir template engine by Zed Shaw
+--
+--]
+
+local cjson = require"cjson"
+local math  = require"math"
+local redis = require"resty.redis"
+
 local ROOT_PATH = ngx.var.root
 local config = ngx.shared.config
 
@@ -13,18 +25,19 @@ if not config then
     ngx.shared.config = config
 end
 
--- Load redis
-local redis = require "resty.redis"
 
--- Set the content type
+-- Set the default content type
 ngx.header.content_type = 'text/html';
 
 local TEMPLATEDIR = ROOT_PATH .. '/';
 
--- the db global
+-- db global
 red = nil
+-- BASE path global
 BASE = config.path.base
+-- IMG base path
 IMGPATH = ROOT_PATH .. config.path.image .. '/'
+-- Default tag length global
 TAGLENGTH = 6
 
 -- Default context helper
@@ -375,59 +388,11 @@ end
 -- Admin view
 -- 
 local function admin()
-    local albums = getalbums()
-    local tags  = {}
-    local images = {}
-    local thumbs = {}
-    local imagecount = 0
-    local accesskeys = {}
-    local accesskeysh = {}
-
-    for i, album in ipairs(albums) do
-        local theimages, err = red:zrange(album, 0, -1)
-        local tag,       err = red:hget(album .. 'h', 'tag')
-        local accesskeyl, err = red:smembers('album:' ..album .. ':accesstags')
-        tags[album] = tag
-        images[album] = theimages
-        accesskeys[album] = accesskeyl
-        accesskeysh[album] = {}
-        for i, key in ipairs(accesskeyl) do 
-            accesskeysh[album][key] = red:hgetall('album:' .. album .. ':' .. key)
-        end
-        imagecount = imagecount + #theimages
-        thumbs[album] = {}
-        for i, image in ipairs(theimages) do
-            local itag = red:hget(image, 'itag')
-            -- Get thumb if key exists
-            -- set to full size if it doesn't exist
-            if red:hexists(image, 'thumb_name') == 1 then
-                thumbs[album][image] = itag .. '/' .. red:hget(image, 'thumb_name')
-            else
-                thumbs[album][image] = itag .. '/' .. red:hget(image, 'file_name')
-            end
-        end
-    end
 
     -- load template
     local page = tload('admin.html')
-    local args = ngx.req.get_uri_args()
 
-    -- generate tag to make guessing urls non-worky
-    local tag = generate_tag()
-
-    local context = ctx{
-        tag=tag,
-        albums = albums,
-        tags = tags,
-        images = images,
-        thumbs = thumbs,
-        accesskeys = accesskeys,
-        accesskeysh = accesskeysh,
-        imagesjs = cjson.encode(images),
-        albumsjs = cjson.encode(albums),
-        tagsjs   = cjson.encode(tags),
-        imagecount = imagecount,
-    }
+    local context = ctx{}
     -- and return it to nginx
     ngx.print( page(context) )
 end
