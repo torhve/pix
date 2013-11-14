@@ -181,7 +181,7 @@ a, a:hover {
     text-align:center;
     z-index: 2;
 }
-#lightbox p {
+#lightbox .action-group {
     position:fixed; 
     top:  0; 
     right: 0;
@@ -190,7 +190,7 @@ a, a:hover {
     z-index: 5;
     font-size: 1.6em;
 }
-#lightbox p a {
+#lightbox .action-group a {
     margin: 5px;
     color: rgba(255,255,255,0.9);
     text-shadow: 0 -1px 0 rgba(0,0,0,.5);

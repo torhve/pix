@@ -113,15 +113,15 @@ var photongx = (function() {
             //create HTML markup for lightbox window
             var lightbox = 
             '<div id="lightbox" class="hidden">' +
-                '<p>' +
-                '<a id="play" href="#"><i class="icon-play"></i></a>' +
-                '<a id="goFS" href="#"><i class="icon-fullscreen"></i></a>' +
-                '<a id="hideLB" href="#"><i class="icon-remove"></i></a></p>' +
-                '<a href="#prev" id="prev"><div><i class="icon-chevron-left"></i></div></a>' +
+                '<div class="action-group">' +
+                '<a id="play" href="#" title="Toggle slideshow"><i class="fa fa-play"></i></a>' +
+                '<a id="goFS" href="#" title="Toggle full screen"><i class="fa fa-arrows-alt"></i></a>' +
+                '<a id="hideLB" href="# title="Close image""><i class="fa fa-times"></i></a></div>' +
+                '<a href="#prev" id="prev" title="Previous image"><div><i class="fa fa-backward"></i></div></a>' +
                     '<div id="content">' + //insert clicked link's href into img src
                         '<img class="lbimg" id="img-front" src="">' +
                     '</div>' +  
-                '<a href="#next" id="next"><div><i class="icon-chevron-right"></i></div></a>' +
+                '<a href="#next" id="next" title="Next image"><div><i class="fa fa-forward"></i></div></a>' +
             '</div>';
                 
             //insert lightbox HTML into page
@@ -157,7 +157,7 @@ var photongx = (function() {
 
             // Handle clicks on the play link
             $('#play').bind('click', function(e) {
-                if($('#play i').hasClass('icon-play')) {
+                if($('#play i').hasClass('fa-play')) {
                     play();
                 }else {
                     pause();
@@ -212,7 +212,7 @@ var photongx = (function() {
     };
         
     var hideLB = function() {
-        if($('#goFS i').hasClass('icon-resize-small')) {
+        if($('#goFS i').hasClass('fa fa-compress')) {
             document.cancelFullScreen();
         }
         // effects for background
@@ -233,7 +233,7 @@ var photongx = (function() {
     document.cancelFullScreen = document.webkitExitFullscreen || document.mozCancelFullScreen || document.exitFullscreen;
     
     var goFS = function(e) {
-        if($('#goFS i').hasClass('icon-fullscreen')) {
+        if($('#goFS i').hasClass('fa-arrows-alt')) {
 
             var elem = document.getElementById('lightbox');
 
@@ -247,10 +247,10 @@ var photongx = (function() {
             elem.onwebkitfullscreenchange = onFullScreenExit;
             elem.onmozfullscreenchange = onFullScreenExit;
 
-            $('#goFS i').removeClass('icon-fullscreen').addClass('icon-resize-small');
+            $('#goFS i').removeClass('fa-arrows-alt').addClass('fa-compress');
         }else {
             document.cancelFullScreen();
-            $('#goFS i').removeClass('icon-resize-small').addClass('icon-fullscreen');
+            $('#goFS i').removeClass('fa-compress').addClass('fa-arrows-alt');
         }
     }
     var onFullScreenExit = function() {
