@@ -28,10 +28,12 @@
 
   <body class="{{ bodyclass }}" ng-controller="AlbumListCtrl">
 
-  <div class="row">
-    <div class="col-md-12">
-      <div class="page-header">
-        <h1><span class="blue">Photo Engine X</span> Administration <small class="pull-right">{{ images.nrofimages }} images in {{ images.albums.length }} albums</small></h1>
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="page-header">
+          <h1><span class="blue">Photo Engine X</span> Administration <small class="pull-right">{{ images.nrofimages }} images in {{ images.albums.length }} albums</small></h1>
+        </div>
       </div>
     </div>
   </div>
@@ -58,24 +60,24 @@
                         </li>
                         <li class="nav-header">Albums</li>
                         <li ng-hide="images.albums.length" class=""><i class="fa fa-spin fa-spinner"></i> Loading all the things...</li>
-                        <li class="li-nav-album" ng-repeat="album in images.albums" ng-mouseover="mouseOverAlbum(album)" ng-click="clickAlbum(album)">
-                            <a href="#">
+                        <li class="li-nav-album" ng-repeat="album in images.albums" ng-mouseover="mouseOverAlbum(album)" >
+                            <a ng-click="clickAlbum(album)">
                                 <span class="badge pull-right" title="Number of images in album">{{ images.imagecount[album] }}</span>
                                 <i class="fa fa-picture"></i>
                                 {{ album }}
                             </a>
                             <div class="btn-group animate-show" ng-show="hoverAlbum==album">
-                                <a class="btn btn-success" ng-click="albumAdd(album)" href="#" title="Add more images to album"><i class="fa fa-plus"></i></a>
-                                <a href="#" class="btn" ng-click="albumLink(album)" title="Create expirable album link"><i class="fa fa-clock-o"></i></a>
+                                <a class="btn btn-success" ng-click="albumAdd(album)" title="Add more images to album"><i class="fa fa-plus"></i></a>
+                                <a class="btn" ng-click="albumLink(album)" title="Create expirable album link"><i class="fa fa-clock-o"></i></a>
                                 <a id="lalbum/{{album}}" href="#" class="albummodify btn            "><i class="fa fa-pencil"></i></a>
-                                <a href="/admin/api/album/remove/{{ tags[album]}}/{{album}}" title="Remove album and all images. Warning: No confirmation dialog"  class="link-album-remove btn  btn-danger"><i class="fa fa-trash-o"></i></a>
+                                <a href="/admin/api/album/remove/{{ images.tags[album] }}/{{album}}" title="Remove album and all images. Warning: No confirmation dialog"  class="link-album-remove btn  btn-danger"><i class="fa fa-trash-o"></i></a>
                             </div>
                         </li>
                         </ul>
                     </div><!--/.well -->
                 </div><!--/span-->
                 <div id="admincontent" class="col-md-9">
-                  <div ng-hide="selectedAlbum">
+                  <div ng-hide="selectedAlbum || albumname">
                     <h1>Welcome to the Admin pages</h1>
                         Here you can
                         <ul>
@@ -88,6 +90,7 @@
                   </div>
 <div id="albumcontainer">
     <div class="uploadcontainer" ng-show="uploading">
+      <h1>Upload images to the album <strong>{{albumname}}</strong></h1>
       <div class="small pull-right"><a href="#" ng-click="fileSelect = true">Alternate upload</a></div>
 
       <div id="fileDrop">
@@ -105,8 +108,8 @@
         </form>
         </p>
         <p>
-        <a id="upload" class="btn" href="#" title="Upload all files in list">Upload files</a>
-        <a id="reset" class="btn" href="#" title="Remove all files from list">Clear list</a>
+        <a id="upload" class="btn btn-primary" href="#" title="Upload all files in list">Upload files</a>
+        <a id="reset" class="btn btn-danger" href="#" title="Remove all files from list">Clear list</a>
         </p>
       </div>
 
@@ -162,8 +165,10 @@
 
     </div>
 
-<div class="modal hide fade">
-  <form id="form-ttl" method="GET" class="form-horizontal" ng-submit="submitAlbumLink()">
+<div class="modal fade">
+  <div class="modal-dialog">
+    <div class="modal-content">
+    <form id="form-ttl" method="GET" class="form-horizontal" ng-submit="submitAlbumLink()">
     <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
         <h3>Create expirable album link</h3>
@@ -208,7 +213,9 @@
         <!--<a href="#" class="btn">Close</a>-->
         <button type="submit" class="btn btn-primary">Create link</a>
     </div>
-  </form>
+    </form>
+  </div>
+  </div>
 </div>
 
 
@@ -216,7 +223,7 @@
     <script>
         pnxadmin = pnxadmin();
     </script>
-    <script src="/static/bootstrap/js/bootstrap-modal.js"></script>
+    <script src="/static/bootstrap/js/bootstrap.js"></script>
 
 
     <div class="container-fluid">

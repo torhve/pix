@@ -37,7 +37,7 @@ function AlbumListCtrl($scope, $http, images) {
 
     }
 
-    $scope.submitNewAlbum = function(ev) {
+    $scope.submitNewAlbum = function() {
         $scope.uploading = true;
         $scope.selectedAlbum = false;
         var album = $scope.albumname;
@@ -81,6 +81,8 @@ function AlbumListCtrl($scope, $http, images) {
         $scope.uploading = true;
         $scope.selectedAlbum = false;
         $scope.albumname = album;
+        $scope.submitNewAlbum();
+        return false;
     }
     $scope.submitAlbumLink = function() {
         var formData = $('#form-ttl').serialize();

@@ -186,6 +186,8 @@ function secure_filename(filename)
     filename = string.gsub(filename, '%.%.', '')
     -- Filenames with spaces are just a hassle
     filename = string.gsub(filename, ' ', '_')
+    -- Strip all nonascii
+    filename = string.gsub(filename, '[^_,%-%.a-zA-Z0-9]', '')
     return filename
 end
 
@@ -329,9 +331,10 @@ local function album(path_vars)
         else
             thumbs[image] = itag .. '/' .. red:hget(image, 'file_name')
         end
-        -- Get the huge iamge if it exists
-        if red:hexists(image, 'huge_name') == 1 then
-            images[image] = itag .. '/' .. red:hget(image, 'huge_name')
+        -- Get the huge image if it exists
+        local huge_name = red:hget(image, 'huge_name')
+        if huge_name ~= ngx.null then
+            images[image] = itag .. '/'
         else 
             images[image] = itag .. '/' .. red:hget(image, 'file_name')
         end
@@ -489,11 +492,9 @@ local function add_file_to_db(album, itag, atag, file_name, h)
     red:zadd(albumkey , timestamp, imagekey) -- add imey to imageset
     red:sadd(itagkey, itag)                  -- add itag to set of used itags
     red:hmset(imagekey, imgh)                -- add imagehash
-    -- only set tag if not exist
-    red:hsetnx(albumhkey, 'tag', h['X-tag'])
+    red:hsetnx(albumhkey, 'tag', h['X-tag']) -- only set tag if not exist
 
-    -- Add the uploaded image to the queue
-    red:lpush('queue:thumb', imagekey)
+    red:lpush('queue:thumb', imagekey)       -- Add the uploaded image to the queue
 end
 
 --
