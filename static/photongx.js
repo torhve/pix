@@ -17,11 +17,7 @@ var photongx = (function() {
     }
     $(window).on("debouncedresize", function(event) {
         setColumnwidth();
-        $('.item').wookmark({
-            container: $('.items'),
-            autoResize: false,
-            offset: offset
-        });
+        $container.trigger('refreshWookmark');
     });
 
     // calculate and set optimal column size
@@ -42,22 +38,29 @@ var photongx = (function() {
         else if (docwidth < 790)
             columns = 1;
 
-        // also subtract 3*columns, since every item got 6 px margin, 3 on each side
-        cwidth = (docwidth / columns) - (offset*(columns-1)); 
-        $('.item').css('max-width', cwidth + 'px');
-        $('.item img').css('width', cwidth + 'px');
+        // also subtract columns*offsett, since every item got offset px margin, offset/2 on each side
+        cwidth = docwidth / columns - (offset*(columns-1)); 
+        //$('.item').css('max-width', cwidth + 'px');
+        $('.item img').css('max-width', cwidth + 'px');
         console.log('Decided on ', columns, ' columns with docwidth ', docwidth);
     }
     setColumnwidth();
 
-    
-    $container.imagesLoaded(function( $images, $proper, $broken ) {
-        setColumnwidth();
+    var wookmarkIt = function() {
         $('.item').wookmark({
-            container: $('.items'),
+            container: $container,
             autoResize: false,
+            flexibleWidth: false,
+            outerOffset: 0,
             offset: offset
         });
+    }
+
+    
+    $container.imagesLoaded(function( $images, $proper, $broken ) {
+        //setColumnwidth();
+
+        wookmarkIt();
 
         // We are loaded, so hide the spinner
         $('.spinner').addClass('hidden');
