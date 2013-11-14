@@ -41,7 +41,7 @@ var photongx = (function() {
         // also subtract columns*offsett, since every item got offset px margin, offset/2 on each side
         cwidth = docwidth / columns - (offset*(columns-1)); 
         //$('.item').css('max-width', cwidth + 'px');
-        $('.item img').css('max-width', cwidth + 'px');
+        $('.item img').css('width', cwidth + 'px');
         console.log('Decided on ', columns, ' columns with docwidth ', docwidth);
     }
     setColumnwidth();
