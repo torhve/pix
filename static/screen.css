@@ -5,7 +5,7 @@ body.gallery {
   background: #222426;
   padding: 0;
   }
-a:hover {
+a, a:hover {
     text-decoration: none;
 }
 .container {
@@ -27,8 +27,8 @@ a:hover {
         color: #999;
     }
     #about ul {
-        margin: 10%;
         text-align: justify;
+        margin-bottom: 40px;
     }
     #about li {
         font-size: 34px;
@@ -43,6 +43,9 @@ a:hover {
     #about .footer {
         text-align: left;
         color: #999;
+    }
+    #about img {
+        max-width: 100%;
     }
 .admin-label {
     color: white;
@@ -181,6 +184,9 @@ a:hover {
 }
 #lightbox p a {
     margin: 5px;
+    color: rgba(255,255,255,0.9);
+    text-shadow: 0 -1px 0 rgba(0,0,0,.5);
+    text-decoration: none;
 }
 #lightbox #prev {
     left: 0;
@@ -286,11 +292,13 @@ a:hover {
 
 
 }
-.bear-color, .bear {
-    color: #abad6a;
-}    .blue {
+.bear-color, .bear, {
+      color: #abad6a;
+}    
+.blue, a{
     color: #3ea8f4;
-}    .gray {
+}    
+.gray {
     color: #333;
 }       
 .white {
@@ -355,4 +363,79 @@ a:hover {
 @-webkit-keyframes cube4{
     0% { -webkit-transform: rotate3d(0,1,0,0); }
     100% { -webkit-transform: rotate3d(0,1,0,90deg); }
+}
+.hidden {
+    display: none;
+
+}
+.container-fluid {
+  padding-right: 20px;
+  padding-left: 20px;
+  *zoom: 1;
+}
+.container-fluid:before,
+.container-fluid:after {
+  display: table;
+  content: "";
+  line-height: 0;
+}
+.container-fluid:after {
+  clear: both;
+}
+[class*="span"] {
+  float: left;
+  min-height: 1px;
+  margin-left: 20px;
+}
+.span6 {
+  width: 460px;
+}
+.row-fluid {
+  width: 100%;
+  *zoom: 1;
+}
+.row-fluid:before,
+.row-fluid:after {
+  display: table;
+  content: "";
+  line-height: 0;
+}
+.row-fluid:after {
+  clear: both;
+}
+.row-fluid [class*="span"] {
+  display: block;
+  width: 100%;
+  min-height: 30px;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  margin-left: 2.127659574468085%;
+  *margin-left: 2.074468085106383%;
+}
+.row-fluid [class*="span"]:first-child {
+  margin-left: 0;
+}
+.row-fluid .controls-row [class*="span"] + [class*="span"] {
+  margin-left: 2.127659574468085%;
+}
+.row-fluid .span12 {
+  width: 100%;
+  *width: 99.94680851063829%;
+}
+.row-fluid .span6 {
+  width: 48.93617021276595%;
+  *width: 48.88297872340425%;
+}
+.btn {
+    padding: 8px;
+    color: white;
+    border-radius: 5px;
+    background-color: #3ea8f4;
+    text-shadow: 0px -1px 0px rgba(0, 0, 0, 0.25);
+    background-color: #006DCC;
+    background-image: linear-gradient(to bottom, rgb(0, 136, 204), rgb(0, 68, 204));
+    background-repeat: repeat-x;
+    border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
 }
