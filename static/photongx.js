@@ -1,4 +1,11 @@
 var photongx = (function() {
+    var slideshow = false,
+        $container = $('.items'),
+        currentimage = 0,
+        slideshowtimer,
+        interval = 3000,
+        offset = 4;
+
     $.fn.preload = function() {
         this.each(function(){
             // Check if url starts with /
@@ -13,19 +20,13 @@ var photongx = (function() {
         $('.item').wookmark({
             container: $('.items'),
             autoResize: false,
-            offset: 6
+            offset: offset
         });
     });
 
-    var slideshow = false;
-    var $container = $('.items');
-    var currentimage = 0;
-    var slideshowtimer;
-    var interval = 3000;
-
     // calculate and set optimal column size
     var setColumnwidth = function() {
-        var docwidth = $(document).width();
+        var docwidth = document.body.clientWidth;
         var cwidth = 0;
         var columns = 0;
         // Decide on the best column width depending on docwidth
@@ -42,19 +43,20 @@ var photongx = (function() {
             columns = 1;
 
         // also subtract 3*columns, since every item got 6 px margin, 3 on each side
-        cwidth = (docwidth / columns) - (4*columns); 
+        cwidth = (docwidth / columns) - (offset*(columns-1)); 
         $('.item').css('max-width', cwidth + 'px');
         $('.item img').css('width', cwidth + 'px');
         console.log('Decided on ', columns, ' columns with docwidth ', docwidth);
     }
-
     setColumnwidth();
+
     
     $container.imagesLoaded(function( $images, $proper, $broken ) {
+        setColumnwidth();
         $('.item').wookmark({
             container: $('.items'),
             autoResize: false,
-            offset: 6
+            offset: offset
         });
 
         // We are loaded, so hide the spinner
@@ -360,5 +362,6 @@ var photongx = (function() {
             $('#play').click();
         }
     });
+
     return this;
 });

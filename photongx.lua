@@ -30,7 +30,7 @@ TAGLENGTH = 6
 -- Default context helper
 function ctx(ctx)
     ctx['BASE'] = BASE
-    ctx['IMGBASE'] = config.path.image .. '/'
+    ctx['IMGBASE'] = config.path.image
     return ctx
 end
 
