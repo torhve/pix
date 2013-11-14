@@ -22,7 +22,7 @@ function AlbumListCtrl($scope, $http, images) {
     }
 
     $scope.clickAlbum = function(album) { 
-       // TODO $scope.selectedImages = images.all.filter;
+       $scope.uploading = false;
        $scope.selectedAlbum = album;
        // TODO make this clever?
        setTimeout(function() {
