@@ -11,6 +11,7 @@
 local cjson = require"cjson"
 local math  = require"math"
 local redis = require"resty.redis"
+local tir   = require"tir"
 
 local ROOT_PATH = ngx.var.root
 local config = ngx.shared.config
@@ -26,10 +27,7 @@ if not config then
 end
 
 
--- Set the default content type
-ngx.header.content_type = 'text/html';
-
-local TEMPLATEDIR = ROOT_PATH .. '/';
+TEMPLATEDIR = ROOT_PATH .. '/';
 
 -- db global
 red = nil
@@ -46,105 +44,6 @@ function ctx(ctx)
     ctx['IMGBASE'] = config.path.image
     return ctx
 end
-
--- Template helper
-function escape(s)
-    if s == nil then return '' end
-
-    local esc, i = s:gsub('&', '&amp;'):gsub('<', '&lt;'):gsub('>', '&gt;')
-    return esc
-end
-
--- Helper function that loads a file into ram.
-function load_file(name)
-    local intmp = assert(io.open(name, 'r'))
-    local content = intmp:read('*a')
-    intmp:close()
-
-    return content
-end
-
--- Used in template parsing to figure out what each {} does.
-local VIEW_ACTIONS = {
-    ['{%'] = function(code)
-        return code
-    end,
-
-    ['{{'] = function(code)
-        return ('_result[#_result+1] = %s'):format(code)
-    end,
-
-    ['{('] = function(code)
-        return ([[ 
-            if not _children[%s] then
-                _children[%s] = tload(%s)
-            end
-
-            _result[#_result+1] = _children[%s](getfenv())
-        ]]):format(code, code, code, code)
-    end,
-
-    ['{<'] = function(code)
-        return ('_result[#_result+1] =  escape(%s)'):format(code)
-    end,
-}
-
--- Takes a view template and optional name (usually a file) and 
--- returns a function you can call with a table to render the view.
-function compile_view(tmpl, name)
-    local tmpl = tmpl .. '{}'
-    local code = {'local _result, _children = {}, {}\n'}
-
-    for text, block in string.gmatch(tmpl, "([^{]-)(%b{})") do
-        local act = VIEW_ACTIONS[block:sub(1,2)]
-        local output = text
-
-        if act then
-            code[#code+1] =  '_result[#_result+1] = [[' .. text .. ']]'
-            code[#code+1] = act(block:sub(3,-3))
-        elseif #block > 2 then
-            code[#code+1] = '_result[#_result+1] = [[' .. text .. block .. ']]'
-        else
-            code[#code+1] =  '_result[#_result+1] = [[' .. text .. ']]'
-        end
-    end
-
-    code[#code+1] = 'return table.concat(_result)'
-
-    code = table.concat(code, '\n')
-    local func, err = loadstring(code, name)
-
-    if err then
-        assert(func, err)
-    end
-
-    return function(context)
-        assert(context, "You must always pass in a table for context.")
-        setmetatable(context, {__index=_G})
-        setfenv(func, context)
-        return func()
-    end
-end
-
-function tload(name)
-
-    name = TEMPLATEDIR .. name
-
-    if not os.getenv('PROD') then
-        local tempf = load_file(name)
-        return compile_view(tempf, name)
-    else
-        return function (params)
-            local tempf = load_file(name)
-            assert(tempf, "Template " .. name .. " does not exist.")
-
-            return compile_view(tempf, name)(params)
-        end
-    end
-end
-
-
-
 
 -- KEY SCHEME
 -- albums            z: zalbums                    = set('albumname', 'albumname2', ... )
@@ -165,7 +64,6 @@ end
 -- /base/atag/itag/img01.jpg
 -- /base/atag/itag/img01.fs.jpg
 -- /base/atag/itag/img01.t.jpg
-
 
 
 
@@ -236,6 +134,13 @@ function verify_access_key(key, album)
 end
 
 
+-- Help to set content type and compile to JSON
+function json(str) 
+    ngx.header.content_type = 'application/json';
+    return cjson.encode(str)
+end
+
+
 --
 --
 -- ******* VIEWS ******* 
@@ -297,10 +202,11 @@ local function albums(match)
         atags = atags,
         tags = tags,
         accesstag = accesstag,
-        bodyclass = 'gallery'}
+        bodyclass = 'gallery'
+    }
     -- render template with counter as context
     -- and return it to nginx
-    ngx.print( page(context) )
+    return page(context) 
 end
 
 -- 
@@ -314,7 +220,7 @@ local function index()
     }
     -- render template with counter as context
     -- and return it to nginx
-    ngx.print( page(context) )
+    return page(context)
 end
 
 --
@@ -368,7 +274,7 @@ local function album(path_vars)
     }
     -- render template with counter as context
     -- and return it to nginx
-    ngx.print( page(ctx(context)) )
+    return page(ctx(context))
 end
 
 local function upload()
@@ -381,7 +287,7 @@ local function upload()
 
     local context = ctx{album=args['album'], tag=tag}
     -- and return it to nginx
-    ngx.print( page(context) )
+    return page(context)
 end
 
 --
@@ -392,16 +298,15 @@ local function admin()
     -- load template
     local page = tload('admin.html')
 
-    local context = ctx{}
     -- and return it to nginx
-    ngx.print( page(context) )
+    return page{}
 end
 
 -- 
 -- Admin API json queue length
 --
 local function admin_api_queue_length()
-    ngx.print( cjson.encode{ counter = red:llen('queue:thumb') } )
+    return cjson.encode{ counter = red:llen('queue:thumb') }
 end
 
 -- 
@@ -434,7 +339,7 @@ local function admin_api_albumttl()
         expire= ok3,
     }
 
-    ngx.print( cjson.encode(res) )
+    return json(res)
 end
 
 
@@ -552,9 +457,8 @@ local function upload_post()
 
     -- load template
     local page = tload('uploaded.html')
-    local context = ctx{}
     -- and return it to nginx
-    ngx.print( page(context) )
+    return page{}
 end
 
 
@@ -562,7 +466,6 @@ end
 -- return images from db
 --
 local function admin_api_images()
-    ngx.header.content_type = 'application/json';
     local albumskey = 'zalbums'
     local albums, err = red:zrange(albumskey, 0, -1)
     local res = {}
@@ -575,14 +478,13 @@ local function admin_api_images()
         end
     end
 
-    ngx.print( cjson.encode(res) )
+    return json(res)
 end
 
 --[
 -- Admin API all, api function to return all infos from db, tags, thumbs, images, accesskeys, imagecount, etc
 -- ]]
 local function admin_api_all()
-    ngx.header.content_type = 'application/json';
     local albums = getalbums()
     local tags  = {}
     local images = {}
@@ -622,26 +524,24 @@ local function admin_api_all()
         accesskeys = accesskeys,
         accesskeysh = accesskeysh,
     }
-    ngx.print( cjson.encode(res) )
+    return json(res)
 end
 
 --
 -- return image from db
 --
 local function admin_api_image(match)
-    ngx.header.content_type = 'application/json';
     local image = match[1]
     local res = {}
     local imgh, err = red:hgetall(image)
     res[image] = red:array_to_hash(imgh)
-    ngx.print( cjson.encode(res) )
+    return json(res)
 end
 
 --
 -- 
 --
 local function admin_api_albums()
-    ngx.header.content_type = 'application/json';
     local albumskey = 'zalbums'
     local albums = getalbums()
     local res = {}
@@ -652,21 +552,20 @@ local function admin_api_albums()
             tag = dbtag,
         })
     end
-    ngx.print( cjson.encode(res) )
+    return json(res)
 end
 
 --
 -- 
 --
 local function admin_api_album(match)
-    ngx.header.content_type = 'application/json';
     local album = match[1]
     local dbtag, err = red:hget(album .. 'h', 'tag')
     local res = { 
         name = album,
         tag = dbtag
     }
-    ngx.print( cjson.encode(res) )
+    return json(res)
 end
 
 --
@@ -676,7 +575,7 @@ local function api_img_click()
     local args = ngx.req.get_uri_args()
     local match = ngx.re.match(args['img'], '^/.*/(\\w+)/(\\w+)/(.+)$')
     if not match then
-        return ngx.print('Faulty request')
+        return 'Faulty request', 404
     end
     atag = match[1]
     itag = match[2]
@@ -684,22 +583,20 @@ local function api_img_click()
     local key = itag .. '/' .. img
     local counter, err = red:hincrby(key, 'views', 1)
     if err then
-        ngx.print (cjson.encode ({image=key,error=err}) )
-        return
+        return {image=key,error=err}, 500
     end
-    ngx.print (cjson.encode ({image=key,views=counter}) )
+    return json{image=key,views=counter}
 end
 
 -- 
 -- remove img
 --
 local function api_img_remove()
-    ngx.header.content_type = 'application/json'
     local args = ngx.req.get_uri_args()
     local album = args['album']
     match = ngx.re.match(args['image'], '(.*)/(.*)')
     if not match then
-        return ngx.print('Faulty image')
+        return 'Faulty image', 401
     end
     res = {}
     itag = match[1]
@@ -726,15 +623,16 @@ local function api_img_remove()
     res['tag'] = tag
     res['img'] = img
 
-    ngx.print( cjson.encode ( res ) )
+
+    return json(res)
+
 end
 
 local function api_album_remove(match)
-    ngx.header.content_type = 'application/json';
     local tag = match[1]
     local album = match[2]
     if not tag or not album then
-        return ngx.print('Faulty tag or album')
+        return 'Faulty tag or album', 401
     end
     res = {
         tag = tag,
@@ -761,12 +659,12 @@ local function api_album_remove(match)
     res['albums'] = red:zrem('zalbums', album)
     res['command'] = "rm -rf "..IMGPATH..'/'..tag
     os.execute(res['command'])
-    ngx.print( cjson.encode ( res ) )
+    return json(res)
 end
 
 local function admin_api_gentag(match) 
     local tag = generate_tag()
-    ngx.print( cjson.encode { tag=tag } )
+    return json{ tag=tag }
 end
 
 
@@ -819,15 +717,22 @@ local routes = {
     ['admin/api/albumttl/create(.*)'] = admin_api_albumttl,
     ['admin/api/queue/length/'] = admin_api_queue_length,
 }
+-- Set the default content type
+ngx.header.content_type = 'text/html';
+
 -- iterate route patterns and find view
 for pattern, view in pairs(routes) do
     local match = ngx.re.match(ngx.var.uri, '^' .. BASE .. pattern, "o") -- regex mather in compile mode
     if match then
         init_db()
-        view(match)
+        local ret, exit = view(match) 
+        -- Print the returned res
+        ngx.print(ret)
         end_db()
-        -- return OK, since we called a view
-        ngx.exit( ngx.HTTP_OK )
+        -- If not given exit, then assume OK
+        if not exit then exit = ngx.HTTP_OK end
+        -- Exit with returned exit value
+        ngx.exit( exit )
     end
 end
 -- no match, log and return 404
