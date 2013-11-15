@@ -11,7 +11,7 @@
 local cjson = require"cjson"
 local math  = require"math"
 local redis = require"resty.redis"
-local tir   = require"tir"
+local template = require "template"
 
 local ROOT_PATH = ngx.var.root
 local config = ngx.shared.config
@@ -194,7 +194,7 @@ local function albums(match)
     end
 
     -- load template
-    local page = tload('albums.html')
+    local page = template.tload('albums.html')
     local context = ctx{
         albums = albums, 
         imagecount = imagecount,
@@ -214,7 +214,7 @@ end
 --
 local function index()
     -- load template
-    local page = tload('main.html')
+    local page = template.tload('main.html')
     local context = ctx{
         bodyclass = 'gallery',
     }
@@ -261,7 +261,7 @@ local function album(path_vars)
     end
     
     -- load template
-    local page = tload('album.html')
+    local page = template.tload('album.html')
     local context = ctx{ 
         album = album,
         tag = tag,
@@ -279,7 +279,7 @@ end
 
 local function upload()
     -- load template
-    local page = tload('upload.html')
+    local page = template.tload('upload.html')
     local args = ngx.req.get_uri_args()
 
     -- generate tag to make guessing urls non-worky
@@ -296,7 +296,7 @@ end
 local function admin()
 
     -- load template
-    local page = tload('admin.html')
+    local page = template.tload('admin.html')
 
     -- and return it to nginx
     return page{}
@@ -456,7 +456,7 @@ local function upload_post()
     add_file_to_db(album, itag, tag, file_name, h)
 
     -- load template
-    local page = tload('uploaded.html')
+    local page = template.tload('uploaded.html')
     -- and return it to nginx
     return page{}
 end

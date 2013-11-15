@@ -1,9 +1,47 @@
+--
+-- tortir (C) Tor Hveem
+-- Simple template based on Tir (C) Zed Shaw
+--
+-- License: BSD 3-clause : http://tir.mongrel2.org/wiki/license.html
+--
+--
+
+local require = require
+local setmetatable = setmetatable
+local io = require "io"
+local assert = assert
+local string = string
+local table = table
+local loadstring = loadstring
+local load = load
+local setfenv = setfenv
+local getfenv = getfenv
+
+module('tir',  package.seeall)
+
 -- Simplistic HTML escaping.
 function escape(s)
     if s == nil then return '' end
 
     local esc, i = s:gsub('&', '&amp;'):gsub('<', '&lt;'):gsub('>', '&gt;')
     return esc
+end
+
+-- Simplistic Tir template escaping, for when you need to show lua code on web.
+local function tirescape(s)
+    if s == nil then return '' end
+
+    local esc, i = s:gsub('{', '&#123;'):gsub('}', '&#125;')
+    return tir.escape(esc)
+end
+
+-- Helper function that loads a file into ram.
+function load_file(name)
+    local intmp = assert(io.open(name, 'r'))
+    local content = intmp:read('*a')
+    intmp:close()
+
+    return content
 end
 
 -- Used in template parsing to figure out what each {} does.
@@ -19,7 +57,8 @@ local VIEW_ACTIONS = {
     ['{('] = function(code)
         return ([[ 
             if not _children[%s] then
-                _children[%s] = tload(%s)
+                local tir = require 'template'
+                _children[%s] = tir.tload(%s)
             end
 
             _result[#_result+1] = _children[%s](getfenv())
@@ -27,11 +66,9 @@ local VIEW_ACTIONS = {
     end,
 
     ['{<'] = function(code)
-        return ('_result[#_result+1] =  escape(%s)'):format(code)
+        return ('local tir = require "tir" _result[#_result+1] =  tir.escape(%s)'):format(code)
     end,
 }
-
-
 
 -- Takes a view template and optional name (usually a file) and 
 -- returns a function you can call with a table to render the view.
@@ -56,7 +93,8 @@ function compile_view(tmpl, name)
     code[#code+1] = 'return table.concat(_result)'
 
     code = table.concat(code, '\n')
-    local func, err = loadstring(code, name)
+    -- use load from lua 5.2 or luajit
+    local func, err = load(code, name, 't',  mt )
 
     if err then
         assert(func, err)
@@ -70,22 +108,20 @@ function compile_view(tmpl, name)
     end
 end
 
--- Helper function that loads a file into ram.
-function load_file(name)
-    local intmp = assert(io.open(name, 'r'))
-    local content = intmp:read('*a')
-    intmp:close()
 
-    return content
+-- Return loaded template
+function tload(name)
+    local tempf = load_file(name)
+    assert(tempf, "Template " .. name .. " does not exist.")
+    return compile_view(tempf, name)
 end
 
--- Crafts a new view from the given file in the TEMPLATES directory.
--- If the ENV[PROD] is set to something then it will do this once.
--- Otherwise it returns a function that reloads the template since you're
--- in developer mode.
-function tload(name)
-    name = TEMPLATEDIR .. name
+-- Recompile dynamically
+function dynload(name)
+    return function (params)
+        local tempf = load_file(name)
+        assert(tempf, "Template " .. name .. " does not exist.")
 
-    local tempf = load_file(name)
-    return compile_view(tempf, name)
+        return compile_view(tempf, name)(params)
+    end
 end
