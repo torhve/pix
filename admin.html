@@ -147,7 +147,7 @@
     <div class="items">
         <div class="item" ng-repeat="(img, thumb) in images.thumbs[selectedAlbum]">
             <a href="/img/{{ images.tags[selectedAlbum] }}/{{ img }}" class="lb">
-              <img class="adminthumb" src="/img/{{ images.tags[selectedAlbum] }}/{{ thumb }}">
+              <img class="adminthumb" ng-src="/img/{{ images.tags[selectedAlbum] }}/{{ thumb }}">
             </a>
             <div class="admin-label">
                 <a class="btn btn-mini btn-danger link-image-remove" href="/admin/api/img/remove/?album={{ selectedAlbum }}&amp;image={{ images.all[img].file_name }}">

@@ -45,8 +45,13 @@ function AlbumListCtrl($scope, $http, images) {
         // Get tag from backend
         $http.get('/admin/api/gentag/').then(function(data) {
             var tag = data.data.tag;
+            // If we already have a tag defined for this album name it means
+            // that we are uploading images to an existing album which means
+            // we have to reuse the tag instead of using a generated one
+            if(images.tags[album] != undefined) {
+                tag = images.tags[album];
+            }
 
-            //$('<h1>Upload<small>to album <a href="/album/'+tag+'/'+album+'/">'+album+'</a></h1>').prependTo($('#admincontent .hero-unit'));
             if (typeof FileReader == "undefined") alert ("Your browser is not supported. You will need to update to a modern browser with File API support to upload files.");
             var fileCount = document.getElementById("fileCount");
             var fileList = document.getElementById("fileList");
