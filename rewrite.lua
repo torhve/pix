@@ -48,14 +48,14 @@ if match then
             local uri = BASE .. 'album/' .. tag .. '/' .. album .. '/'
             if img then uri = uri ..  img end
             ngx.var.IMGBASE = '/img/' .. key .. '/'  .. album .. '/'
-            ngx.log(ngx.ERR, '---***---: rewrote URI:' .. ngx.var.uri .. '=>' .. uri)
+            --ngx.log(ngx.ERR, '---***---: rewrote URI:' .. ngx.var.uri .. '=>' .. uri)
             ngx.req.set_uri(uri)
         elseif urltype == 'img' then
             local uri = ngx.var.IMGBASE .. img
-            ngx.log(ngx.ERR, '---***---: rewrote URI:' .. ngx.var.uri .. '=>' .. uri)
+            --ngx.log(ngx.ERR, '---***---: rewrote URI:' .. ngx.var.uri .. '=>' .. uri)
             ngx.req.set_uri(uri)
         else
-            ngx.log(ngx.ERR, '---***---: 404 in rewriter with requested URI:' .. ngx.var.uri)
+            --ngx.log(ngx.ERR, '---***---: 404 in rewriter with requested URI:' .. ngx.var.uri)
             exit(red, 404)
         end
     else 
