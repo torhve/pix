@@ -224,6 +224,7 @@ function FileAPI (c, t, d, f, g, a) {
                   var ps = li.getElementsByTagName("div");
                   var divContainer = li.getElementsByTagName("div")[0];
                   var divBar = li.getElementsByTagName("div")[1];
+                  divBar.style["width"] = "100%";
                   for (var i = 0; i < ps.length; i++) {
                       if (ps[i].className == "loader") {
                           counter_uploading -= 1;
