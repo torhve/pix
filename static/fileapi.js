@@ -86,17 +86,17 @@ function FileAPI (c, t, d, f, g, a) {
           ev.preventDefault();
           while (fileQueue.length > 0) {
               var item = fileQueue.shift();
-              var p = document.createElement("p");
-              p.className = "loader";
-              var pText = document.createTextNode("Pending...");
-              p.appendChild(pText);
-              item.li.appendChild(p);
+              var div = document.createElement("div");
+              div.className = "loader";
+              var divText = document.createTextNode("Pending...");
+              div.appendChild(divText);
+              item.li.appendChild(div);
               if (item.file.size < 32212254720) {
-                  p.style["color"] = "#3a87ad";
+                  div.style["color"] = "#3a87ad";
                   uploadFile(item.file, item.li);
               } else {
-                  p.textContent = "File to large (>30GB)";
-                  p.style["color"] = "red";
+                  div.textContent = "File to large (>30GB)";
+                  div.style["color"] = "red";
               }
           }
       }
@@ -106,7 +106,7 @@ function FileAPI (c, t, d, f, g, a) {
           updateFileCount();
 
           for (var i = 0; i < files.length; i++) {
-              //var fr = new FileReader();
+              var fr = new FileReader();
               //fr.file = files[i];
               //fr.onloadend = showFileInList;
               showFileInList(files[i])
@@ -125,26 +125,20 @@ function FileAPI (c, t, d, f, g, a) {
               //    thumb.addEventListener("mouseout", removePreview, false);
               //    li.appendChild(thumb);
               //}
-              var h5 = document.createElement("h5");
-              var h5Text = document.createTextNode(file.name);
-              h5.appendChild(h5Text);
-              li.appendChild(h5)
-              var p = document.createElement("p");
               var mime = file.type;
               if (mime.length == 0){
                   mime = "unknown";
               }
               var pText = document.createTextNode(
-                  "File type: "
-                  + mime + ", size: " +
+                  file.name + ", " +
+                  mime + ", size: " +
                   Math.round(file.size / 1024 / 1024) + " MB"
               );
-              p.appendChild(pText);
-              li.appendChild(p);
+              li.appendChild(pText);
               var divContainer = document.createElement("div");
-              divContainer.className = "progress progress-striped active";
+              divContainer.className = "progress";
               var divLoader = document.createElement("div");
-              divLoader.className = "bar";
+              divLoader.className = "progress-bar";
               li.appendChild(divContainer);
               divContainer.appendChild(divLoader);
               fileList.appendChild(li);
@@ -208,13 +202,14 @@ function FileAPI (c, t, d, f, g, a) {
       var uploadFile = function (file, li) {
           if (li && file) {
               var xhr = new XMLHttpRequest(),
-                  upload = xhr.upload;
+                  upload = xhr.upload,
+                  fd = FormData();
 
               upload.addEventListener("progress", function (ev) {
                   if (ev.lengthComputable) {
                       var loader = li.getElementsByTagName("div")[1];
                       loader.style["width"] = (ev.loaded / ev.total) * 100 + "%";
-                      var ps = li.getElementsByTagName("p");
+                      var ps = li.getElementsByTagName("div");
                       for (var i = 0; i < ps.length; i++) {
                           if (ps[i].className == "loader") {
                               var percent = (ev.loaded / ev.total) * 100;
@@ -226,37 +221,54 @@ function FileAPI (c, t, d, f, g, a) {
                   }
               }, false);
               upload.addEventListener("load", function (ev) {
-                  var ps = li.getElementsByTagName("p");
+                  var ps = li.getElementsByTagName("div");
                   var divContainer = li.getElementsByTagName("div")[0];
                   var divBar = li.getElementsByTagName("div")[1];
-                  divBar.style["width"] = "100%";
-                  divContainer.className = "progress";
-                  divBar.className = "progress-bar progress-bar-success";
                   for (var i = 0; i < ps.length; i++) {
                       if (ps[i].className == "loader") {
                           counter_uploading -= 1;
                           counter_completed += 1;
                           updateFileCount();
 
-                          ps[i].textContent = "Upload complete";
-                          ps[i].style["color"] = "white";
+                          ps[i].textContent = xhr.responseText;
+                          //ps[i].style["color"] = "white";
                           break;
                       }
                   }
               }, false);
               upload.addEventListener("error", function (ev) {console.log(ev);}, false);
+              upload.addEventListener("abort", function (ev) {console.log(ev);}, false);
+              fd.append("attachment1", file);
               xhr.open(
                   "POST",
                   "/upload/post/"
               );
-              xhr.setRequestHeader("Cache-Control", "no-cache");
               xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
               xhr.setRequestHeader("X-Filename", file.name);
               xhr.setRequestHeader("X-Size", file.size);
               xhr.setRequestHeader("X-Tag", tag);
               xhr.setRequestHeader("X-Album", album);
+              // TODO use filereader to read file and check md5
               xhr.setRequestHeader("X-Checksum", calcMD5(file));
-              xhr.send(file);
+              // Check upload respone and error message
+              xhr.onload = function() {
+                  var ps = li.getElementsByTagName("div");
+                  var divContainer = li.getElementsByTagName("div")[0];
+                  var divBar = li.getElementsByTagName("div")[1];
+                  if(xhr.status == 200) {
+                      divContainer.className = "progress";
+                      divBar.className = "progress-bar progress-bar-success";
+                  }else if(xhr.status == 403) {
+                      divBar.className = "progress-bar progress-bar-danger";
+                  }
+                  for (var i = 0; i < ps.length; i++) {
+                      if (ps[i].className == "loader") {
+                          ps[i].textContent = xhr.responseText;
+                          break;
+                      }
+                  }
+              }
+              xhr.send(fd);
           }
       }
   }

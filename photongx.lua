@@ -12,6 +12,9 @@ local cjson = require"cjson"
 local math  = require"math"
 local redis = require"resty.redis"
 local template = require "template"
+local resty_md5 = require "resty.md5"
+local rupload = require "resty.upload"
+local rstr = require "resty.string"
 
 local ROOT_PATH = ngx.var.root
 local config = ngx.shared.config
@@ -93,6 +96,7 @@ end
 
 -- Function to transform a potienially unsecure filename to a secure one
 function secure_filename(filename)
+    if not filename then return nil end
     filename = string.gsub(filename, '/', '')
     filename = string.gsub(filename, '%.%.', '')
     -- Filenames with spaces are just a hassle
@@ -277,6 +281,9 @@ local function album(path_vars)
     return page(ctx(context))
 end
 
+--
+-- A view that display a upload form
+--
 local function upload()
     -- load template
     local page = template.tload('upload.html')
@@ -344,7 +351,7 @@ end
 
 
 
-local function add_file_to_db(album, itag, atag, file_name, h)
+local function add_file_to_db(album, itag, atag, file_name)
     local imgh       = {}
     local timestamp  = ngx.time() -- FIXME we could use header for this
     imgh['album']    = album
@@ -363,7 +370,7 @@ local function add_file_to_db(album, itag, atag, file_name, h)
     red:zadd(albumkey , timestamp, imagekey) -- add imey to imageset
     red:sadd(itagkey, itag)                  -- add itag to set of used itags
     red:hmset(imagekey, imgh)                -- add imagehash
-    red:hsetnx(albumhkey, 'tag', h['X-tag']) -- only set tag if not exist
+    red:hsetnx(albumhkey, 'tag', atag) -- only set tag if not exist
 
     red:lpush('queue:thumb', imagekey)       -- Add the uploaded image to the queue
 end
@@ -371,27 +378,35 @@ end
 --
 -- View that recieves data from upload page
 --
-local function upload_post()
+local function upload_post_handler()
 
-    -- Read body from nginx so file is available for consumption
-    ngx.req.read_body()
-
+    local chunk_size = 4096
+    local form       = rupload:new(chunk_size)
+    local md5        = resty_md5:new()
     local h          = ngx.req.get_headers()
-    local md5        = h['content-md5'] -- FIXME check this with ngx.md5
+    local fmd5       = h['X-Checksum'] -- FIXME check this with ngx.md5
     local file_name  = h['X-Filename']
     local referer    = h['referer']
     local album      = h['X-Album']
     local tag        = h['X-Tag']
     local itag       = generate_tag()  -- Image tag
+    local file
 
     -- None unsecure shall pass
     file_name = secure_filename(file_name)
+    -- check if filename is image
+    local pattern = '\\.(jpe?g|gif|png)$'
+    if not ngx.re.match(file_name, pattern, "i") then
+        return 'Filename must be of image type', 403
+    end
+    -- Find unused tag if already in use
+    while red:sismember('album:' .. album .. ':imagetags', itag) == 1 do
+        itag = generate_tag()
+    end
 
     -- Tags needs to be checked too
     if not verify_tag(tag) then
-        ngx.status = 403
-        ngx.say('Invalid tag specified')
-        return
+        return 'Invalid tag specified', 403
     end
 
     -- We want safe album names too
@@ -399,61 +414,69 @@ local function upload_post()
 
     -- Check if tag is OK
     local albumhkey =  album .. 'h' -- album metadata
-    red:hsetnx(albumhkey, 'tag', h['X-tag'])
+    red:hsetnx(albumhkey, 'tag', tag)
 
-    -- FIXME verify correct tag
-    local tag, err = red:hget(albumhkey, 'tag')
+    -- FIXME verify correct tag, check tag vs atag
+    local atag, err = red:hget(albumhkey, 'tag')
 
     local path  = IMGPATH
 
-    -- FIXME Check if tag already in use
-    -- simple trick to check if path exists
-    local albumpath = path .. tag .. '/' .. album
-    if not os.rename(path .. tag, path .. tag) then
-        os.execute('mkdir -p ' .. path .. tag)
-    end
-    if not os.rename(albumpath, albumpath) then
-        os.execute('mkdir -p ' .. albumpath)
+    if file_name then
+        local albumpath = path .. atag .. '/' .. album
+        -- simple trick to check if path exists
+        if not os.rename(path .. tag, path .. atag) then
+            os.execute('mkdir -p ' .. path .. atag)
+        end
+        if not os.rename(albumpath, albumpath) then
+            os.execute('mkdir -p ' .. albumpath)
+        end
+
+        local imagepath = path .. tag .. '/' .. itag .. '/'
+        if not os.rename(imagepath, imagepath) then
+            os.execute('mkdir -p ' .. imagepath)
+        end
+
+        file = io.open(imagepath .. file_name, 'w+')
+
+        if not file then
+            return string.format('Failed to open file: %s', file_name), 403
+        end
     end
 
-    -- Find unused tag if already in use
-    while red:sismember('album:' .. album .. ':imagetags', itag) == 1 do
-        itag = generate_tag()
-    end
-
-    local imagepath = path .. tag .. '/' .. itag .. '/'
-    if not os.rename(imagepath, imagepath) then
-        os.execute('mkdir -p ' .. imagepath)
-    end
-    
-    local req_body_file_name = ngx.req.get_body_file()
-    if not req_body_file_name then
-        ngx.status = 403
-        ngx.say('No file found in request')
-        return
-    end
-    -- check if filename is image
-    local pattern = '\\.(jpe?g|gif|png)$'
-    if not ngx.re.match(file_name, pattern, "i") then
-        ngx.status = 403
-        ngx.say('Filename must be of image type')
-        return
-    end
-
-    tmpfile = io.open(req_body_file_name)
-    realfile = io.open(imagepath .. file_name, 'w')
-    local size = 2^13      -- good buffer size (8K)
     while true do
-      local block = tmpfile:read(size)
-      if not block then break end
-      realfile:write(block)
+        local typ, res, err = form:read()
+        if not typ then
+             ngx.log(ngx.ERR, "failed to read: ", err)
+             return
+        end
+        if typ == "header" then
+            -- do nothing we use request headers instead of form data for all our values
+
+        elseif typ == "body" then
+            if file then
+                file:write(res)
+                md5:update(res)
+            end
+
+        elseif typ == "part_end" then
+            file:close()
+            file = nil
+            local md5_sum = rstr.to_hex(md5:final())
+            md5:reset()
+            if md5_sum ~= fmd5 then
+                ngx.log(ngx.ERR, string.format('MD5 sum did not match, our:%s, theirs:%s', md5_sum, fmd5))
+            end
+            -- Save meta data to DB
+            add_file_to_db(album, itag, tag, file_name)
+            
+        elseif typ == "eof" then
+            break
+
+        else
+            -- do nothing
+        end
     end
 
-    tmpfile:close()
-    realfile:close()
-
-    -- Save meta data to DB
-    add_file_to_db(album, itag, tag, file_name, h)
 
     -- load template
     local page = template.tload('uploaded.html')
@@ -704,7 +727,7 @@ local routes = {
     ['$']               = index,
     ['admin/$']         = admin,
     ['upload/$']        = upload,
-    ['upload/post/?$']  = upload_post,
+    ['upload/post/?$']  = upload_post_handler,
     ['api/img/click/$'] = api_img_click,
     ['admin/api/images/?$']= admin_api_images,
     ['admin/api/image/(.+)/?$']= admin_api_image,
@@ -727,11 +750,12 @@ for pattern, view in pairs(routes) do
         init_db()
         local ret, exit = view(match) 
         -- Print the returned res
-        ngx.print(ret)
         end_db()
         -- If not given exit, then assume OK
         if not exit then exit = ngx.HTTP_OK end
         -- Exit with returned exit value
+        ngx.status = exit
+        ngx.print(ret)
         ngx.exit( exit )
     end
 end

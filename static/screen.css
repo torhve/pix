@@ -115,6 +115,14 @@ a, a:hover {
     font-size: 1.6em;
     margin: 10px;
 }
+#fileList {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+.progress {
+    margin-bottom: 0;
+}
 
 .isotope,
 .isotope .isotope-item {
