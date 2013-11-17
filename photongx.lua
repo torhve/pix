@@ -384,7 +384,7 @@ local function upload_post_handler()
     local form       = rupload:new(chunk_size)
     local md5        = resty_md5:new()
     local h          = ngx.req.get_headers()
-    local fmd5       = h['X-Checksum'] -- FIXME check this with ngx.md5
+    local fmd5       = h['X-Checksum'] 
     local file_name  = h['X-Filename']
     local referer    = h['referer']
     local album      = h['X-Album']
@@ -416,8 +416,10 @@ local function upload_post_handler()
     local albumhkey =  album .. 'h' -- album metadata
     red:hsetnx(albumhkey, 'tag', tag)
 
-    -- FIXME verify correct tag, check tag vs atag
     local atag, err = red:hget(albumhkey, 'tag')
+    if atag ~= tag then
+        return 'Wrong tag used when uploading', 403
+    end
 
     local path  = IMGPATH
 
@@ -535,7 +537,10 @@ local function admin_api_all()
             if thumb_name ~= ngx.null then
                 thumbs[album][image] = itag .. '/' .. thumb_name
             else
-                thumbs[album][image] = itag .. '/' .. red:hget(image, 'file_name')
+                local file_name = red:hget(image, 'file_name')
+                if file_name ~= ngx.null then 
+                    thumbs[album][image] = itag .. '/' .. file_name
+                end
             end
         end
     end
