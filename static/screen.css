@@ -5,7 +5,11 @@ html, body {
   font-family: "Tahoma", sans-serif;
 }
 body.gallery {
-  background: #222426;
+    background: #222426;
+}
+body.admin {
+    background: #222426;
+    color: #aaa
 }
 img {
     height: auto;
@@ -123,6 +127,13 @@ a, a:hover {
 .progress {
     margin-bottom: 0;
 }
+.login {
+    max-width: 330px;
+    padding: 15px;
+    padding-top: 40px;
+    margin: 0 auto;
+}
+
 
 .isotope,
 .isotope .isotope-item {
@@ -457,8 +468,15 @@ a, a:hover {
     background-image: linear-gradient(to bottom, rgb(0, 136, 204), rgb(0, 68, 204));
     background-repeat: repeat-x;
 }
+.well {
+    padding-top: 0;
+}
+.sidebar-nav ul {
+    padding: 0;
+}
 .sidebar-nav {
-      list-style: none;
+    list-style: none;
+    padding: 0;
   }
 .sidebar-nav li {
     margin: 0;
@@ -477,6 +495,13 @@ a, a:hover {
   text-transform: uppercase;
   padding-top: 30px;
 }
-
-
+.vertical-line {
+    -webkit-box-shadow: rgba(255, 255, 255, 0.07) 0 1px 0;
+       -moz-box-shadow: rgba(255, 255, 255, 0.07) 0 1px 0;
+            box-shadow: rgba(255, 255, 255, 0.07) 0 1px 0;
+            border-bottom: 1px solid #121212;
+    }
+.ph {
+    margin-bottom: 15px;
+}
 

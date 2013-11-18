@@ -107,7 +107,9 @@ local function setsess(personadata)
         expires = personadata.expires,
     })
     -- persona timestamp is javascript timestamp, so only use 10 first digits
-    local ok, err = red:expireat(key, substr(personadata.expires, 1, 10))
+    -- FIXME why is persona ttl so low??
+    --local ok, err = red:expireat(key, substr(personadata.expires, 1, 10))
+    local ok, err = red:expire(key, 3600)
     end_db()
 end
 
@@ -115,9 +117,7 @@ function get_current_email()
     local cookie = ngx.var['cookie_session']
     if cookie then
         local sess = getsess(cookie)
-        if sess then
-            return sess.email
-        end
+        return sess['email']
     end
     return false
 end
@@ -136,7 +136,7 @@ function login()
         -- Print the data back to client
         return cjson.encode(personadata)
     else
-        return cjson.encode{ email = false} 
+        return cjson.encode{ email = false } 
     end
 end
 

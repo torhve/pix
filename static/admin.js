@@ -1,21 +1,62 @@
 var pnxapp = angular.module('PNXApp', ['PNXApp.services']);
-function AlbumListCtrl($scope, $http, images) {
-    $scope.selectedImages = [];
 
-    images.getAllFromBackend();
-    images.getImagesFromBackend();
+pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', function($scope, $http, images, personaSvc) {
     $scope.images = images;
-    console.log($scope.images);
-
-    images.getQueueCount();
-    // Update queue count on a timer
-    var timer = setInterval(function() {
-        images.getQueueCount();
-        $scope.$apply();
-    }, 6000);
-
+    $scope.selectedImages = [];
     $scope.selectedAlbum = false;
     $scope.hoverAlbum = false;
+    $scope.verified = false;
+
+    angular.extend($scope, { verified:false, error:false, email:"" });
+
+    $scope.verify = function () {
+        personaSvc.verify().then(function (email) {
+            angular.extend($scope, { verified:true, error:false, email:email });
+            $scope.status();
+        }, function (err) {
+            angular.extend($scope, { verified:false, error:err});
+        });
+    };
+
+    $scope.logout = function () {
+        personaSvc.logout().then(function () {
+            angular.extend($scope, { verified:false, error:false});
+        }, function (err) {
+            $scope.error = err;
+        });
+    };
+
+    $scope.status = function () {
+        personaSvc.status().then(function (data) {
+            // in addition to email, everything else returned by persona/status will be added to the scope
+            // this could be the chance to expose data from your local DB, for example
+            angular.extend($scope, data, { error:false, verified:!!data.email, email:data.email });
+            // if we are verified refresh the item list
+            // basicially means we just logged in
+            if ($scope.verified) {
+                $scope.init();
+            }                                                                                                                                               
+        }, function (err) {
+            $scope.error = err;
+        });
+    };
+
+    // setup; check status once on init
+    $scope.status();
+
+    // Init function gets called from status function when user logs in
+    $scope.init = function() {
+        console.log('init');
+        images.getAllFromBackend();
+        images.getImagesFromBackend();
+
+        images.getQueueCount();
+        // Update queue count on a timer
+        var timer = setInterval(function() {
+            images.getQueueCount();
+            $scope.$apply();
+        }, 6000);
+    }
 
     $scope.mouseOverAlbum = function(album) {
         $scope.hoverAlbum = album;
@@ -43,7 +84,7 @@ function AlbumListCtrl($scope, $http, images) {
         var album = $scope.albumname;
 
         // Get tag from backend
-        $http.get('/admin/api/gentag/').then(function(data) {
+        $http.get('/api/gentag/').then(function(data) {
             var tag = data.data.tag;
             // If we already have a tag defined for this album name it means
             // that we are uploading images to an existing album which means
@@ -92,14 +133,13 @@ function AlbumListCtrl($scope, $http, images) {
     $scope.submitAlbumLink = function() {
         var formData = $('#form-ttl').serialize();
         var formUrl = "/admin/api/albumttl/create/";
-        console.log($scope.linkAlbum);
         $.getJSON(formUrl, formData, function(data) { 
             console.log(data);
             $scope.linkAlbum = '';
             $('.modal').modal('hide');
         });
     };
-}
+}]);
 
 
 function PImage(entry) {
@@ -162,6 +202,40 @@ services.factory('images', ['$http', function($http) {
     return images;
 }]);
 
+services.factory("personaSvc", ["$http", "$q", function ($http, $q) {
+
+  return {
+        verify:function () {
+            var deferred = $q.defer();
+            navigator.id.get(function (assertion) {
+                $http.post("/api/persona/verify", {assertion:assertion})
+                    .then(function (response) {
+                        if (response.data.status != "okay") {
+                            deferred.reject(response.data.reason);
+                        } else {
+                            deferred.resolve(response.data.email);
+                        }
+                    });
+            });
+            return deferred.promise;
+        },
+        logout:function () {
+            return $http.post("/api/persona/logout").then(function (response) {
+                if (response.data.status != "okay") {
+                    $q.reject(response.data.reason);
+                }
+                return response.data.email;
+            });
+        },
+        status:function () {
+            return $http.post("/api/persona/status").then(function (response) {
+                return response.data;
+            });
+        }
+    };
+}]);
+
+AlbumListCtrl.$inject = ["$scope", "personaSvc"];
 
 
 

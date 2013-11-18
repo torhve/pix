@@ -3,6 +3,7 @@
   <head>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.0/angular.min.js"></script>
+    <script src="https://login.persona.org/include.js"></script>
     <script src="/static/fileapi.js"></script>
     <script src="/static/admin.js"></script>
     <meta charset="utf-8">
@@ -26,20 +27,26 @@
 
   </head>
 
-  <body class="" ng-controller="AlbumListCtrl">
-
-  <div class="container-fluid">
-    <div class="row">
-      <div class="col-md-12">
-        <div class="page-header">
-          <h1><span class="blue">Photo Engine X</span> Administration <small class="pull-right">{{ images.nrofimages }} images in {{ images.albums.length }} albums</small></h1>
+  <body class="admin" ng-controller="AlbumListCtrl">
+    <div ng-show="error" class="label label-danger">{{ error }}</div>
+    <div ng-hide="verified" class="login">
+      <a ng-click="verify()" class="btn btn-lg btn-primary" title="Login" alt="Login">Gimme gimme <i class="fa fa-angle-right"></i></a>
+    </div>
+    <div ng-show="verified" class="container-fluid">
+      <div class="row">
+        <div class="col-md-12">
+          <div class="vertical-line ph">
+            <h1><span class="blue">Photo Engine X</span> Administration 
+                </ul>
+              
+              <small class="pull-right">{{ images.nrofimages }} images in {{ images.albums.length }} albums</small></h1>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-    <div class="container-fluid">
-        <div class="row">
+    <div ng-show="verified" class="container-fluid">
+      <div class="row">
             <div class="col-md-3">
                 <div class="well">
                     <ul class="sidebar-nav">
@@ -73,7 +80,10 @@
                                 <a href="/admin/api/album/remove/{{ images.tags[album] }}/{{album}}" title="Remove album and all images. Warning: No confirmation dialog"  class="link-album-remove btn  btn-danger"><i class="fa fa-trash-o"></i></a>
                             </div>
                         </li>
-                        </ul>
+                        <li>
+                          <div ng-show="verified"><a ng-click="logout()" class="btn btn-primary" title="You are logged in as {{ email }}" alt="You are logged in as {{ email }}">Log out <i class="fa fa-angle-right"></i></a></div>
+                        </li>
+                      </ul>
                     </div><!--/.well -->
                 </div><!--/span-->
                 <div id="admincontent" class="col-md-9">
@@ -88,82 +98,52 @@
                         </ul>
                         Please select an album in the left menu to start.
                   </div>
-<div id="albumcontainer">
-    <div class="uploadcontainer" ng-show="uploading">
-      <h1>Upload images to the album <strong>{{albumname}}</strong></h1>
-      <div class="small pull-right"><a href="#" ng-click="fileSelect = true">Alternate upload</a></div>
-
-      <div id="fileDrop">
-        <p>Drop files here to upload</p>
-      </div>
-
-
-      <div ng-show="fileSelect" id="fileSelect">
-        <div class="small pull-right"><a href="#" id="fileSelect-hide" ng-Click="fileSelect = false">Hide alternate upload</a></div>
-        <p>
-        <form action="" method="post" enctype="multipart/form-data">
-          <div class="controls">
-            <input class="input-file" type="file" id="fileField" name="fileField" multiple value="Browse..."/>
-          </div>
-        </form>
-        </p>
-        <p>
-        <a id="upload" class="btn btn-primary" href="#" title="Upload all files in list">Upload files</a>
-        <a id="reset" class="btn btn-danger" href="#" title="Remove all files from list">Clear list</a>
-        </p>
-      </div>
-
-      <h6><div id="fileCount"></div></h6>
-
-      <div id="files">
-        <ul id="fileList"></ul>
-      </div>
-
-    </div>
-<div class="adminalbum" ng-show="selectedAlbum">
-    <table class="table table-striped table-bordered table-hover">
-        <tr>
-            <th>tag</th>
-            <th>created</th>
-            <th>expires</th>
-            <th>album direct link</th>
-            <th>album portal link</th>
-        </tr>
-        <tr>
-            <td>admin</td>
-            <td></td>
-            <td></td>
-            <td><a href="/album/{{ images.tags[selectedAlbum]}}/{{selectedAlbum}}/">/album/{{ images.tags[selectedAlbum]}}/{{selectedAlbum}}/</td>
-            <td></td>
-        </tr>
-        <tr ng-repeat="(key, val) in images.accesskeysh[selectedAlbum]">
-            <td>{{ key}}</td>
-            <td>{{ val[0] }}</td>
-            <td>{{ val[1] }}</td>
-            <td><a href="/album/{{ key }}/{{selectedAlbum}}/">/album/{{ key }}/{{selectedAlbum}}/</td>
-            <td><a href="/albums/{{ key }}/{{selectedAlbum}}/">/albums/{{ key }}/</td>
-        </tr>
-    </table>
-    <div class="items">
-        <div class="item" ng-repeat="(img, thumb) in images.thumbs[selectedAlbum]">
-            <a href="/img/{{ images.tags[selectedAlbum] }}/{{ img }}" class="lb">
-              <img class="adminthumb" ng-src="/img/{{ images.tags[selectedAlbum] }}/{{ thumb }}">
-            </a>
-            <div class="admin-label">
-                <a class="btn btn-mini btn-danger link-image-remove" href="/admin/api/img/remove/?album={{ selectedAlbum }}&amp;image={{ images.all[img].file_name }}">
-                <i class="fa fa-trash-o"></i> 
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-</div>
+                  <div id="albumcontainer">
+                    <div class="uploadcontainer" ng-show="uploading">
+                      {( "uploadform.html" )}
+                    </div>
+                    <div class="adminalbum" ng-show="selectedAlbum">
+                      <table class="table table-striped table-bordered table-hover">
+                        <tr>
+                          <th>tag</th>
+                          <th>created</th>
+                          <th>expires</th>
+                          <th>album direct link</th>
+                          <th>album portal link</th>
+                        </tr>
+                        <tr>
+                          <td>admin</td>
+                          <td></td>
+                          <td></td>
+                          <td><a href="/album/{{ images.tags[selectedAlbum]}}/{{selectedAlbum}}/">/album/{{ images.tags[selectedAlbum]}}/{{selectedAlbum}}/</td>
+                            <td></td>
+                          </tr>
+                          <tr ng-repeat="(key, val) in images.accesskeysh[selectedAlbum]">
+                            <td>{{ key}}</td>
+                            <td>{{ val[0] }}</td>
+                            <td>{{ val[1] }}</td>
+                            <td><a href="/album/{{ key }}/{{selectedAlbum}}/">/album/{{ key }}/{{selectedAlbum}}/</td>
+                              <td><a href="/albums/{{ key }}/{{selectedAlbum}}/">/albums/{{ key }}/</td>
+                              </tr>
+                            </table>
+                            <div class="items">
+                              <div class="item" ng-repeat="(img, thumb) in images.thumbs[selectedAlbum]">
+                                <a href="/img/{{ images.tags[selectedAlbum] }}/{{ img }}" class="lb">
+                                  <img class="adminthumb" ng-src="/img/{{ images.tags[selectedAlbum] }}/{{ thumb }}">
+                                </a>
+                                <div class="admin-label">
+                                  <a class="btn btn-mini btn-danger link-image-remove" href="/admin/api/img/remove/?album={{ selectedAlbum }}&amp;image={{ images.all[img].file_name }}">
+                                    <i class="fa fa-trash-o"></i> 
+                                  </a>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-            </div>
-        </div>
-        <hr>
-
-    </div>
 
 <div class="modal fade">
   <div class="modal-dialog">
@@ -219,28 +199,27 @@
 </div>
 
 
-    <script src="/static/md5.js"></script>
-    <script>
-        pnxadmin = pnxadmin();
-    </script>
-    <script src="/static/bootstrap/js/bootstrap.js"></script>
 
-
-    <div class="container-fluid">
-        <div class="row-fluid">
-            <div class="span12">
-                &copy; 2012-2013 Tor Hveem
-            </div>
-        </div>
+  <div ng-show="verified" class="container-fluid">
+    <div class="row-fluid">
+      <div class="span12">
+        &copy; 2012-2013 Tor Hveem
+      </div>
     </div>
-    <footer>
-    </footer>
+  </div>
+  <footer>
+  </footer>
 
-    <!--<script src="/static/bootstrap/js/bootstrap.js"></script>-->
-    <script type="application/javascript" src="/static/smartresize/jquery.debouncedresize.js"></script>
-    <script type="application/javascript" src="/static/imagesloaded/jquery.imagesloaded.min.js"></script>
-    <script type="application/javascript" src="/static/wookmark/jquery.wookmark.min.js"></script>
-    <script type="application/javascript" src="/static/photongx.js?v=4"></script>
+  <script src="/static/md5.js"></script>
+  <script>
+    pnxadmin = pnxadmin();
+  </script>
+
+  <script src="/static/bootstrap/js/bootstrap.js"></script>
+  <script type="application/javascript" src="/static/smartresize/jquery.debouncedresize.js"></script>
+  <script type="application/javascript" src="/static/imagesloaded/jquery.imagesloaded.min.js"></script>
+  <script type="application/javascript" src="/static/wookmark/jquery.wookmark.min.js"></script>
+  <script type="application/javascript" src="/static/photongx.js"></script>
   </body>
 </html>
 

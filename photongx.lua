@@ -73,6 +73,16 @@ end
 
 -- helpers
 
+
+-- helper function to verify that the current user is logged in and valid
+-- using persona
+function is_admin() 
+    if persona.get_current_email() == config.admin then
+        return true
+    end
+    return false
+end
+
 -- Get albums
 function getalbums(accesskey) 
     local allalbums, err = red:zrange("zalbums", 0, -1)
@@ -302,6 +312,7 @@ end
 -- Admin view
 -- 
 local function admin()
+    if not is_admin() then return 'You must be logged in', 403 end
 
     -- load template
     local page = template.tload('admin.html')
@@ -314,6 +325,7 @@ end
 -- Admin API json queue length
 --
 local function admin_api_queue_length()
+    if not is_admin() then return 'You must be logged in', 403 end
     return cjson.encode{ counter = red:llen('queue:thumb') }
 end
 
@@ -321,6 +333,7 @@ end
 -- Admin API json
 --
 local function admin_api_albumttl()
+    if not is_admin() then return 'You must be logged in', 403 end
     local args = ngx.req.get_uri_args()
     local album = args['album']
     local accesstag = args['name']
@@ -492,6 +505,7 @@ end
 -- return images from db
 --
 local function admin_api_images()
+    if not is_admin() then return 'You must be logged in', 403 end
     local albumskey = 'zalbums'
     local albums, err = red:zrange(albumskey, 0, -1)
     local res = {}
@@ -511,6 +525,7 @@ end
 -- Admin API all, api function to return all infos from db, tags, thumbs, images, accesskeys, imagecount, etc
 -- ]]
 local function admin_api_all()
+    if not is_admin() then return 'You must be logged in', 403 end
     local albums = getalbums()
     local tags  = {}
     local images = {}
@@ -560,6 +575,7 @@ end
 -- return image from db
 --
 local function admin_api_image(match)
+    if not is_admin() then return 'You must be logged in', 403 end
     local image = match[1]
     local res = {}
     local imgh, err = red:hgetall(image)
@@ -571,6 +587,7 @@ end
 -- 
 --
 local function admin_api_albums()
+    if not is_admin() then return 'You must be logged in', 403 end
     local albumskey = 'zalbums'
     local albums = getalbums()
     local res = {}
@@ -588,6 +605,7 @@ end
 -- 
 --
 local function admin_api_album(match)
+    if not is_admin() then return 'You must be logged in', 403 end
     local album = match[1]
     local dbtag, err = red:hget(album .. 'h', 'tag')
     local res = { 
