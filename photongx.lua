@@ -690,7 +690,7 @@ local function api_album_remove(match)
     return json(res)
 end
 
-local function admin_api_gentag(match) 
+local function api_gentag(match) 
     local tag = generate_tag()
     return json{ tag=tag }
 end
@@ -734,13 +734,13 @@ local routes = {
     ['upload/$']        = upload,
     ['upload/post/?$']  = upload_post_handler,
     ['api/img/click/$'] = api_img_click,
+    ['api/gentag/?$']   = api_gentag,
     ['admin/api/images/?$']= admin_api_images,
     ['admin/api/image/(.+)/?$']= admin_api_image,
     ['admin/api/albums/?$']= admin_api_albums,
     ['admin/api/album/remove/(\\w+)/(.+)$'] = api_album_remove,
     ['admin/api/album/(.+)$']= admin_api_album,
     ['admin/api/all/?$']= admin_api_all,
-    ['admin/api/gentag/?$']= admin_api_gentag,
     ['admin/api/img/remove/(.*)'] = api_img_remove,
     ['admin/api/albumttl/create(.*)'] = admin_api_albumttl,
     ['admin/api/queue/length/'] = admin_api_queue_length,
