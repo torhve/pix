@@ -308,19 +308,6 @@ local function upload()
     return page(context)
 end
 
---
--- Admin view
--- 
-local function admin()
-    if not is_admin() then return 'You must be logged in', 403 end
-
-    -- load template
-    local page = template.tload('admin.html')
-
-    -- and return it to nginx
-    return page{}
-end
-
 -- 
 -- Admin API json queue length
 --
@@ -749,7 +736,6 @@ local routes = {
     ['album/(\\w+)/(.+?)/$']  = album,
     ['album/(\\w+)/(.+?)/(\\d+)/$']= album,
     ['$']               = index,
-    ['admin/$']         = admin,
     ['upload/$']        = upload,
     ['upload/post/?$']  = upload_post_handler,
     ['api/img/click/$'] = api_img_click,
