@@ -14,6 +14,7 @@ A photo gallery with next to no chrome, written in lua deploying with nginx
  * Redis as database
  * Runs on nginx (openresty)
  * Mozilla Persona for login
+ * AngularJS admin panel
  * Is awesome!
  
 
