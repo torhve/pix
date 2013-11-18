@@ -1,6 +1,6 @@
 ---
 -- Persona Lua auth backend using ngx location capture
--- also using postgresql capture for storing sessions to db
+-- using redis storing sessions 
 -- 
 -- Copyright Tor Hveem <thveem> 2013
 -- 
