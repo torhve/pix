@@ -15,6 +15,7 @@ local template = require "template"
 local resty_md5 = require "resty.md5"
 local rupload = require "resty.upload"
 local rstr = require "resty.string"
+local persona = require 'persona'
 
 local ROOT_PATH = ngx.var.root
 local config = ngx.shared.config
@@ -735,6 +736,9 @@ local routes = {
     ['upload/post/?$']  = upload_post_handler,
     ['api/img/click/$'] = api_img_click,
     ['api/gentag/?$']   = api_gentag,
+    ['api/persona/verify$'] = persona.login,
+    ['api/persona/logout$'] = persona.logout,
+    ['api/persona/status$'] = persona.status,
     ['admin/api/images/?$']= admin_api_images,
     ['admin/api/image/(.+)/?$']= admin_api_image,
     ['admin/api/albums/?$']= admin_api_albums,
