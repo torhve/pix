@@ -10,5 +10,6 @@
         "thumb_max": 640,
         "huge_max": 2000,
         "quality": 70
-    }
+    },
+    "admin": "emailaddress@persona"
 }

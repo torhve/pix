@@ -13,4 +13,8 @@ A photo gallery with next to no chrome, written in lua deploying with nginx
  * Backend in lua
  * Redis as database
  * Runs on nginx (openresty)
+ * Mozilla Persona for login
  * Is awesome!
+ 
+
+ See demo at <http://pex.hveem.no>
