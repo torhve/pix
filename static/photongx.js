@@ -1,6 +1,5 @@
-var photongx = (function() {
+var photongx = (function($container) {
     var slideshow = false,
-        $container = $('.items'),
         currentimage = 0,
         slideshowtimer,
         interval = 3000,
@@ -118,7 +117,7 @@ var photongx = (function() {
                 '<a id="goFS" href="#" title="Toggle full screen"><i class="fa fa-arrows-alt"></i></a>' +
                 '<a id="hideLB" href="# title="Close image""><i class="fa fa-times"></i></a></div>' +
                 '<a href="#prev" id="prev" title="Previous image"><div><i class="fa fa-backward"></i></div></a>' +
-                    '<div id="content">' + //insert clicked link's href into img src
+                    '<div id="lbcontent">' + //insert clicked link's href into img src
                         '<img class="lbimg" id="img-front" src="">' +
                     '</div>' +  
                 '<a href="#next" id="next" title="Next image"><div><i class="fa fa-forward"></i></div></a>' +
@@ -181,7 +180,7 @@ var photongx = (function() {
         if(slideshow) {
 
             $('#img-front').css('opacity', 0).bind("transitionend webkitTransitionEnd oTransitionEnd MSTransitionEnd", function(){ 
-                $('#content').html('<img class="lbimg" id="img-front" src="' + image_href +'">');
+                $('#lbcontent').html('<img class="lbimg" id="img-front" src="' + image_href +'">');
                 //$('#img-front').attr('src', image_href);
                 $('#img-front').css('opacity', 0.999).bind("transitionend webkitTransitionEnd oTransitionEnd MSTransitionEnd", function(){ 
                     $('#img-front').css('opacity', 1);
@@ -200,7 +199,7 @@ var photongx = (function() {
 
     };
     this.showLB = function() {
-        $('#content').imagesLoaded(function( $images, $proper, $broken ) {
+        $('#lbcontent').imagesLoaded(function( $images, $proper, $broken ) {
             // effects for background
             $('.items').addClass('backgrounded');
             //show lightbox window - you could use .show('fast') for a transition

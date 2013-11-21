@@ -97,9 +97,9 @@
                           <li>Create new display links for guests</li>
                         </ul>
                         Please select an album to start.
-                        <div class="items">
+                        <div class="aitems" style="position:relative">
                           <div class="" ng-repeat="album in images.albums" ng-click="clickAlbum(album)">
-                            <div class="item" ng-repeat="img in images.imagesarray[album] | limitTo:1">
+                            <div class="aitem" ng-repeat="img in images.imagesarray[album] | limitTo:1" style="float:left">
                               <div class="admin-album-label">
                                 <i class="fa fa-camera-retro"></i> {{ album }}
                               </div>
@@ -163,9 +163,9 @@
                               <td><a href="/albums/{{ key }}/{{selectedAlbum}}/">/albums/{{ key }}/</td>
                               </tr>
                             </table>
-                            <div class="items">
+                            <div class="items" style="position:relative">
                               <div class="item" ng-repeat="(img, thumb) in images.thumbs[selectedAlbum]">
-                                <a href="/img/{{ images.tags[selectedAlbum] }}/{{ img }}" class="lb">
+                                <a id="image-{{$index}}" href="/img/{{ images.tags[selectedAlbum] }}/{{ img }}" class="lb">
                                   <img class="adminthumb" ng-src="/img/{{ images.tags[selectedAlbum] }}/{{ thumb }}">
                                 </a>
                                 <div class="admin-label">
@@ -257,6 +257,7 @@
   <script type="application/javascript" src="/static/imagesloaded/jquery.imagesloaded.min.js"></script>
   <script type="application/javascript" src="/static/wookmark/jquery.wookmark.min.js"></script>
   <script type="application/javascript" src="/static/photongx.js"></script>
+  <div id="spinner" class="spinner">Loading ...</div>
   </body>
 </html>
 

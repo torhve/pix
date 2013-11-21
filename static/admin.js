@@ -46,6 +46,7 @@ pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', f
 
     // Init function gets called from status function when user logs in
     $scope.init = function() {
+        $('.spinner').removeClass('hidden');
         images.getAllFromBackend();
         images.getImagesFromBackend();
 
@@ -55,6 +56,7 @@ pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', f
             images.getQueueCount();
             $scope.$apply();
         }, 6000);
+        $('.spinner').addClass('hidden');
     }
 
     $scope.mouseOverAlbum = function(album) {
@@ -66,13 +68,7 @@ pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', f
        $scope.selectedAlbum = album;
        // TODO make this clever?
        setTimeout(function() {
-           $('#admincontent').imagesLoaded(function() {
-               $('.item').wookmark({
-                   container: $('#admincontent .items'),
-                   autoResize: true,
-                   offset: 3
-               });
-           });
+           pnx = photongx($('.items'));
         }, 2000);
 
     }

@@ -66,6 +66,8 @@ a, a:hover {
 }
 .admin-label {
     right:0;
+    position: absolute;
+    top:0;
 }
 .album-label {
     background: rgba(0, 0, 0, 0.4);
