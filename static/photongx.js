@@ -1,4 +1,4 @@
-var photongx = (function($container) {
+var photongx = (function($container, $items) {
     var slideshow = false,
         currentimage = 0,
         slideshowtimer,
@@ -40,13 +40,13 @@ var photongx = (function($container) {
         // also subtract columns*offsett, since every item got offset px margin, offset/2 on each side
         cwidth = docwidth / columns - (offset*(columns-1)); 
         //$('.item').css('max-width', cwidth + 'px');
-        $('.item img').css('width', cwidth + 'px');
+        $items.find('img').css('width', cwidth + 'px');
         console.log('Decided on ', columns, ' columns with docwidth ', docwidth);
     }
     setColumnwidth();
 
     var wookmarkIt = function() {
-        $('.item').wookmark({
+        $items.wookmark({
             container: $container,
             autoResize: false,
             flexibleWidth: false,
@@ -201,7 +201,7 @@ var photongx = (function($container) {
     this.showLB = function() {
         $('#lbcontent').imagesLoaded(function( $images, $proper, $broken ) {
             // effects for background
-            $('.items').addClass('backgrounded');
+            $container.addClass('backgrounded');
             //show lightbox window - you could use .show('fast') for a transition
             $('#lightbox').removeClass('hidden').show();
             // We are loaded, so hide the spinner
@@ -215,7 +215,7 @@ var photongx = (function($container) {
             document.cancelFullScreen();
         }
         // effects for background
-        $('.items').removeClass('backgrounded');
+        $container.removeClass('backgrounded');
         //$('#lightbox').hide();
         $('#lightbox').hide();
         // Stop any running slideshow;
@@ -254,19 +254,18 @@ var photongx = (function($container) {
     }
     var onFullScreenExit = function() {
         console.log('onFSExit');
-        //$('#goFS i').removeClass('icon-resize-small').addClass('icon-fullscreen');
     }
     
 
     // Slideshow
     var play = function() {
-        $('#play i').removeClass('icon-play').addClass('icon-pause');
+        $('#play i').removeClass('fa-play').addClass('fa-pause');
         slideshow = true;
         slideshowtimer = setInterval(function(){ $(document).trigger("next_image"); }, interval);
     }
     // Slideshow
     var pause = function() {
-        $('#play i').removeClass('icon-pause').addClass('icon-play');
+        $('#play i').removeClass('fa-pause').addClass('fa-play');
         slideshow = false;
         window.clearInterval(slideshowtimer);
     }
@@ -276,8 +275,8 @@ var photongx = (function($container) {
         if (c == 0) {
             // we are at the start, figure out the amount of items and
             // go to the end
-            c = $('.item').length;
-        }else if (c > ($('.item').length)) {
+            c = $items.length;
+        }else if (c > ($items.length)) {
             c = 1; // Lua starts at 1 :)
         }
 
