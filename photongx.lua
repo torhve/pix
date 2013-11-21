@@ -173,17 +173,13 @@ local function albums(match)
     local images = {}
     local tags  = {}
     local atags = {}
-    local imagecount = 0
+    local currentviewcount = {}
 
-    -- Fetch a cover img
+    -- Fetch a cover img in a very slow manner
+    -- iterate every picture and get the view count from the redis hash
+    -- and then compare it to existing
     for i, album in ipairs(albums) do
-        -- FIXME, only get 1 image
-        local theimages, err = red:zrange(album, 0, 1)
-        imagecount = imagecount + #theimages
-        if err then
-            ngx.say(err)
-            return
-        end
+        local theimages, err = red:zrange(album, 0, 0) -- Only request first picture uploaded. First picture is 17ms, all pictures and sorting is 120ms. Far too slow. Should really store the viewcount in an efficient manner
         local tag, err = red:hget(album .. 'h', 'tag')
         -- If accesstag is set, we use that as access for every album
         if accesstag then 
@@ -194,25 +190,40 @@ local function albums(match)
         end
         tags[album] = tag
         for i, image in ipairs(theimages) do
-            local itag = red:hget(image, 'itag')
-            -- Get thumb if key exists
-            -- set to full size if it doesn't exist
-            local img = ngx.var.IMGBASE .. accesstag .. '/' .. album .. '/' .. tag .. '/' ..  itag .. '/'  
-            local thumb_name = red:hget(image, 'thumb_name')
-            if thumb_name ~= ngx.null then
-                images[album] = img .. thumb_name
-            else
-                images[album] = img .. red:hget(image, 'file_name')
+            local h = red:array_to_hash(red:hgetall(image))
+            if not currentviewcount[album] then 
+              currentviewcount[album] = -1
             end
-            break
+            local viewc = h.views
+            if viewc then
+                viewc = tonumber(viewc)
+                -- Set new coverimage if viewcount is greater
+                if viewc > currentviewcount[album] then
+                    currentviewcount[album] = viewc
+                    local itag = h.itag
+                    -- Get thumb if key exists
+                    -- set to full size if it doesn't exist
+                    local img = ngx.var.IMGBASE .. accesstag .. '/' .. album .. '/' .. tag .. '/' ..  itag .. '/'  
+                    local thumb_name = h.thumb_name
+                    if thumb_name then
+                        images[album] = img .. thumb_name
+                    else
+                        images[album] = img .. h.file_name
+                    end
+                end
+            end
         end
     end
+    --[[
+    table.sort(imagelist, function(a,b)
+        return views[a] > views[b]
+    end)
+    --]]
 
     -- load template
     local page = template.tload('albums.html')
     local context = ctx{
         albums = albums, 
-        imagecount = imagecount,
         images = images, 
         atags = atags,
         tags = tags,
@@ -242,42 +253,60 @@ end
 -- View for a single album
 -- 
 local function album(path_vars)
+    local args = ngx.req.get_uri_args()
 
     local tag = path_vars[1]
     local album = path_vars[2]
     local image_num = path_vars[3]
+
     -- Verify tag
     local dbtag, err = red:hget(album .. 'h', 'tag')
     if dbtag ~= tag then
-        ngx.exit(410)
+        return 'You are trying to access expired content', 410
     end
 
     local imagelist, err = red:zrange(album, 0, -1)
     local images = {} -- Table holding full size images
     local thumbs = {} -- Table holding thumbnails
+    local views = {}  -- Table holding view count per image
 
     for i, image in ipairs(imagelist) do
-        local itag = red:hget(image, 'itag')
+        local h = red:array_to_hash(red:hgetall(image))
+        local itag = h.itag
         -- Get thumb if key exists
         -- set to full size if it doesn't exist
-        local thumb_name = red:hget(image, 'thumb_name')
-        if thumb_name ~= ngx.null then
+        local thumb_name = h.thumb_name
+        if thumb_name then
             thumbs[image] = itag .. '/' .. thumb_name
         else
-            thumbs[image] = itag .. '/' .. red:hget(image, 'file_name')
+            thumbs[image] = itag .. '/' .. h.file_name
         end
         -- Get the huge image if it exists
-        local huge_name = red:hget(image, 'huge_name')
-        if huge_name ~= ngx.null then
+        -- set to full size if it doesn't exist
+        local huge_name = h.huge_name
+        if huge_name then
             images[image] = itag .. '/' .. huge_name
         else 
-            images[image] = itag .. '/' .. red:hget(image, 'file_name')
+            images[image] = itag .. '/' .. h.file_name
+        end
+
+        local viewc = h.views
+        if viewc then
+          views[image] = tonumber(viewc)
+        else
+          views[image] = 0
         end
     end
+
+    -- Check if user wants the album sorted by views
+    -- FIXME we just have this as default behaviour for now
+    if true or args['sort'] == 'views' then
+        table.sort(imagelist, function(a,b)
+            return views[a] > views[b]
+        end)
+    end
     
-    -- load template
-    local page = template.tload('album.html')
-    local context = ctx{ 
+    return template.tload('album.html')(ctx{ 
         album = album,
         tag = tag,
         albumtitle = ngx.re.gsub(album, '_', ' '),
@@ -286,10 +315,8 @@ local function album(path_vars)
         thumbs = thumbs,
         bodyclass = 'gallery',
         showimage = image_num,
-    }
-    -- render template with counter as context
-    -- and return it to nginx
-    return page(ctx(context))
+        views = views,
+    })
 end
 
 --
@@ -610,17 +637,21 @@ end
 --
 local function api_img_click()
     local args = ngx.req.get_uri_args()
-    local match = ngx.re.match(args['img'], '^/.*/(\\w+)/(\\w+)/(.+)$')
+    local match = ngx.re.match(args['img'], '^(\\w+)/(.+)$')
     if not match then
-        return 'Faulty request', 404
+        return json{image=args['img'],err='Faulty request'}, 403
     end
-    atag = match[1]
-    itag = match[2]
-    img  = match[3]
+    local itag = match[1]
+    local img  = match[2]
     local key = itag .. '/' .. img
+    -- In case frontend is sending bad data check for key existance before plowing through
+    if red:exists(key) == 0 then
+      return json{image=key,err='Wrong key specified'}, 403
+    end
+
     local counter, err = red:hincrby(key, 'views', 1)
     if err then
-        return {image=key,error=err}, 500
+        return json{image=key,err=err}, 500
     end
     return json{image=key,views=counter}
 end
@@ -631,14 +662,14 @@ end
 local function api_img_remove()
     local args = ngx.req.get_uri_args()
     local album = args['album']
-    match = ngx.re.match(args['image'], '(.*)/(.*)')
+    local match = ngx.re.match(args['image'], '(.*)/(.*)')
     if not match then
         return 'Faulty image', 401
     end
-    res = {}
-    itag = match[1]
-    img = match[2]
-    tag = red:hget(album..'h', 'tag')
+    local res = {}
+    local itag = match[1]
+    local img = match[2]
+    local tag = red:hget(album..'h', 'tag')
     if tag == ngx.null then
       return 'Faulty image', 403
     end

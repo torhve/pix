@@ -103,6 +103,7 @@ var photongx = (function($container, $items) {
         createLB();
 
         setLBimage(image_href);
+        countView($(this).data('filename'));
 
         showLB();
     });
@@ -190,11 +191,6 @@ var photongx = (function($container, $items) {
         }else {
             $('#img-front').attr('src', image_href);
         }
-
-        // Count the viewing
-        $.getJSON('/api/img/click/', { 'img':image_href}, function(data) {
-            //console.log(data);
-        });
         // TODO scrollto background pos img
 
     };
@@ -288,8 +284,10 @@ var photongx = (function($container, $items) {
     // it wraps on start and end, and preloads 3 images in the current 
     // scrolling direction
     this.navigateImage = function(c) {
-        var image_href = $('#image-'+c).attr('href');
+        var imageelement = $('#image-'+c);
+        var image_href = imageelement.attr('href');
         setLBimage(image_href);
+        countView(imageelement.data('filename'));
 
         var cone = c+1, ctwo = c+2 , cthree = c+3;
         // We are going backwards
@@ -304,6 +302,18 @@ var photongx = (function($container, $items) {
             //$('#image-'+String(parseInt(ctwo))).attr('href'),
             //$('#image-'+String(parseInt(cthree))).attr('href')
         currentimage = c;
+    }
+
+    //
+    // Function responsible for counting clicks/views in the backend
+    //
+    this.countView = function(file_name) {
+        // Backend wants the original file name as a key to use for counting
+        $.getJSON('/api/img/click/', { 'img':file_name}, function(data) {
+            if (!data.views > 0) {
+                console.log('Error counting clicks. Response from backend was',data);
+            }
+        });
     }
 
     $(document).on('next_image', function (evt) {
