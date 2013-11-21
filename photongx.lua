@@ -623,7 +623,7 @@ local function api_img_click()
 end
 
 -- 
--- remove img
+-- API Function remove a single given image from a given album
 --
 local function api_img_remove()
     local args = ngx.req.get_uri_args()
@@ -647,21 +647,22 @@ local function api_img_remove()
     -- FIXME get real thumbnail filenames?
     -- delete thumbnail
     -- FIXME get thumb size from config
-    res['rmimg'] = os.execute('rm "' .. IMGPATH .. tag .. '/' .. itag .. '/t640.' .. img .. '"')
+    res['rmimg'] = os.execute('rm -v "' .. IMGPATH .. tag .. '/' .. itag .. '/t640.' .. img .. '"')
     -- FIXME get thumb size from config
-    res['rmimg'] = os.execute('rm "' .. IMGPATH .. tag .. '/' .. itag .. '/t2000.' .. img .. '"')
-    res['rmdir'] = os.execute('rmdir ' .. IMGPATH .. tag .. '/' .. itag .. '/')
+    res['rmimg'] = os.execute('rm -v "' .. IMGPATH .. tag .. '/' .. itag .. '/t2000.' .. img .. '"')
+    res['rmdir'] = os.execute('rmdir -v ' .. IMGPATH .. tag .. '/' .. itag .. '/')
 
     res['album'] = album
     res['itag'] = itag
     res['tag'] = tag
     res['img'] = img
 
-
     return json(res)
-
 end
 
+
+--
+-- API Function to remove an album
 local function api_album_remove(match)
     local tag = match[1]
     local album = match[2]
@@ -691,8 +692,8 @@ local function api_album_remove(match)
     res[album..'h'] = red:del(album..'h')
 
     res['albums'] = red:zrem('zalbums', album)
-    res['command'] = "rm -rf "..IMGPATH..'/'..tag
-    os.execute(res['command'])
+    res['command'] = "rm -rfv "..IMGPATH..'/'..tag
+    res['commandres'] = os.execute(res['command'])
     return json(res)
 end
 
