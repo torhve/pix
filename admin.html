@@ -140,7 +140,7 @@
                       </div>
                     </div>
                     <div class="adminalbum" ng-show="selectedAlbum">
-                      <table class="table table-bordered>
+                      <table class="table table-bordered">
                         <tr>
                           <th>tag</th>
                           <th>created</th>
@@ -168,6 +168,9 @@
                                 <a id="image-{{$index}}" href="/img/{{ images.tags[selectedAlbum] }}/{{ img }}" class="lb">
                                   <img class="adminthumb" ng-src="/img/{{ images.tags[selectedAlbum] }}/{{ thumb }}">
                                 </a>
+                                <div class="admin-album-label">
+                                  {{ img }}
+                                </div>
                                 <div class="admin-label">
                                   <a class="btn btn-mini btn-danger link-image-remove" href="/admin/api/img/remove/?album={{ selectedAlbum }}&amp;image={{ img }}">
                                     <i class="fa fa-trash-o"></i> 
