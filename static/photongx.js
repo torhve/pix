@@ -242,6 +242,8 @@ var photongx = (function($container, $items) {
                 elem.mozRequestFullScreen();
             } else if (elem.webkitRequestFullScreen) {
                 elem.webkitRequestFullScreen();
+            } else if (elem.msRequestFullscreen) {
+                elem.msRequestFullScreen();
             }
             elem.onwebkitfullscreenchange = onFullScreenExit;
             elem.onmozfullscreenchange = onFullScreenExit;
