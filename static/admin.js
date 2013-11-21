@@ -46,7 +46,6 @@ pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', f
 
     // Init function gets called from status function when user logs in
     $scope.init = function() {
-        console.log('init');
         images.getAllFromBackend();
         images.getImagesFromBackend();
 
@@ -164,6 +163,7 @@ services.factory('images', ['$http', function($http) {
         accesskeysh: {},
         nrofimages: 0,
         thumbs: {},
+        imagesarray: {},
         tags: {},
         queueCount: 0,
         getAllFromBackend: function() {
@@ -174,6 +174,7 @@ services.factory('images', ['$http', function($http) {
               images.thumbs = res.thumbs;
               images.accesskeysh = res.accesskeysh;
               images.accesskeys = res.accesskeys;
+              images.imagesarray = res.images;
             });
         },
         getImagesFromBackend: function() {
@@ -235,7 +236,7 @@ services.factory("personaSvc", ["$http", "$q", function ($http, $q) {
     };
 }]);
 
-AlbumListCtrl.$inject = ["$scope", "personaSvc"];
+//AlbumListCtrl.$inject = ["$scope", "personaSvc"];
 
 
 

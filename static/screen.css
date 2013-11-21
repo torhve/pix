@@ -60,12 +60,12 @@ a, a:hover {
     #about img {
         max-width: 100%;
     }
-.admin-label {
+.admin-album-label, .admin-label {
     color: white;
-    position: absolute;
-    top: 0;
-    right:0;
     z-index: 1;
+}
+.admin-label {
+    right:0;
 }
 .album-label {
     background: rgba(0, 0, 0, 0.4);
@@ -73,7 +73,7 @@ a, a:hover {
      -moz-box-shadow: 0 2px 10px rgba(0,0,0,.25);
           box-shadow: 0 2px 10px rgba(0,0,0,.25);
     color: white;
-    position: absolute;
+    position: relative;
     top: 15px;
     left: 0;
     z-index: 1;
@@ -337,9 +337,6 @@ a, a:hover {
 .adminthumb {
     max-width:180px;
 }
-.adminthumb.hidden {
-    display: none;
-}
 #admincontent {
 }
 
@@ -468,22 +465,34 @@ a, a:hover {
     background-image: linear-gradient(to bottom, rgb(0, 136, 204), rgb(0, 68, 204));
     background-repeat: repeat-x;
 }
-.well {
-    padding-top: 0;
+input[text], .badge {
+    border: 0;
+    border-radius: 0;
+    color: #ccc;
+    box-shadow: 0px 1px 0px rgba(255, 255, 255, 0.1), 0px 1px 7px 0px rgba(0, 0, 0, 0.8) inset;
+    background: none repeat scroll 0% 0% rgba(0, 0, 0, 0.3);
+}
+.sidebar {
+  background: #282828;
+  padding: 5px;
+-webkit-box-shadow: rgba(255, 255, 255, 0.07) 0 1px 0;
+   -moz-box-shadow: rgba(255, 255, 255, 0.07) 0 1px 0;
+        box-shadow: rgba(255, 255, 255, 0.07) 0 1px 0;
+    border: 1px solid #121212;
 }
 .sidebar-nav ul {
-    padding: 0;
 }
 .sidebar-nav {
-    list-style: none;
-    padding: 0;
   }
 .sidebar-nav li {
-    margin: 0;
 }
 
 .sidebar-nav li a {
    cursor: pointer;
+   color: #DDD;
+}
+.sidebar-nav li a:hover { 
+  color:black;
 }
 .nav-header {
   display: block;

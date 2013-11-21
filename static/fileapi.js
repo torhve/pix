@@ -1,4 +1,5 @@
 /* FileAPI from filebin.net (C) Espen Braastad */
+/* Modifications by Tor Hveem */
 function FileAPI (c, t, d, f, g, a) {
   
       var fileCount = c,

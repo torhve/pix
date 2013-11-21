@@ -36,7 +36,7 @@
       <div class="row">
         <div class="col-md-12">
           <div class="vertical-line ph">
-            <h1><span class="blue">Photo Engine X</span> Administration 
+            <h1><a href="/admin/"><span class="blue">Photo Engine X</span> </a>Administration 
                 </ul>
               
               <small class="pull-right">{{ images.nrofimages }} images in {{ images.albums.length }} albums</small></h1>
@@ -48,8 +48,8 @@
     <div ng-show="verified" class="container-fluid">
       <div class="row">
             <div class="col-md-3">
-                <div class="well">
-                    <ul class="sidebar-nav">
+                <div class="sidebar">
+                    <ul class="sidebar-nav nav nav-pills nav-stacked">
                         <li class="nav-header" title="When images are uploaded, they are processed in the background. Generation meta data and creating thumbnails and such. This counter shows you how many images are still waiting to be processed">Processing queue</li>
                         <li id="li-queue">
                           <span class="blue" ng-bind="images.queueCount"></span> images in the queue
@@ -96,7 +96,17 @@
                           <li>Delete albums</li>
                           <li>Create new display links for guests</li>
                         </ul>
-                        Please select an album in the left menu to start.
+                        Please select an album to start.
+                        <div class="items">
+                          <div class="" ng-repeat="album in images.albums" ng-click="clickAlbum(album)">
+                            <div class="item" ng-repeat="img in images.imagesarray[album] | limitTo:1">
+                              <div class="admin-album-label">
+                                <i class="fa fa-camera-retro"></i> {{ album }}
+                              </div>
+                              <img class="adminthumb" ng-src="/img/{{ images.tags[album] }}/{{ img }}">
+                            </div>
+                          </div>
+                        </div>
                   </div>
                   <div id="albumcontainer">
                     <div class="uploadcontainer" ng-show="uploading">
