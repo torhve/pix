@@ -48,7 +48,7 @@ pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', f
     $scope.init = function() {
         $('.spinner').removeClass('hidden');
         images.getAllFromBackend();
-        images.getImagesFromBackend();
+        //images.getImagesFromBackend();
 
         images.getQueueCount();
         // Update queue count on a timer
@@ -173,6 +173,7 @@ services.factory('images', ['$http', function($http) {
               images.imagesarray = res.images;
             });
         },
+        /*
         getImagesFromBackend: function() {
             $http.get('/admin/api/images/').then(function(data) {
                 var i = 0;
@@ -189,6 +190,7 @@ services.factory('images', ['$http', function($http) {
                 images.nrofimages = i;
             });
         },
+        */
         getQueueCount: function() {
             $http.get('/admin/api/queue/length/').then(function(data) {
                 var counter =  data.data['counter'];
