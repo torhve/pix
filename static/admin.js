@@ -181,6 +181,7 @@ services.factory('images', ['$http', function($http) {
               images.accesskeysh = res.accesskeysh;
               images.accesskeys = res.accesskeys;
               images.imagesarray = res.images;
+              images.nrofimages = res.nrofimages;
             });
         },
         /*

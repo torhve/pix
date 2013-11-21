@@ -519,6 +519,7 @@ local function admin_api_all()
     local thumbs = {}
     local accesskeys = {}
     local accesskeysh = {}
+    local nrofimages = 0
 
     for i, album in ipairs(albums) do
         local theimages, err = red:zrange(album, 0, -1)
@@ -545,6 +546,7 @@ local function admin_api_all()
                     thumbs[album][image] = itag .. '/' .. file_name
                 end
             end
+            nrofimages = nrofimages + 1
         end
     end
     local res = {
@@ -554,6 +556,7 @@ local function admin_api_all()
         thumbs = thumbs,
         accesskeys = accesskeys,
         accesskeysh = accesskeysh,
+        nrofimages = nrofimages,
     }
     return json(res)
 end
@@ -758,7 +761,7 @@ local routes = {
     ['admin/api/albums/?$']= admin_api_albums,
     ['admin/api/album/remove/(\\w+)/(.+)$'] = api_album_remove,
     ['admin/api/album/(.+)$']= admin_api_album,
-    ['admin/api/all/?$']= admin_api_all,
+    ['admin/api/all/?$']     = admin_api_all,
     ['admin/api/img/remove/(.*)'] = api_img_remove,
     ['admin/api/albumttl/create(.*)'] = admin_api_albumttl,
     ['admin/api/queue/length/'] = admin_api_queue_length,
