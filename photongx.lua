@@ -636,6 +636,9 @@ local function api_img_remove()
     itag = match[1]
     img = match[2]
     tag = red:hget(album..'h', 'tag')
+    if tag == ngx.null then
+      return 'Faulty image', 403
+    end
     -- delete image hash
     res['image'] = red:array_to_hash(red:hgetall(itag .. '/' .. img))
     res['imagedel'] = red:del(itag .. '/' .. img)
