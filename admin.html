@@ -69,7 +69,7 @@
                         <li ng-hide="images.albums.length" class=""><i class="fa fa-spin fa-spinner"></i> Loading all the things...</li>
                         <li class="li-nav-album" ng-repeat="album in images.albums" ng-mouseover="mouseOverAlbum(album)" >
                             <a ng-click="clickAlbum(album)">
-                                <span class="badge pull-right" title="Number of images in album">{{ images.imagecount[album] }}</span>
+                                <span class="badge pull-right" title="Number of images in album">{{ images.imagesarray[album].length }}</span>
                                 <i class="fa fa-picture"></i>
                                 {{ album }}
                             </a>
@@ -140,7 +140,7 @@
                       </div>
                     </div>
                     <div class="adminalbum" ng-show="selectedAlbum">
-                      <table class="table table-bordered table-hover">
+                      <table class="table table-bordered>
                         <tr>
                           <th>tag</th>
                           <th>created</th>

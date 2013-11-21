@@ -19,7 +19,7 @@
         var BASE = '{{BASE}}';
         var showimage = {% if showimage then %}{{showimage}}{% else %}null{% end %};
         $(document).on("ready", function (evt) {
-            pnx = photongx($('.items'));
+            pnx = photongx($('.items'), $('.item'));
             if (showimage) {
                 pnx.createLB();
                 pnx.navigateImage(showimage);

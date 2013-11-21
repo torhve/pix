@@ -56,8 +56,18 @@ pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', f
             images.getQueueCount();
             $scope.$apply();
         }, 6000);
-        $('.spinner').addClass('hidden');
     }
+    /* Fired after everything has been loaded from the backend */
+    $scope.$watch('images.imagesarray', function() {
+        $('.spinner').addClass('hidden');
+        // TODO this should be more clever
+        setTimeout(function() {
+            $('.aitems').imagesLoaded(function( $images, $proper, $broken ) {
+                apnx = photongx($('.aitems'), $('.aitem'));
+            });
+        }, 2000);
+    });
+
 
     $scope.mouseOverAlbum = function(album) {
         $scope.hoverAlbum = album;
@@ -68,7 +78,7 @@ pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', f
        $scope.selectedAlbum = album;
        // TODO make this clever?
        setTimeout(function() {
-           pnx = photongx($('.items'));
+           pnx = photongx($('.items'), $('.item'));
         }, 2000);
 
     }

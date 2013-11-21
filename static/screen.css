@@ -60,16 +60,7 @@ a, a:hover {
     #about img {
         max-width: 100%;
     }
-.admin-album-label, .admin-label {
-    color: white;
-    z-index: 1;
-}
-.admin-label {
-    right:0;
-    position: absolute;
-    top:0;
-}
-.album-label {
+.album-label, .admin-album-label {
     background: rgba(0, 0, 0, 0.4);
   -webkit-box-shadow: 0 2px 10px rgba(0,0,0,.25);
      -moz-box-shadow: 0 2px 10px rgba(0,0,0,.25);
@@ -95,6 +86,19 @@ a, a:hover {
         padding-left: 5px;
         text-transform: capitalize;
     }
+
+.admin-album-label, .admin-label {
+    color: white;
+    z-index: 1;
+    position: absolute;
+    top: 0;
+}
+.admin-label {
+    right:0;
+}
+.aitem {
+    pointer: cursor;
+}
 .items {
     width: 100%;
     position: relative;
@@ -182,13 +186,6 @@ a, a:hover {
     transition: all 500ms cubic-bezier(0.250, 0.100, 0.250, 1.000); /* ease (default) */
 }
 
-#content {
-    position:fixed; /* keeps the lightbox window in the current viewport */
-    top:  0; 
-    left: 0; 
-    right: 0;
-    bottom: 0;
-}
 #lightbox {
     position:fixed; /* keeps the lightbox window in the current viewport */
     top:  0; 
@@ -248,9 +245,9 @@ a, a:hover {
     padding: 4%;
 }
 #lightbox img {
-            box-shadow:0 0 40px #000;
     -webkit-box-shadow:0 0 40px #000;
-    -   moz-box-shadow:0 0 40px #000;
+       -moz-box-shadow:0 0 40px #000;
+            box-shadow:0 0 40px #000;
     /*
     border-left: 5px solid black;
     border-right: 5px solid black;
@@ -258,6 +255,13 @@ a, a:hover {
     border: 3px solid black;
     max-width:100%;
     height: 100%;
+}
+#lbcontent {
+    position:fixed; /* keeps the lightbox window in the current viewport */
+    top:  0; 
+    left: 0; 
+    right: 0;
+    bottom: 0;
 }
 
 #spinner {
@@ -338,8 +342,6 @@ a, a:hover {
 
 .adminthumb {
     max-width:180px;
-}
-#admincontent {
 }
 
 /* TRANSITION */
