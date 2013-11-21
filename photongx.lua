@@ -637,19 +637,25 @@ local function api_img_remove()
     img = match[2]
     tag = red:hget(album..'h', 'tag')
     -- delete image hash
-    res['image'] = red:del(itag .. '/' .. img)
+    res['image'] = red:array_to_hash(red:hgetall(itag .. '/' .. img))
+    res['imagedel'] = red:del(itag .. '/' .. img)
     -- delete itag from itag set
     res['itags'] = red:srem('album:' .. album .. ':imagetags', itag)
     -- delete image from album set
     res['images'] = red:zrem(album, itag .. '/' .. img)
     -- delete image and dir from file
     res['rmimg'] = os.execute('rm "' .. IMGPATH .. tag .. '/' .. itag .. '/' .. img .. '"')
-    -- FIXME get real thumbnail filenames?
     -- delete thumbnail
-    -- FIXME get thumb size from config
-    res['rmimg'] = os.execute('rm -v "' .. IMGPATH .. tag .. '/' .. itag .. '/t640.' .. img .. '"')
-    -- FIXME get thumb size from config
-    res['rmimg'] = os.execute('rm -v "' .. IMGPATH .. tag .. '/' .. itag .. '/t2000.' .. img .. '"')
+    local thumb_name = res['image'].thumb_name
+    if thumb_name then
+      res['thumb_file_name'] = IMGPATH .. tag .. '/' .. itag .. '/' .. thumb_name 
+      res['rmthumb'] = os.execute('rm -v "'..res['thumb_file_name']..'"')
+    end
+    local huge_name = res['image'].huge_name
+    if huge_name then
+      res['huge_file_name'] = IMGPATH .. tag .. '/' .. itag .. '/' .. huge_name
+      res['rmhuge'] = os.execute('rm -v "'..res['huge_file_name']..'"')
+    end
     res['rmdir'] = os.execute('rmdir -v ' .. IMGPATH .. tag .. '/' .. itag .. '/')
 
     res['album'] = album
