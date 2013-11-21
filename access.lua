@@ -1,2 +1,0 @@
---ngx.redirect('/')
---ngx.exit(410)
