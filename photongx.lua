@@ -194,22 +194,22 @@ local function albums(match)
             if not currentviewcount[album] then 
               currentviewcount[album] = -1
             end
-            local viewc = h.views
-            if viewc then
-                viewc = tonumber(viewc)
-                -- Set new coverimage if viewcount is greater
-                if viewc > currentviewcount[album] then
-                    currentviewcount[album] = viewc
-                    local itag = h.itag
-                    -- Get thumb if key exists
-                    -- set to full size if it doesn't exist
-                    local img = ngx.var.IMGBASE .. accesstag .. '/' .. album .. '/' .. tag .. '/' ..  itag .. '/'  
-                    local thumb_name = h.thumb_name
-                    if thumb_name then
-                        images[album] = img .. thumb_name
-                    else
-                        images[album] = img .. h.file_name
-                    end
+            local viewc = tonumber(h.views)
+            if not viewc then
+                viewc = 0
+            end
+            -- Set new coverimage if viewcount is greater
+            if viewc > currentviewcount[album] then
+                currentviewcount[album] = viewc
+                local itag = h.itag
+                -- Get thumb if key exists
+                -- set to full size if it doesn't exist
+                local img = ngx.var.IMGBASE .. accesstag .. '/' .. album .. '/' .. tag .. '/' ..  itag .. '/'  
+                local thumb_name = h.thumb_name
+                if thumb_name then
+                    images[album] = img .. thumb_name
+                else
+                    images[album] = img .. h.file_name
                 end
             end
         end
