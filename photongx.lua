@@ -637,6 +637,7 @@ end
 --
 local function api_img_click()
     local args = ngx.req.get_uri_args()
+    if not args['img'] then return json{err='No image'}, 403 end
     local match = ngx.re.match(args['img'], '^(\\w+)/(.+)$')
     if not match then
         return json{image=args['img'],err='Faulty request'}, 403

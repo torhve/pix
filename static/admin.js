@@ -90,7 +90,6 @@ pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', f
        setTimeout(function() {
            pnx = photongx($('.items'), $('.item'));
         }, 2000);
-
     }
 
     $scope.submitNewAlbum = function() {
@@ -290,17 +289,6 @@ var pnxadmin = (function() {
             }
             console.log(data); 
         });
-        return false;
-    });
-
-  
-
-    $('#fileSelect-show').bind('click', function() {
-        $('#fileSelect').toggleClass('hidden');
-        return false;
-    });
-    $('#fileSelect-hide').bind('click', function() {
-        $('#fileSelect').toggleClass('hidden');
         return false;
     });
 

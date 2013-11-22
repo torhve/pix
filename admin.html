@@ -39,7 +39,7 @@
             <h1><a href="/admin/"><span class="blue">Photo Engine X</span> </a>Administration 
                 </ul>
               
-              <small class="pull-right">{{ images.nrofimages }} images in {{ images.albums.length }} albums</small></h1>
+                <small class="pull-right">{{ images.nrofimages }} images in {{ images.albums.length }} albums.  <span ng-class="{'blue':images.queueCount}" ng-bind="images.queueCount"></span> images in processing queue  </small></h1>
           </div>
         </div>
       </div>
@@ -50,10 +50,6 @@
             <div class="col-md-3">
                 <div class="sidebar">
                     <ul class="sidebar-nav nav nav-pills nav-stacked">
-                        <li class="nav-header" title="When images are uploaded, they are processed in the background. Generation meta data and creating thumbnails and such. This counter shows you how many images are still waiting to be processed">Processing queue</li>
-                        <li id="li-queue">
-                          <span class="blue" ng-bind="images.queueCount"></span> images in the queue
-                        </li>
                         <li class="nav-header">New album</li>
                         <li>
                             <form class="form form-horizontal uploadform" ng-submit="submitNewAlbum()" class="form-inline"> 
