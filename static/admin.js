@@ -67,6 +67,16 @@ pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', f
             });
         }, 2000);
     });
+    
+    /* Rewookmark when filter expression changes */
+    $scope.$watch('albumsearch', function() {
+        setTimeout(function() {
+            $('.aitems').imagesLoaded(function( $images, $proper, $broken ) {
+                apnx = photongx($('.aitems'), $('.aitem'));
+            });
+        });
+    });
+
 
 
     $scope.mouseOverAlbum = function(album) {

@@ -65,9 +65,16 @@
                                 </div>
                             </form>
                         </li>
+                        <li class="nav-header">Filter albums by name</li>
+                        <li>
+                          <form class="form form-horizontal" class="form-inline"> 
+                              <input id="albumsearch" text="text" class="form-control" ng-model="albumsearch" name="albumsearch" placeholder="Search">
+                          </form>
+                        </li>
+
                         <li class="nav-header">Albums</li>
                         <li ng-hide="images.albums.length" class=""><i class="fa fa-spin fa-spinner"></i> Loading all the things...</li>
-                        <li class="li-nav-album" ng-repeat="album in images.albums" ng-mouseover="mouseOverAlbum(album)" >
+                        <li class="li-nav-album" ng-repeat="album in images.albums | filter:albumsearch" ng-mouseover="mouseOverAlbum(album)" >
                             <a ng-click="clickAlbum(album)">
                                 <span class="badge pull-right" title="Number of images in album">{{ images.imagesarray[album].length }}</span>
                                 <i class="fa fa-picture"></i>
@@ -98,7 +105,7 @@
                         </ul>
                         Please select an album to start.
                         <div class="aitems" style="position:relative">
-                          <div class="" ng-repeat="album in images.albums" ng-click="clickAlbum(album)">
+                          <div class="" ng-repeat="album in images.albums | filter:albumsearch" ng-click="clickAlbum(album)">
                             <div class="aitem" ng-repeat="img in images.imagesarray[album] | limitTo:1" style="float:left">
                               <div class="admin-album-label">
                                 <i class="fa fa-camera-retro"></i> {{ album }}
