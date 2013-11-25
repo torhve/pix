@@ -9,7 +9,6 @@ var photongx = (function($container, $items) {
         this.each(function(){
             // Check if url starts with /
             if (this[0] == '/') {
-                //console.log(String(this));
                 $('<img>')[0].src = this;
             }
         });
@@ -20,7 +19,7 @@ var photongx = (function($container, $items) {
     });
 
     // calculate and set optimal column size
-    var setColumnwidth = function() {
+    this.setColumnwidth = function() {
         var docwidth = document.body.clientWidth;
         var cwidth = 0;
         var columns = 0;
@@ -45,7 +44,8 @@ var photongx = (function($container, $items) {
     }
     setColumnwidth();
 
-    var wookmarkIt = function() {
+    this.wookmarkIt = function() {
+        setColumnwidth();
         $items.wookmark({
             container: $container,
             autoResize: false,
@@ -375,6 +375,7 @@ var photongx = (function($container, $items) {
             $('#play').click();
         }
     });
+
 
     return this;
 });
