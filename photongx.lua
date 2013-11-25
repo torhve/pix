@@ -87,11 +87,6 @@ end
 function getalbums(accesskey) 
     local allalbums, err = red:zrange("zalbums", 0, -1)
 
-    if err then
-        ngx.say(err)
-        ngx.exit(ngx.HTTP_INTERNAL_SERVER_ERROR)
-    end
-
     local albums = {}
     if accesskey then
         for i, album in ipairs(allalbums) do
@@ -236,17 +231,12 @@ local function albums(match)
 end
 
 -- 
--- About view
+-- Index view
 --
 local function index()
-    -- load template
-    local page = template.tload('main.html')
-    local context = ctx{
-        bodyclass = 'gallery',
-    }
-    -- render template with counter as context
-    -- and return it to nginx
-    return page(context)
+    return template.tload('main.html')(ctx{
+        bodyclass = 'gallery'
+    })
 end
 
 --
@@ -380,14 +370,15 @@ end
 
 
 local function add_file_to_db(album, itag, atag, file_name)
-    local imgh       = {}
     local timestamp  = ngx.time() -- FIXME we could use header for this
-    imgh['album']    = album
-    imgh['atag']     = atag
-    imgh['itag']     = itag
-    imgh['timestamp']= timestamp
-    imgh['client']   = ngx.var.remote_addr
-    imgh['file_name']= file_name
+    local imgh       = {
+        ['album']    = album,
+        ['atag']     = atag,
+        ['itag']     = itag,
+        ['timestamp']= timestamp,
+        ['client']   = ngx.var.remote_addr,
+        ['file_name']= file_name
+    }
     local albumskey  = 'zalbums' -- albumset
     local albumkey   =  album    -- image set
     local albumhkey  =  album .. 'h' -- album metadata
@@ -449,7 +440,7 @@ local function upload_post_handler()
         return 'Wrong tag used when uploading', 403
     end
 
-    local path  = IMGPATH
+    local path = IMGPATH
 
     if file_name then
         local albumpath = path .. atag .. '/' .. album
@@ -817,6 +808,6 @@ for pattern, view in pairs(routes) do
         ngx.exit( exit )
     end
 end
--- no match, log and return 404
-ngx.log(ngx.ERR, '---***---: 404 with requested URI:' .. ngx.var.uri)
+-- no match, return 404
+--ngx.log(ngx.ERR, '---***---: 404 with requested URI:' .. ngx.var.uri)
 ngx.exit( ngx.HTTP_NOT_FOUND )

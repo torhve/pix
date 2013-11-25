@@ -82,6 +82,7 @@ if match then
         exit(red, 410)
     end
 end
+
 local ok, err = red:set_keepalive(0, 100)
 -- 1 week cache
 ngx.header["Expires"] = ngx.http_time( ngx.time() + 86400*7 )
