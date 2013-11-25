@@ -34,7 +34,7 @@ end
 TEMPLATEDIR = ROOT_PATH .. '/';
 
 -- db global
-red = nil
+red = redis:new()
 -- BASE path global
 BASE = config.path.base
 -- IMG base path
@@ -42,12 +42,6 @@ IMGPATH = ROOT_PATH .. config.path.image .. '/'
 -- Default tag length global
 TAGLENGTH = 6
 
--- Default context helper
-function ctx(ctx)
-    ctx['BASE'] = BASE
-    ctx['IMGBASE'] = config.path.image
-    return ctx
-end
 
 -- KEY SCHEME
 -- albums            z: zalbums                    = set('albumname', 'albumname2', ... )
@@ -72,7 +66,22 @@ end
 
 
 -- helpers
+--
+-- Default context helper
+function ctx(ctx)
+    ctx['BASE'] = BASE
+    ctx['IMGBASE'] = config.path.image
+    return ctx
+end
 
+-- Check for error and spit it out in case there is one
+local errcheck = function(err)
+    if err then
+        ngx.status = 500
+        ngx.say('Error: ' .. err)
+        ngx.exit(500)
+    end
+end
 
 -- helper function to verify that the current user is logged in and valid
 -- using persona
@@ -737,34 +746,8 @@ local function api_gentag(match)
     return json{ tag=tag }
 end
 
-
--- 
--- Initialise db
---
-local function init_db()
-    -- Start redis connection
-    red = redis:new()
-    if config.redis.unix_socket_path then
-        local ok, err = red:connect("unix:" .. config.redis.unix_socket_path)
-        if not ok then
-            ngx.say("failed to connect: ", err)
-            return
-        end
-    end
-end
-
---
--- End db, we could close here, but park it in the pool instead
---
-local function end_db()
-    -- put it into the connection pool of size 100,
-    -- with 0 idle timeout
-    local ok, err = red:set_keepalive(0, 100)
-    if not ok then
-        ngx.say("failed to set keepalive: ", err)
-        return
-    end
-end
+-- Set the default content type
+ngx.header.content_type = 'text/html';
 
 -- mapping patterns to views
 local routes = {
@@ -789,23 +772,21 @@ local routes = {
     ['admin/api/albumttl/create(.*)'] = admin_api_albumttl,
     ['admin/api/queue/length/'] = admin_api_queue_length,
 }
--- Set the default content type
-ngx.header.content_type = 'text/html';
-
 -- iterate route patterns and find view
 for pattern, view in pairs(routes) do
     local match = ngx.re.match(ngx.var.uri, '^' .. BASE .. pattern, "o") -- regex mather in compile mode
     if match then
-        init_db()
+        local ok, err = red:connect("unix:" .. config.redis.unix_socket_path)
+        errcheck(err)
         local ret, exit = view(match) 
-        -- Print the returned res
-        end_db()
+        local ok, err = red:set_keepalive(0, 100)
         -- If not given exit, then assume OK
         if not exit then exit = ngx.HTTP_OK end
-        -- Exit with returned exit value
+        -- Set the exit status code
         ngx.status = exit
+        -- Print the page
         ngx.print(ret)
-        ngx.exit( exit )
+        ngx.exit(exit)
     end
 end
 -- no match, return 404
