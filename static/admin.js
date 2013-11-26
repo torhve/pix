@@ -52,10 +52,13 @@ pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', f
 
         images.getQueueCount();
         // Update queue count on a timer
+        // 
+        /* XXX disable queue for now XXX
         var timer = setInterval(function() {
             images.getQueueCount();
             $scope.$apply();
         }, 6000);
+        */
     }
     /* Fired after everything has been loaded from the backend */
     $scope.$watch('images.imagesarray', function() {
@@ -97,15 +100,10 @@ pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', f
         $scope.selectedAlbum = false;
         var album = $scope.albumname;
 
-        // Get tag from backend
-        $http.get('/api/gentag/').then(function(data) {
-            var tag = data.data.tag;
-            // If we already have a tag defined for this album name it means
-            // that we are uploading images to an existing album which means
-            // we have to reuse the tag instead of using a generated one
-            if(images.tags[album] != undefined) {
-                tag = images.tags[album];
-            }
+        // Create album
+        $http.post('/api/albums', {name:album}).then(function(data) {
+            console.log(data.data.album);
+            var tag = data.data.album.token;
 
             if (typeof FileReader == "undefined") alert ("Your browser is not supported. You will need to update to a modern browser with File API support to upload files.");
             var fileCount = document.getElementById("fileCount");

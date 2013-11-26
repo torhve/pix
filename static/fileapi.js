@@ -240,10 +240,10 @@ function FileAPI (c, t, d, f, g, a) {
               }, false);
               upload.addEventListener("error", function (ev) {console.log(ev);}, false);
               upload.addEventListener("abort", function (ev) {console.log(ev);}, false);
-              fd.append("attachment1", file);
+              fd.append("upload", file);
               xhr.open(
                   "POST",
-                  "/upload/post/"
+                  "/api/images"
               );
               xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
               xhr.setRequestHeader("X-Filename", file.name);

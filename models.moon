@@ -1,6 +1,9 @@
 db = require "lapis.db"
 redis = require "resty.redis"
 config = require("lapis.config").get!
+json = require "cjson"
+
+import execute from require "os"
 
 import Model from require "lapis.db.model"
 import underscore, slugify from require "lapis.util"
@@ -29,6 +32,9 @@ generate_token = do
 
   (length) ->
     string.char unpack [ random_char! for i=1,length ]
+
+secure_filename = (str) ->
+    (str\gsub("%s+", "-")\gsub("%.+", ".")\gsub("[^%w%-_%.]+", ""))
 
 class Sessions extends Model
   @timestamp: true
@@ -66,12 +72,13 @@ class Users extends Model
   @write_session: (r, verification_data) =>
     r.session.user = {
       email: verification_data.email
+      id: @id
     }
 
 class Albums extends Model
   @timestamp: true
 
-  @create: (email, title) =>
+  @create: (user_id, title) =>
     token = generate_token 6
     while @check_unique_constraint "token", token
         token = generate_token 6
@@ -83,13 +90,28 @@ class Albums extends Model
 class Images extends Model
   @timestamp: true
 
-  @create: (album, email, title) =>
+  file_path: =>
+    path = {
+      config.imgpath,
+      @user_id,
+      @album_id,
+      @id
+    }
+    table.concat path, '/'
+
+  real_file_name: =>
+    @file_path! .. '/' .. @file_name
+
+  @create: (user_id, album_id, file_name) =>
     token = generate_token 6
     while @check_unique_constraint "token", token
         token = generate_token 6
 
-    Model.create @, {
-      :user_id, :token, :title
-    }
 
-{ :R, :init, :Users, :Albums, :Images, :Sessions, generate_token }
+    image = Model.create @, {
+      :user_id, :token, :album_id, file_name:secure_filename(file_name), title:file_name, thumb_name:'', huge_name:''
+    }
+    execute "mkdir -p "..image\file_path!
+    image
+
+{ :R, :init, :Users, :Albums, :Images, :Sessions, :generate_token }

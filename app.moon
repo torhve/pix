@@ -4,7 +4,7 @@ import capture_errors from require "lapis.application"
 import respond_to, capture_errors, capture_errors_json, assert_error, yield_error from require "lapis.application"
 import validate, assert_valid from require "lapis.validate"
 import escape_pattern, trim_filter from require "lapis.util"
-import Users, Albums, Images from require "models"
+import Users, Albums, Images, generate_token from require "models"
 config = require("lapis.config").get!
 
 --models.init!
@@ -15,6 +15,15 @@ require_login = (fn) ->
       fn @
     else
       redirect_to: @url_for "user_login"
+
+json_params = (fn) ->
+  =>
+    body = ngx.req.get_body_data!
+    if body
+      @json_params = json.decode body
+      fn @
+    else
+      json:{error:"No parameters recieved"}
 
 persona_verify = (assertion, audience) -> 
 
@@ -42,9 +51,6 @@ class extends lapis.Application
     "Welcome to Lapis #{require "lapis.version"}!"
 
   [user_login: "/api/persona/login"]: respond_to {
-    GET: =>
-      render: true
-
     POST: capture_errors_json =>
       body = ngx.req.get_body_data!
       if body
@@ -61,55 +67,65 @@ class extends lapis.Application
       render: true
 
     POST: capture_errors_json =>
-      json:{email:@current_user.email}
+      cu = @current_user
+      if cu 
+        return json:{email:cu.email}
+      json:{email:false}
   }
+  [user_logout: "/api/persona/logout"]: =>
+    @session.user = false
+    json: {email:false}
 
 -- ALBUMS API view - get albums or add new album
   [albums: "/api/albums"]: respond_to {
     GET: =>
       json: 'todo'
 
-    POST: capture_errors_json =>
+    POST: capture_errors_json json_params =>
 
-      assert_valid @params, {
+      assert_valid @json_params, {
         { "name", exists: true, min_length: 1 }
       }
-      album = models.Album\create @params.email
+      -- Get or create
+      album = Albums\find user_id: @current_user.id, title:@json_params.name
+      unless album
+        album = Albums\create @current_user.id, @json_params.name
       json: { album: album }
   }
 
 
-  [upload: "/upload"]: respond_to {
-    before: =>
-      @title = "Upload"
-
+  [images: "/api/images"]: respond_to {
     GET: =>
-      render: true
+      json: "todo"
 
-    POST: capture_errors =>
-        csrf.assert_token @
+    POST: capture_errors_json =>
         assert_valid @params, {
             {'upload', file_exists: true}
         }
+        -- XXX assert_valid ?
+        h = @req.headers
+        fmd5       = h['X-Checksum'] 
+        file_name  = h['X-Filename']
+        referer    = h['referer']
+        album      = h['X-Album']
+        tag        = h['X-Tag']
         file = @params.upload
+        album = Albums\find user_id: @current_user.id, title:album
+        ngx.log ngx.ERR, json.encode album
+        image = Images\create @current_user.id, album.id, file_name
         content = file.content
-        timestamp = ngx.now!
-        filename = secure_filename file.filename
-        fileurl = 'static/uploads/'..timestamp..'_'..filename
-        diskfile = io.open fileurl, 'w'
+        real_file_name = image\real_file_name!
+        diskfile = io.open real_file_name, 'w+'
         diskfile\write file.content
         diskfile\close
-
-        {:type, :CKEditorFuncNum } = @params
-        message = '' -- XXX add lots of error checking
-        url = '/' .. fileurl
-
-        res = "<script type='text/javascript'>window.parent.CKEDITOR.tools.callFunction(#{CKEditorFuncNum}, '#{url}', '#{message}');</script>"
-        @write res
+        json: 'success'
   }
 
   [admin: "/admin/"]: =>
     layout:'admin' 
+
+  "/api/tag": =>
+    json: {token: generate_token 6}
 
   [adminapi: "/admin/api/all"]: =>
     ok = "test"
