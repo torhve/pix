@@ -1,0 +1,274 @@
+import Widget from require "lapis.html"
+
+class Layout extends Widget
+  content: =>
+    raw [[
+<!DOCTYPE html>
+<html lang="en" ng-app="PNXApp">
+  <head>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.0/angular.min.js"></script>
+    <script src="https://login.persona.org/include.js"></script>
+    <script src="/static/fileapi.js"></script>
+    <script src="/static/admin.js"></script>
+    <meta charset="utf-8">
+    <title>Photo Engine X Administration</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Photo Engine X">
+    <meta name="author" content="Tor Hveem">
+
+    <link href='//fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/fa/css/font-awesome.min.css" rel="stylesheet">
+    <link href="/static/screen.css" rel="stylesheet">
+
+    <link rel="shortcut icon" type="image/png" href="/static/favicon.png">
+    <link rel="icon" type="image/png" href="/static/favicon.png">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+  </head>
+
+  <body class="admin" ng-controller="AlbumListCtrl">
+    <div ng-show="error" class="label label-danger">{{ error }}</div>
+    <div ng-hide="verified" class="login">
+      <a ng-click="verify()" class="btn btn-lg btn-primary" title="Login" alt="Login">Gimme gimme <i class="fa fa-angle-right"></i></a>
+    </div>
+    <div ng-show="verified" class="container-fluid">
+      <div class="row">
+        <div class="col-md-12">
+          <div class="vertical-line ph">
+            <h1><a href="/admin/"><span class="blue">Photo Engine X</span> </a>Administration 
+                </ul>
+              
+                <small class="pull-right">{{ images.nrofimages }} images in {{ images.albums.length }} albums.  <span ng-class="{'blue':images.queueCount}" ng-bind="images.queueCount"></span> images in processing queue  </small></h1>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div ng-show="verified" class="container-fluid">
+      <div class="row">
+            <div class="col-md-3">
+                <div class="sidebar">
+                    <ul class="sidebar-nav nav nav-pills nav-stacked">
+                        <li class="nav-header">New album</li>
+                        <li>
+                            <form class="form form-horizontal uploadform" ng-submit="submitNewAlbum()" class="form-inline"> 
+                              <div class="input-group">
+                                    <input id="albumname" text="text" class="form-control" ng-model="albumname" name="album" placeholder="Name">
+                                    <span class="input-group-btn">
+                                      <button type="submit" class="btn btn-primary btn-mini"><i class="fa fa-plus"></i></button>
+                                    </span>
+                                </div>
+                            </form>
+                        </li>
+                        <li class="nav-header">Filter albums by name</li>
+                        <li>
+                          <form class="form form-horizontal" class="form-inline"> 
+                              <input id="albumsearch" text="text" class="form-control" ng-model="albumsearch" name="albumsearch" placeholder="Search">
+                          </form>
+                        </li>
+
+                        <li class="nav-header">Albums</li>
+                        <li ng-hide="images.albums.length" class=""><i class="fa fa-spin fa-spinner"></i> Loading all the things...</li>
+                        <li class="li-nav-album" ng-repeat="album in images.albums | filter:albumsearch" ng-mouseover="mouseOverAlbum(album)" >
+                            <a ng-click="clickAlbum(album)">
+                                <span class="badge pull-right" title="Number of images in album">{{ images.imagesarray[album].length }}</span>
+                                <i class="fa fa-picture"></i>
+                                {{ album }}
+                            </a>
+                            <div class="btn-group animate-show" ng-show="hoverAlbum==album">
+                                <a class="btn btn-success" ng-click="albumAdd(album)" title="Add more images to album"><i class="fa fa-plus"></i></a>
+                                <a class="btn" ng-click="albumLink(album)" title="Create expirable album link"><i class="fa fa-clock-o"></i></a>
+                                <a id="lalbum/{{album}}" href="#" class="albummodify btn            "><i class="fa fa-pencil"></i></a>
+                                <a href="/admin/api/album/remove/{{ images.tags[album] }}/{{album}}" title="Remove album and all images. Warning: No confirmation dialog"  class="link-album-remove btn  btn-danger"><i class="fa fa-trash-o"></i></a>
+                            </div>
+                        </li>
+                        <li>
+                          <div ng-show="verified"><a ng-click="logout()" class="btn btn-primary" title="You are logged in as {{ email }}" alt="You are logged in as {{ email }}">Log out <i class="fa fa-angle-right"></i></a></div>
+                        </li>
+                      </ul>
+                    </div><!--/.well -->
+                </div><!--/span-->
+                <div id="admincontent" class="col-md-9">
+                  <div ng-hide="selectedAlbum || albumname">
+                    <h1>Welcome to the Admin pages</h1>
+                        Here you can
+                        <ul>
+                          <li>Create new albums</li>
+                          <li>Modify existing albums (delete pictures, etc)</li>
+                          <li>Delete albums</li>
+                          <li>Create new display links for guests</li>
+                        </ul>
+                        Please select an album to start.
+                        <div class="aitems" style="position:relative">
+                          <div class="" ng-repeat="album in images.albums | filter:albumsearch" ng-click="clickAlbum(album)">
+                            <div class="aitem" ng-repeat="img in images.imagesarray[album] | limitTo:1" style="float:left">
+                              <div class="admin-album-label">
+                                <i class="fa fa-camera-retro"></i> {{ album }}
+                              </div>
+                              <img class="adminthumb" ng-src="/img/{{ images.tags[album] }}/{{ img }}">
+                            </div>
+                          </div>
+                        </div>
+                  </div>
+                  <div id="albumcontainer">
+                    <div class="uploadcontainer" ng-show="uploading">
+                      <h1>Upload images to the album <strong>{{albumname}}</strong></h1>
+                      <div class="small pull-right"><a href="#" ng-click="fileSelect = true">Alternate upload</a></div>
+
+                      <div id="fileDrop">
+                        <p>Drop files here to upload</p>
+                      </div>
+
+
+                      <div ng-show="fileSelect" id="fileSelect">
+                        <div class="small pull-right"><a href="#" id="fileSelect-hide" ng-Click="fileSelect = false">Hide alternate upload</a></div>
+                        <p>
+                        <form action="" method="post" enctype="multipart/form-data">
+                          <div class="controls">
+                            <input class="input-file" type="file" id="fileField" name="fileField" multiple value="Browse..."/>
+                          </div>
+                        </form>
+                        </p>
+                        <p>
+                        <a id="upload" class="btn btn-primary" href="#" title="Upload all files in list">Upload files</a>
+                        <a id="reset" class="btn btn-danger" href="#" title="Remove all files from list">Clear list</a>
+                        </p>
+                      </div>
+
+                      <h6><div id="fileCount"></div></h6>
+
+                      <div id="files">
+                        <ul id="fileList"></ul>
+                      </div>
+                    </div>
+                    <div class="adminalbum" ng-show="selectedAlbum">
+                      <table class="table table-bordered">
+                        <tr>
+                          <th>tag</th>
+                          <th>created</th>
+                          <th>expires</th>
+                          <th>album direct link</th>
+                          <th>album portal link</th>
+                        </tr>
+                        <tr>
+                          <td>admin</td>
+                          <td></td>
+                          <td></td>
+                          <td><a href="/album/{{ images.tags[selectedAlbum]}}/{{selectedAlbum}}/">/album/{{ images.tags[selectedAlbum]}}/{{selectedAlbum}}/</td>
+                            <td></td>
+                          </tr>
+                          <tr ng-repeat="(key, val) in images.accesskeysh[selectedAlbum]">
+                            <td>{{ key}}</td>
+                            <td>{{ val[0] }}</td>
+                            <td>{{ val[1] }}</td>
+                            <td><a href="/album/{{ key }}/{{selectedAlbum}}/">/album/{{ key }}/{{selectedAlbum}}/</td>
+                              <td><a href="/albums/{{ key }}/{{selectedAlbum}}/">/albums/{{ key }}/</td>
+                              </tr>
+                            </table>
+                            <div class="items" style="position:relative">
+                              <div class="item" ng-repeat="(img, thumb) in images.thumbs[selectedAlbum]">
+                                <a id="image-{{$index}}" href="/img/{{ images.tags[selectedAlbum] }}/{{ img }}" class="lb">
+                                  <img class="adminthumb" ng-src="/img/{{ images.tags[selectedAlbum] }}/{{ thumb }}">
+                                </a>
+                                <div class="admin-album-label">
+                                  {{ img }}
+                                </div>
+                                <div class="admin-label">
+                                  <a class="btn btn-mini btn-danger link-image-remove" href="/admin/api/img/remove/?album={{ selectedAlbum }}&amp;image={{ img }}">
+                                    <i class="fa fa-trash-o"></i> 
+                                  </a>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+<div class="modal fade">
+  <div class="modal-dialog">
+    <div class="modal-content">
+    <form id="form-ttl" method="GET" class="form-horizontal" ng-submit="submitAlbumLink()">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h3>Create expirable album link</h3>
+    </div>
+    <div class="modal-body">
+        <p>Create a link that expires after a time</p>
+
+            <div class="control-group">
+                <label class="control-label" for="ttl">Time to live</label>
+                <div class="controls">
+                    <select name="ttl" class="input-xlarge" id="ttl">
+                        <option value="3600"
+                        >One hour</option>
+                        <option value="86400"
+                        selected="selected"
+                        >One day (default)</option>
+                        <option value="604800"
+                        >One week</option>
+                        <option value="18748800"
+                        >One month</option>
+                        <option value="112492800"
+                        >Six months</option>
+                        <option value="31536000"
+                        >One year</option>
+                        <option value="forever"
+                        >Forever</option>
+                    </select>
+
+                    <p class="help-block">The link will automatically be inaccessible if <i>time to live</i> is exceeded.</p>
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="name">Name the link</label>
+                <div class="controls">
+                    <input type="text" name="name" placeholder="Name">
+                    <p class="help-block">The name will be used in the link.</p>
+                </div>
+            </div>
+            <input id="input-album-name" type="hidden" name="album"></input>
+    </div>
+    <div class="modal-footer">
+        <!--<a href="#" class="btn">Close</a>-->
+        <button type="submit" class="btn btn-primary">Create link</a>
+    </div>
+    </form>
+  </div>
+  </div>
+</div>
+
+
+
+  <div ng-show="verified" class="container-fluid">
+    <div class="row-fluid">
+      <div class="span12">
+        &copy; 2012-2013 Tor Hveem
+      </div>
+    </div>
+  </div>
+  <footer>
+  </footer>
+
+  <script src="/static/md5.js"></script>
+  <script>
+    pnxadmin = pnxadmin();
+  </script>
+
+  <script src="/static/bootstrap/js/bootstrap.js"></script>
+  <script type="application/javascript" src="/static/smartresize/jquery.debouncedresize.js"></script>
+  <script type="application/javascript" src="/static/imagesloaded/jquery.imagesloaded.min.js"></script>
+  <script type="application/javascript" src="/static/wookmark/jquery.wookmark.min.js"></script>
+  <script type="application/javascript" src="/static/photongx.js"></script>
+  <div id="spinner" class="spinner hidden">Loading ...</div>
+  </body>
+</html>
+]]

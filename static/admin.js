@@ -227,7 +227,7 @@ services.factory("personaSvc", ["$http", "$q", function ($http, $q) {
         verify:function () {
             var deferred = $q.defer();
             navigator.id.get(function (assertion) {
-                $http.post("/api/persona/verify", {assertion:assertion})
+                $http.post("/api/persona/login", {assertion:assertion})
                     .then(function (response) {
                         if (response.data.status != "okay") {
                             deferred.reject(response.data.reason);
