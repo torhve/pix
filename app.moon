@@ -135,10 +135,21 @@ class extends lapis.Application
       json: { album: album }
   }
 
+  "/api/albums/:album_id": respond_to {
+    PUT: capture_errors_json require_login json_params =>
+      album = Albums\find id:@params.album_id, user_id: @current_user.id
+      album.title = @json_params.title
+      album\update "title"
+      json: {:album}
+    }
 
-  "/api/images/:album_id": capture_errors_json require_login =>
-    images = assert_error Images\select "where user_id = ? and album_id = ?", @current_user.id, @params.album_id
-    json: {:images}
+  "/api/images/:album_id": respond_to {
+
+    GET: capture_errors_json require_login =>
+      images = assert_error Images\select "where user_id = ? and album_id = ?", @current_user.id, @params.album_id
+      json: {:images}
+  }
+
 
   [images: "/api/images"]: respond_to {
     GET:capture_errors_json require_login  =>

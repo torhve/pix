@@ -54,7 +54,6 @@ pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', f
         // Update queue count on a timer
         var timer = setInterval(function() {
             images.getQueueCount();
-            images.getAlbumsFromBackend();
             $scope.$apply();
         }, 6000);
     }
@@ -91,10 +90,18 @@ pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', f
        images.getImagesFromBackend(album);
        $scope.uploading = false;
        $scope.selectedAlbum = album.title;
+        // Scroll top top, since we might be far down in the navigaiton list
+        $("body").scrollTop(0);
        // TODO make this clever?
        setTimeout(function() {
            pnx = photongx($('.items'), $('.item'));
         }, 2000);
+    }
+
+    $scope.albumModify = function(album) {
+        console.log($scope.selectedAlbum, album, $scope.albumtitle, album.title);
+        $('#albumtitlemodal').modal('show');
+        $scope.album = album;
     }
 
     $scope.submitNewAlbum = function() {
@@ -104,7 +111,8 @@ pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', f
 
         // Create album
         $http.post('/api/albums', {name:album}).then(function(data) {
-            console.log(data.data.album);
+            // Refresh album list from backend
+            images.getAlbumsFromBackend();
             var tag = data.data.album.token;
 
             if (typeof FileReader == "undefined") alert ("Your browser is not supported. You will need to update to a modern browser with File API support to upload files.");
@@ -134,7 +142,7 @@ pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', f
     }
     $scope.albumLink = function(album) {
         $('#input-album-name').val(album.title);
-        $('.modal').modal('show');
+        $('#albumlinkmodal').modal('show');
         return false;
     }
     $scope.albumAdd = function(album) {
@@ -150,9 +158,16 @@ pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', f
         $.getJSON(formUrl, formData, function(data) { 
             console.log(data);
             $scope.linkAlbum = '';
-            $('.modal').modal('hide');
+            $('#albumlinkmodal').modal('hide');
         });
-    };
+    }
+    $scope.submitAlbumTitle = function () {
+        $('#albumtitlemodal').modal('hide');
+        $http.put('/api/albums/'+$scope.album.id, $scope.album).then(function(data) {
+            console.log(data);
+            images.getAlbumsFromBackend();
+        });
+    }
 }]);
 
 
@@ -251,8 +266,6 @@ var pnxadmin = (function() {
         $('#admincontent').html('');
         $('#album-'+albumname).toggleClass('hidden').prependTo($('#admincontent'));
 
-        // Scroll top top, since we might be far down in the navigaiton list
-        $("body").scrollTop(0);
 
 
         return false;

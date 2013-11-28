@@ -70,16 +70,16 @@
 
                         <li class="nav-header">Albums</li>
                         <li ng-hide="images.albums.length" class=""><i class="fa fa-spin fa-spinner"></i> Loading all the things...</li>
-                        <li class="li-nav-album" ng-repeat="album in images.albums | filter:albumsearch" ng-mouseover="mouseOverAlbum(album)" >
+                        <li ng-class="{'active': selectedAlbum==album.title}" class="li-nav-album" ng-repeat="album in images.albums | filter:albumsearch" ng-mouseover="mouseOverAlbum(album)" >
                             <a ng-click="clickAlbum(album)">
                                 <span class="badge pull-right" title="Number of images in album">{{ images.imagesarray[album].length }}</span>
                                 <i class="fa fa-picture"></i>
-                                {{ album.title }}
+                                <span>{{ album.title }}</span>
                             </a>
                             <div class="btn-group animate-show" ng-show="hoverAlbum==album.title">
                                 <a class="btn btn-success" ng-click="albumAdd(album)" title="Add more images to album"><i class="fa fa-plus"></i></a>
                                 <a class="btn" ng-click="albumLink(album)" title="Create expirable album link"><i class="fa fa-clock-o"></i></a>
-                                <a id="lalbum/{{album.title}}" href="#" class="albummodify btn"><i class="fa fa-pencil"></i></a>
+                                <a class="btn" ng-click="albumModify(album)"><i class="fa fa-pencil"></i></a>
                                 <a ng-click="albumRemove(album.title)" title="Remove album and all images. Warning: No confirmation dialog"  class="link-album-remove btn btn-danger"><i class="fa fa-trash-o"></i></a>
                             </div>
                         </li>
@@ -183,7 +183,7 @@
                   </div>
                 </div>
 
-<div class="modal fade">
+<div id="albumlinkmodal" class="modal fade">
   <div class="modal-dialog">
     <div class="modal-content">
     <form id="form-ttl" method="GET" class="form-horizontal" ng-submit="submitAlbumLink()">
@@ -233,6 +233,27 @@
     </div>
     </form>
   </div>
+  </div>
+</div>
+
+<div id="albumtitlemodal" class="modal fade">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="PUT" class="form-horizontal" ng-submit="submitAlbumTitle()">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h3>Enter new album title</h3>
+        </div>
+        <div class="modal-body">
+          <p class="help-block">Please enter the new album title</p>
+          <input type="text" name="album" ng-model="album.title">
+        </div>
+        <div class="modal-footer">
+          <a href="#" class="btn" data-dismiss="modal">Close</a>
+          <button type="submit" class="btn btn-primary"><i class="fa fa-floppy-o"></i> Update title</a>
+        </div>
+      </form>
+    </div>
   </div>
 </div>
 
