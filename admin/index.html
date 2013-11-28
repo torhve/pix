@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" ng-app="PNXApp">
   <head>
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.0/angular.min.js"></script>
     <script src="https://login.persona.org/include.js"></script>
     <script src="/static/fileapi.js"></script>
@@ -30,7 +30,7 @@
   <body class="admin" ng-controller="AlbumListCtrl">
     <div ng-show="error" class="label label-danger">{{ error }}</div>
     <div ng-hide="verified" class="login">
-      <a ng-click="verify()" class="btn btn-lg btn-primary" title="Login" alt="Login">Gimme gimme <i class="fa fa-angle-right"></i></a>
+      <a ng-click="verify()" class="btn btn-lg btn-primary" title="Login" alt="Login">Log in<i class="fa fa-angle-right"></i></a>
     </div>
     <div ng-show="verified" class="container-fluid">
       <div class="row">
@@ -74,13 +74,13 @@
                             <a ng-click="clickAlbum(album)">
                                 <span class="badge pull-right" title="Number of images in album">{{ images.imagesarray[album].length }}</span>
                                 <i class="fa fa-picture"></i>
-                                {{ album }}
+                                {{ album.title }}
                             </a>
-                            <div class="btn-group animate-show" ng-show="hoverAlbum==album">
+                            <div class="btn-group animate-show" ng-show="hoverAlbum==album.title">
                                 <a class="btn btn-success" ng-click="albumAdd(album)" title="Add more images to album"><i class="fa fa-plus"></i></a>
                                 <a class="btn" ng-click="albumLink(album)" title="Create expirable album link"><i class="fa fa-clock-o"></i></a>
-                                <a id="lalbum/{{album}}" href="#" class="albummodify btn            "><i class="fa fa-pencil"></i></a>
-                                <a href="/admin/api/album/remove/{{ images.tags[album] }}/{{album}}" title="Remove album and all images. Warning: No confirmation dialog"  class="link-album-remove btn  btn-danger"><i class="fa fa-trash-o"></i></a>
+                                <a id="lalbum/{{album.title}}" href="#" class="albummodify btn"><i class="fa fa-pencil"></i></a>
+                                <a ng-click="albumRemove(album.title)" title="Remove album and all images. Warning: No confirmation dialog"  class="link-album-remove btn btn-danger"><i class="fa fa-trash-o"></i></a>
                             </div>
                         </li>
                         <li>
@@ -153,11 +153,6 @@
                         </tr>
                         <tr>
                           <td>admin</td>
-                          <td></td>
-                          <td></td>
-                          <td><a href="/album/{{ images.tags[selectedAlbum]}}/{{selectedAlbum}}/">/album/{{ images.tags[selectedAlbum]}}/{{selectedAlbum}}/</td>
-                            <td></td>
-                          </tr>
                           <tr ng-repeat="(key, val) in images.accesskeysh[selectedAlbum]">
                             <td>{{ key}}</td>
                             <td>{{ val[0] }}</td>
@@ -167,9 +162,9 @@
                               </tr>
                             </table>
                             <div class="items" style="position:relative">
-                              <div class="item" ng-repeat="(img, thumb) in images.thumbs[selectedAlbum]">
-                                <a id="image-{{$index}}" href="/img/{{ images.tags[selectedAlbum] }}/{{ img }}" class="lb">
-                                  <img class="adminthumb" ng-src="/img/{{ images.tags[selectedAlbum] }}/{{ thumb }}">
+                              <div class="item" ng-repeat="image in images.images">
+                                <a id="image-{{$index}}" href="/img/{{ image.token }}/{{ image.huge_name || image.file_name }}" class="lb">
+                                  <img class="adminthumb" ng-src="/img/{{ image.token }}/{{ image.thumb_name || image.file_name }}">
                                 </a>
                                 <div class="admin-album-label">
                                   {{ img }}

@@ -6,7 +6,6 @@
 # -*- coding: utf-8 -*-
 
 from redis import Redis
-from PythonMagick import Image
 import os
 from os.path import sep
 import sys
@@ -14,22 +13,46 @@ import json
 from time import time
 import signal
 from optparse import OptionParser
+import psycopg2
+import psycopg2.extras 
 #from subprocess import check_call as run
-from subprocess import call as run
+from subprocess import check_output as run
+
+class Database:
+    def __init__(self, config):
+        self.pg = psycopg2.connect(config['postgresql']['connstring'])
+        psycopg2.extras.register_hstore(self.pg) # This is what forces psycopg2 to interface Dicts with hstores.
+        self.cursor = self.pg.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+    def get_image(self, token):
+        self.cursor.execute('SELECT * from images where token = %s', (token,))
+        image = self.cursor.fetchone()
+
+        return image
+
+    def save_image_info(self, token, update):
+        for key, val in update.items():
+            command = 'UPDATE images set '+key+' = %s WHERE token = %s'
+            self.cursor.execute(command, (val, token))
+        self.pg.commit()
+
+    def __del__(self):
+        self.pg.close()
 
 class Worker:
     def __init__(self, config):
         self.config = config
         self.work_list = None
         if 'redis' in config:
-            # TODO support sockets and stuffs
             if 'unix_socket_path' in config["redis"]:
                 self.redis = Redis(unix_socket_path = config["redis"]["unix_socket_path"])
+
+        self.db = Database(config)
 
 
     def fetch_thumb_job(self):
         if self.config['fetch_mode'] == 'queue':
-            return self.redis.brpop('queue:thumb')[1]
+            return self.redis.brpop('pix:upload:queue')[1]
         else:
             if self.work_list == None:
                 self.work_list = []
@@ -40,32 +63,33 @@ class Worker:
 
             return self.work_list.pop()
 
-    def get_image_info(self, key):
-        image = self.redis.hgetall(key)
-
+    def get_image_info(self, token):
+        image = self.db.get_image(token)
         return image
 
     def save_image_info(self, imagekey, data):
-        for key, value in data.items():
-            self.redis.hset(imagekey, key, value)
+        self.db.save_image_info(imagekey, data)
 
     def rotate(self, infile):
         ''' Lossless autoration based on exif using jhead/jpegtran '''
-        return run(['/usr/bin/jhead', '-autorot', infile])
+        try:
+            return run(['/usr/bin/jhead', '-autorot', infile])
+        except Exception, e:
+            print e
+
+    def get_exif(self, infile):
+        ''' Return exif as json. Convert every value to str since we store it as hstore in postgresql which does not support numeric values '''
+
+        exif = json.loads(run(['/usr/bin/exiftool', '-json', infile]))[0]
+        for key, val in exif.items():
+            exif[key] = str(val)
+        return exif
 
     def thumbnail(self, infile, outfile, size, quality, no_upscale=False):
-        #image = Image(infile)
-        #image.resize(size)
-        #image.write(outfile)
-
         quality = str(quality)
         if infile.endswith('.gif') or no_upscale:
             size = size+'>'
         resize = run(['/usr/bin/convert', '-interlace', "Plane", '-quality', quality, '-strip',  '-thumbnail', size, infile, outfile])
-        image = Image(outfile)
-
-        return { 'width': image.size().width(), \
-                 'height': image.size().height() }
 
 if __name__ == '__main__':
     parser = OptionParser()
@@ -103,15 +127,22 @@ if __name__ == '__main__':
         image['thumb_name'] = "t%d.%s" % ( photoconf['thumb_max'], image['file_name'] )
         image['huge_name'] = "t%d.%s" % ( photoconf['huge_max'], image['file_name'] )
 
-        relbase = "img" + sep + image['atag'] + sep + image['itag'] + sep
+        relbase = sep.join([BASE_DIR, config['path']['image'], str(image['user_id']), str(image['album_id']), str(image['id'])]) + sep
 
-        infile = BASE_DIR + sep + relbase + image['file_name']
-        thumb_outfile = BASE_DIR + sep + relbase + image['thumb_name']
-        huge_outfile = BASE_DIR + sep + relbase + image['huge_name']
+        infile = relbase + image['file_name']
+        thumb_outfile = relbase + image['thumb_name']
+        huge_outfile = relbase + image['huge_name']
 
         try:
             # First, rotate the original
             success = w.rotate(infile)
+
+            # Get Exif
+            exif = w.get_exif(infile)
+
+            update = {
+                'metadata': exif
+            }
 
             if options.missing and os.path.exists(thumb_outfile):
                 print 'Skipping existing thumbnail %s' %thumb_outfile
@@ -123,11 +154,7 @@ if __name__ == '__main__':
                 thumb = w.thumbnail(infile, thumb_outfile, thumb_max_size, quality)
                 print "done (%d ms)" % ((time() - t) * 1000)
 
-                update = { 'thumb_w': thumb['width'], \
-                           'thumb_h': thumb['height'], \
-                           'thumb_name': image['thumb_name'] }
-
-                w.save_image_info(key, update)
+                update['thumb_name'] = image['thumb_name'],
 
             if options.missing and os.path.exists(huge_outfile):
                 print 'Skipping existing hugenail %s' %huge_outfile
@@ -139,16 +166,14 @@ if __name__ == '__main__':
                 huge = w.thumbnail(infile, huge_outfile, huge_max_size, quality, no_upscale=True)
                 print "done (%d ms)" % ((time() - t) * 1000)
 
-                update = { 'huge_w': huge['width'], \
-                           'huge_h': huge['height'], \
-                           'huge_name': image['huge_name'] }
+                update['huge_name'] = image['huge_name']
 
-                w.save_image_info(key, update)
+            w.save_image_info(key, update)
 
         except Exception, e:
             print "ERROR", e
-            print "Infile:", infile
-            print "Outfile:", thumb_outfile
-            print "Outfile:", huge_outfile
-#3            raise
+            print "Inffile:", infile
+            print "Thumb Outfile:", thumb_outfile
+            print "Huge Outfile:", huge_outfile
+            raise
 

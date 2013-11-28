@@ -47,21 +47,19 @@ pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', f
     // Init function gets called from status function when user logs in
     $scope.init = function() {
         $('.spinner').removeClass('hidden');
-        images.getAllFromBackend();
         //images.getImagesFromBackend();
 
+        images.getAlbumsFromBackend();
         images.getQueueCount();
         // Update queue count on a timer
-        // 
-        /* XXX disable queue for now XXX
         var timer = setInterval(function() {
             images.getQueueCount();
+            images.getAlbumsFromBackend();
             $scope.$apply();
         }, 6000);
-        */
     }
     /* Fired after everything has been loaded from the backend */
-    $scope.$watch('images.imagesarray', function() {
+    $scope.$watch('images.images', function() {
         $('.spinner').addClass('hidden');
         // TODO this should be more clever
         setTimeout(function() {
@@ -69,6 +67,9 @@ pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', f
                 apnx = photongx($('.aitems'), $('.aitem'));
             });
         }, 2000);
+    });
+    $scope.$watch('images.albums', function() {
+        $('.spinner').addClass('hidden');
     });
     
     /* Rewookmark when filter expression changes */
@@ -83,12 +84,13 @@ pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', f
 
 
     $scope.mouseOverAlbum = function(album) {
-        $scope.hoverAlbum = album;
+        $scope.hoverAlbum = album.title;
     }
 
     $scope.clickAlbum = function(album) { 
+       images.getImagesFromBackend(album);
        $scope.uploading = false;
-       $scope.selectedAlbum = album;
+       $scope.selectedAlbum = album.title;
        // TODO make this clever?
        setTimeout(function() {
            pnx = photongx($('.items'), $('.item'));
@@ -131,14 +133,14 @@ pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', f
         });
     }
     $scope.albumLink = function(album) {
-        $('#input-album-name').val(album);
+        $('#input-album-name').val(album.title);
         $('.modal').modal('show');
         return false;
     }
     $scope.albumAdd = function(album) {
         $scope.uploading = true;
         $scope.selectedAlbum = false;
-        $scope.albumname = album;
+        $scope.albumname = album.title;
         $scope.submitNewAlbum();
         return false;
     }
@@ -171,6 +173,7 @@ services.factory('images', ['$http', function($http) {
     var images = {
         all: {},
         albums: [],
+        images: [],
         imagecount: {},
         accesskeys: {},
         accesskeysh: {},
@@ -179,38 +182,18 @@ services.factory('images', ['$http', function($http) {
         imagesarray: {},
         tags: {},
         queueCount: 0,
-        getAllFromBackend: function() {
-            $http.get('/admin/api/all/').then(function(data) {
-              var res = data.data;
-              images.albums = res.albums;
-              images.tags = res.tags;
-              images.thumbs = res.thumbs;
-              images.accesskeysh = res.accesskeysh;
-              images.accesskeys = res.accesskeys;
-              images.imagesarray = res.images;
-              images.nrofimages = res.nrofimages;
+        getAlbumsFromBackend: function() {
+            $http.get('/api/albums').then(function(data) {
+                images.albums = data.data.albums;
             });
         },
-        /*
-        getImagesFromBackend: function() {
-            $http.get('/admin/api/images/').then(function(data) {
-                var i = 0;
-                angular.forEach(data.data, function(entry, id) {
-                    var pimage = new PImage(entry); 
-                    if(images.imagecount[entry.album] == undefined) {
-                        images.imagecount[entry.album] = 1;
-                    }else{
-                        images.imagecount[entry.album]++;
-                    }
-                    images.all[id] = pimage;
-                    i++;
-                })
-                images.nrofimages = i;
+        getImagesFromBackend: function(album) {
+            $http.get('/api/images/'+album.id).then(function(data) {
+                images.images = data.data.images;
             });
         },
-        */
         getQueueCount: function() {
-            $http.get('/admin/api/queue/length/').then(function(data) {
+            $http.get('/api/queue').then(function(data) {
                 var counter =  data.data['counter'];
                 images.queueCount = counter;
             });

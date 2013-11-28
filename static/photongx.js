@@ -103,7 +103,7 @@ var photongx = (function($container, $items) {
         createLB();
 
         setLBimage(image_href);
-        countView($(this).data('filename'));
+        countView($(this).attr('token'));
 
         showLB();
     });
@@ -287,7 +287,7 @@ var photongx = (function($container, $items) {
         var imageelement = $('#image-'+c);
         var image_href = imageelement.attr('href');
         setLBimage(image_href);
-        countView(imageelement.data('filename'));
+        countView(imageelement.attr('token'));
 
         var cone = c+1, ctwo = c+2 , cthree = c+3;
         // We are going backwards

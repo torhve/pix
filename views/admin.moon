@@ -35,7 +35,7 @@ class Layout extends Widget
   <body class="admin" ng-controller="AlbumListCtrl">
     <div ng-show="error" class="label label-danger">{{ error }}</div>
     <div ng-hide="verified" class="login">
-      <a ng-click="verify()" class="btn btn-lg btn-primary" title="Login" alt="Login">Gimme gimme <i class="fa fa-angle-right"></i></a>
+      <a ng-click="verify()" class="btn btn-lg btn-primary" title="Login" alt="Login">Log in <i class="fa fa-angle-right"></i></a>
     </div>
     <div ng-show="verified" class="container-fluid">
       <div class="row">

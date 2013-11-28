@@ -23,6 +23,9 @@ Dev Installation
 ================
 
 
+Preqreqs
+    sudo apt-get install libimage-exiftool-perl imagemagick redis-server jhead
+
 PostgreSQL with hstore
 
     sudo apt-get install postgresql-server postgresql-contrib

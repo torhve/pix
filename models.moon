@@ -8,16 +8,24 @@ import execute from require "os"
 import Model from require "lapis.db.model"
 import underscore, slugify from require "lapis.util"
 
-math.randomseed os.time!
-R = nil
-
-init = ->
-  -- Put redis init in a function or else we get cannot yield across C boundary since we can't init a connection in a require function
-  R = redis\new!
-  ok, err = R\connect unpack(config.redis)
 
 local *
 
+
+
+class Redis
+  new: =>
+    math.randomseed os.time!
+    @prefix = config.redis_prefix
+    @queuekey = @prefix .. ':upload:queue'
+    @red = redis\new!
+    ok, err = @red\connect unpack(config.redis)
+
+  queue: (token) =>
+    @red\lpush @queuekey, token
+
+  queue_length: =>
+    @red\llen @queuekey
 
 generate_token = do
   import random from math
@@ -66,8 +74,9 @@ class Users extends Model
   @read_session: (r) =>
     if r.session.user
       user = @find email: r.session.user.email
-      if user
-        user
+      unless user
+        user = @create r.session.user.email
+      user
 
   @write_session: (r, verification_data) =>
     r.session.user = {
@@ -99,6 +108,38 @@ class Images extends Model
     }
     table.concat path, '/'
 
+  get_url: =>
+    '/'..@real_file_name!
+
+  get_real_thumb_url: =>
+    if @thumb_name
+      '/'..@file_path!..'/'..@thumb_name
+    else
+      '/'..@real_file_name!
+
+  get_real_huge_url: =>
+    if @huge_name
+      '/'..@file_path!..'/'..@huge_name
+    else
+      '/'..@real_file_name!
+
+
+  get_huge_url: =>
+    --XXX url_for ? config?
+    unless @huge_name == ''
+      '/img/'..@token..'/'..@huge_name
+    else
+      '/img/'..@token..'/'..@file_name
+
+  get_thumb_url: =>
+    --XXX url_for ? config?
+    unless @thumb_name == ''
+      '/img/'..@token..'/'..@thumb_name
+    else
+      '/img/'..@token..'/'..@file_name
+
+
+
   real_file_name: =>
     @file_path! .. '/' .. @file_name
 
@@ -114,4 +155,4 @@ class Images extends Model
     execute "mkdir -p "..image\file_path!
     image
 
-{ :R, :init, :Users, :Albums, :Images, :Sessions, :generate_token }
+{ :Redis, :Users, :Albums, :Images, :Sessions, :generate_token }

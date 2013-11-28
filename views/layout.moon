@@ -13,19 +13,29 @@ class Layout extends Widget
 
         if @description
           meta name: "description", content: @description
+        else
+          meta name:"description", content:"Photo engine X"
 
         link rel: "stylesheet", href: "/static/screen.css"
+        link href:"/static/fa/css/font-awesome.css", rel:"stylesheet"
+        meta name:"viewport", content:"width:device-width, initial-scale=1.0"
+        meta name:"author", content:"Tor Hveem"
+        link rel:"shortcut icon", type:"image/png", href:"/static/favicon.png"
+        link rel:"icon", type:"image/png", href:"/static/favicon.png"
+
         script type: "text/javascript", src: "//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"
-        script type: "text/javascript", src: "/static/main.js"
+        raw [[
+        <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+        <!--[if lt IE 9]>
+          <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+        ]]
 
       body ->
-          nav class: "top-bar", ->
-            ul class: "title-area", ->
-                li class: "name", ->
-                    h1 -> a href: @url_for"index", "PIX"
-                li class:"toggle-topbar menu-icon", ->
-                    a href:"#", ->
-                     span "Menu"
-          div class: "", ->
-            @content_for "inner"
+        div class: "", ->
+          @content_for "inner"
+        script type:"application/javascript",src:"/static/smartresize/jquery.debouncedresize.js"
+        script type:"application/javascript",src:"/static/imagesloaded/jquery.imagesloaded.min.js"
+        script type:"application/javascript",src:"/static/wookmark/jquery.wookmark.min.js"
+        script type:"application/javascript",src:"/static/photongx.js"
 

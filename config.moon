@@ -8,9 +8,18 @@ config "development", ->
   secret "ongalabongala pixala"
   imgpath "img"
   upload_size "64M"
-  site "hveem.no"
+  site "pix.hveem.no"
+  redis_prefix "pix"
 
 config "production", ->
   port 80
   num_workers 4
   lua_code_cache "off"
+  postgresql_url "postgres://pix:pix@127.0.0.1/pix"
+  redis {"127.0.0.1", 6379}
+  session_name "pix_session"
+  secret "pix"
+  imgpath "img"
+  upload_size "64M"
+  site "pix.io"
+  redis_prefix "pix"

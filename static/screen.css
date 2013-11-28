@@ -3,9 +3,7 @@ article,aside,details,figcaption,figure,footer,header,hgroup,nav,section,summary
 
 html, body {
   font-family: "Tahoma", sans-serif;
-}
-body.gallery {
-    background: #222426;
+  background: #222426;
 }
 body.admin {
     background: #222426;
