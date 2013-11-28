@@ -4,7 +4,7 @@ import capture_errors from require "lapis.application"
 import respond_to, capture_errors, capture_errors_json, assert_error, yield_error from require "lapis.application"
 import validate, assert_valid from require "lapis.validate"
 import escape_pattern, trim_filter from require "lapis.util"
-import Redis, Users, Albums, Images, generate_token from require "models"
+import Redis, Users, Albums, Images, Accesstokens, generate_token from require "models"
 config = require("lapis.config").get!
 
 --models.init!
@@ -58,10 +58,44 @@ class extends lapis.Application
     for album in *@albums
       images = Images\select "where album_id = ? order by views desc limit 1", album.id
       album.image = images[1]
+      album.url = @url_for("album", token:album.token, title:album.title)
     render: true
 
-  [album: "/album/:token/:title/"]: require_login =>
-    @album = assert_error Albums\find token:@params.token
+  [tokenalbums: "/albums/:slug/"]: capture_errors =>
+    @accesstokens = Accesstokens\for_slug @params.slug
+    unless #@accesstokens > 0
+      return render: "error", status: 404
+    album_ids = [a.album_id for a in *@accesstokens]
+    @albums = Albums\find_all album_ids
+
+    -- FIXME improve SQL to single statement
+    for album in *@albums
+      images = Images\select "where album_id = ? order by views desc limit 1", album.id
+      album.image = images[1]
+      -- Override the token with our given slug so the template generates the correct URLs
+      album.slug = @params.slug
+      album.url = @url_for("tokenalbum", slug:@params.slug, token:album.token, title:album.title)
+    render: "albums"
+
+  [tokenalbum: "/album/:slug/:token/:title/"]: =>
+    @album = Albums\find token:@params.token
+    unless @album
+      return render:"error", status:404
+    valid_token = Accesstokens\validate_album @params.slug, @album.id
+    unless valid_token
+      return render:"error", status:410
+    @album.views = @album.views + 1
+    @album\update "views"
+    @images = Images\select "where album_id = ?", @album.id
+    render: "album"
+
+  [album: "/album/:token/:title/"]: =>
+    if @current_user
+      @album = Albums\find token:@params.token
+      unless @album
+        return render:"error", status:404
+      if @current_user.id != @album.id
+        return render:"error", status:403
     @album.views = @album.views + 1
     @album\update "views"
     @images = Images\select "where album_id = ?", @album.id
@@ -182,6 +216,19 @@ class extends lapis.Application
         queue = assert_error redis\queue image.token
         json: 'success'
   }
+  "/api/albumttl/:album_id": respond_to {
+    POST: capture_errors_json require_login =>
+      assert_valid @params, {
+        { "name", exists: true}
+        { "ttl", exists: true}
+      }
+      ttl = tonumber @params.ttl
+      name = @params.name
+      album = Albums\find id:@params.album_id, user_id: @current_user.id
+      accesstoken = Accesstokens\create @current_user.id, album.id, name, ttl
+
+      json: {:album}
+    }
 
   [admin: "/admin/"]: =>
     layout:'admin' 
@@ -195,7 +242,7 @@ class extends lapis.Application
     }
     @image = Images\find token:@params.img
     unless @image
-      ngx.exit(404)
+      return render: "error", status: 404
     @image.views = @image.views + 1
     @image\update "views"
 
@@ -211,18 +258,27 @@ class extends lapis.Application
     json: {counter:queue}
 
 
-  "/admin/db/make": =>
-    schema = require "schema"
-    schema.make_schema!
-    json: { status: "ok" }
+  "/db/make": require_login =>
+    -- Hard coded to first user for now
+    if @current_user.id == 1 
+      schema = require "schema"
+      schema.make_schema!
+      return json: { status: "ok" }
+    json: status: 403
 
-  "/admin/db/destroy": =>
-    schema = require "schema"
-    schema.destroy_schema!
-    json: { status: "ok" }
+  "/db/destroy": require_login =>
+    -- Hard coded to first user for now
+    if @current_user.id == 1 
+      schema = require "schema"
+      schema.destroy_schema!
+      return json: { status: "ok" }
+    json: status: 403
 
-  "/admin/db/migrate": =>
-    import run_migrations from require "lapis.db.migrations"
-    run_migrations require "migrations"
-    json: { status: "ok" }
+  "/db/migrate": require_login =>
+    -- Hard coded to first user for now
+    if @current_user.id == 1 
+      import run_migrations from require "lapis.db.migrations"
+      run_migrations require "migrations"
+      return json: { status: "ok" }
+    json: status: 403
 

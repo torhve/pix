@@ -72,9 +72,9 @@ make_schema = ->
   -- Access
   create_table "accesstokens", {
     {"id", serial}
-    {"token", "VARCHAR(6) NOT NULL"}
     {"user_id", foreign_key}
     {"album_id", foreign_key}
+    {"slug", text}
     {"views", integer}
     {"created_at", time}
     {"updated_at", time}

@@ -2,6 +2,7 @@ db = require "lapis.db"
 redis = require "resty.redis"
 config = require("lapis.config").get!
 json = require "cjson"
+os = require "os"
 
 import execute from require "os"
 
@@ -11,21 +12,8 @@ import underscore, slugify from require "lapis.util"
 
 local *
 
-
-
-class Redis
-  new: =>
-    math.randomseed os.time!
-    @prefix = config.redis_prefix
-    @queuekey = @prefix .. ':upload:queue'
-    @red = redis\new!
-    ok, err = @red\connect unpack(config.redis)
-
-  queue: (token) =>
-    @red\lpush @queuekey, token
-
-  queue_length: =>
-    @red\llen @queuekey
+format_date = (time) ->
+    os.date "!%Y-%m-%d %H:%M:%S", time
 
 generate_token = do
   import random from math
@@ -43,6 +31,22 @@ generate_token = do
 
 secure_filename = (str) ->
     (str\gsub("%s+", "-")\gsub("%.+", ".")\gsub("[^%w%-_%.]+", ""))
+
+
+
+class Redis
+  new: =>
+    math.randomseed os.time!
+    @prefix = config.redis_prefix
+    @queuekey = @prefix .. ':upload:queue'
+    @red = redis\new!
+    ok, err = @red\connect unpack(config.redis)
+
+  queue: (token) =>
+    @red\lpush @queuekey, token
+
+  queue_length: =>
+    @red\llen @queuekey
 
 class Sessions extends Model
   @timestamp: true
@@ -155,4 +159,22 @@ class Images extends Model
     execute "mkdir -p "..image\file_path!
     image
 
-{ :Redis, :Users, :Albums, :Images, :Sessions, :generate_token }
+class Accesstokens extends Model
+  @timestamp: true
+
+  @create: (user_id, album_id, name, expires_in) =>
+    slug = slugify name
+    expires_at = format_date ngx.now! + expires_in
+    accesstoken = Model.create @, {
+      :user_id, :album_id, :slug, :expires_at
+    }
+    accesstoken
+
+  @for_slug: (slug) =>
+    db.select "* from accesstokens where slug = ? and now() < expires_at", slug
+
+  @validate_album: (slug, album_id) =>
+    res = db.select "* from accesstokens where slug = ? and album_id = ? and now() < expires_at", slug, album_id
+    return #res > 0
+
+{ :Redis, :Users, :Albums, :Images, :Sessions, :Accesstokens, :generate_token }

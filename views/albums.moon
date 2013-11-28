@@ -7,10 +7,10 @@ class Albums extends Widget
          unless album.image
            continue
          div class:"item", ->
-            a href:@url_for("album", token:album.token, title:album.title), -> 
+            a href:album.url, -> 
               img src:@url_for("img", token:album.image.token, filename:album.image.thumb_name)
             div class:"album-label", ->
-              a href:@url_for("album", token:album.token, title:album.title), ->
+              a href:album.url, ->
                 i class:"fa fa-camera-retro"
                 text " "..album.title
       div id:"spinner", class:"spinner", ->

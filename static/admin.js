@@ -141,7 +141,7 @@ pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', f
         });
     }
     $scope.albumLink = function(album) {
-        $('#input-album-name').val(album.title);
+        $('#input-album-id').val(album.id);
         $('#albumlinkmodal').modal('show');
         return false;
     }
@@ -154,8 +154,8 @@ pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', f
     }
     $scope.submitAlbumLink = function() {
         var formData = $('#form-ttl').serialize();
-        var formUrl = "/admin/api/albumttl/create/";
-        $.getJSON(formUrl, formData, function(data) { 
+        var formUrl = "/api/albumttl/"+$('#input-album-id').val();
+        $http.post(formUrl, formData).then(function(data) { 
             console.log(data);
             $scope.linkAlbum = '';
             $('#albumlinkmodal').modal('hide');

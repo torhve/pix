@@ -30,7 +30,10 @@
   <body class="admin" ng-controller="AlbumListCtrl">
     <div ng-show="error" class="label label-danger">{{ error }}</div>
     <div ng-hide="verified" class="login">
-      <a ng-click="verify()" class="btn btn-lg btn-primary" title="Login" alt="Login">Log in<i class="fa fa-angle-right"></i></a>
+      <p>
+      Photo Engine X uses <a href="https://login.persona.org/about">Mozilla Persona</a> to authenticate you. If you use your gmail address you will be logged in using Google Authentication services. Otherwise Persona will create an account/password associated with your given email address. 
+      </p>
+      <a ng-click="verify()" class="btn btn-lg btn-primary" title="Login" alt="Login">Log in <i class="fa fa-angle-right"></i></a>
     </div>
     <div ng-show="verified" class="container-fluid">
       <div class="row">
@@ -54,7 +57,7 @@
                         <li>
                             <form class="form form-horizontal uploadform" ng-submit="submitNewAlbum()" class="form-inline"> 
                               <div class="input-group">
-                                    <input id="albumname" text="text" class="form-control" ng-model="albumname" name="album" placeholder="Name">
+                                    <input id="albumname" class="form-control" ng-model="albumname" name="album" placeholder="Name">
                                     <span class="input-group-btn">
                                       <button type="submit" class="btn btn-primary btn-mini"><i class="fa fa-plus"></i></button>
                                     </span>
@@ -64,7 +67,7 @@
                         <li class="nav-header">Filter albums by name</li>
                         <li>
                           <form class="form form-horizontal" class="form-inline"> 
-                              <input id="albumsearch" text="text" class="form-control" ng-model="albumsearch" name="albumsearch" placeholder="Search">
+                              <input id="albumsearch" class="form-control" ng-model="albumsearch" name="albumsearch" placeholder="Search">
                           </form>
                         </li>
 
@@ -221,15 +224,15 @@
             <div class="control-group">
                 <label class="control-label" for="name">Name the link</label>
                 <div class="controls">
-                    <input type="text" name="name" placeholder="Name">
+                    <input class="form-control" type="text" name="name" placeholder="Name">
                     <p class="help-block">The name will be used in the link.</p>
                 </div>
             </div>
-            <input id="input-album-name" type="hidden" name="album"></input>
+            <input id="input-album-id" type="hidden" name="album"></input>
     </div>
     <div class="modal-footer">
-        <!--<a href="#" class="btn">Close</a>-->
-        <button type="submit" class="btn btn-primary">Create link</a>
+        <a href="#" class="btn btn-danger" data-dismiss="modal">Close</a>
+        <button type="submit" class="btn btn-primary"><i class="fa fa-chain"></i> Create link</a>
     </div>
     </form>
   </div>
@@ -239,17 +242,17 @@
 <div id="albumtitlemodal" class="modal fade">
   <div class="modal-dialog">
     <div class="modal-content">
-      <form method="PUT" class="form-horizontal" ng-submit="submitAlbumTitle()">
+      <form method="PUT" class="form form-horizontal" ng-submit="submitAlbumTitle()">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
           <h3>Enter new album title</h3>
         </div>
         <div class="modal-body">
           <p class="help-block">Please enter the new album title</p>
-          <input type="text" name="album" ng-model="album.title">
+          <input class="form-control" type="text" name="album" ng-model="album.title">
         </div>
         <div class="modal-footer">
-          <a href="#" class="btn" data-dismiss="modal">Close</a>
+          <a href="#" class="btn btn-danger" data-dismiss="modal">Close</a>
           <button type="submit" class="btn btn-primary"><i class="fa fa-floppy-o"></i> Update title</a>
         </div>
       </form>
