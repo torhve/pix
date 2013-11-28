@@ -9,6 +9,7 @@ class Index extends Widget
         small "the little gallery that could"
       div class:"row-fluid", ->
         div class:"span6", ->
+          h2 "Screenshot"
           img src:"/static/pex.png"
         div class:"span6", ->
             h2 "Features"
@@ -29,6 +30,7 @@ class Index extends Widget
               ]]
             raw [[
               <div class="actions">
+                  <a class="btn btn-primary btn-large" href="/albums/demo/"><i class="fa fa-camera-retro"></i> Demo albums</a>
                   <a class="btn btn-primary btn-large" href="/admin/"><i class="fa fa-arrow-right"></i> Log in</a>
                   <a class="btn btn-primary btn-large" href="https://github.com/torhve/photongx/"><i class="fa fa-github"></i> View project on github</a>
               </div>

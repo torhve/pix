@@ -87,9 +87,10 @@ pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', f
     }
 
     $scope.clickAlbum = function(album) { 
+       images.getAccestokensFromBackend(album);
        images.getImagesFromBackend(album);
        $scope.uploading = false;
-       $scope.selectedAlbum = album.title;
+       $scope.selectedAlbum = album;
         // Scroll top top, since we might be far down in the navigaiton list
         $("body").scrollTop(0);
        // TODO make this clever?
@@ -99,7 +100,6 @@ pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', f
     }
 
     $scope.albumModify = function(album) {
-        console.log($scope.selectedAlbum, album, $scope.albumtitle, album.title);
         $('#albumtitlemodal').modal('show');
         $scope.album = album;
     }
@@ -168,6 +168,31 @@ pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', f
             images.getAlbumsFromBackend();
         });
     }
+    $scope.imageRemove = function(image) {
+        $http.delete('/api/image/'+image.id).then(function(data) {
+            if (data.status == 200) {
+                images.images.splice(images.images.indexOf(image), 1);
+            }else {
+                $scope.error = data.data;
+            }
+        });
+    }
+    $scope.albumRemove = function(album) {
+        $scope.albumremove = album;
+        $('#albumremovemodal').modal('show');
+
+    };
+    $scope.submitAlbumRemove = function() {
+        $('#albumremovemodal').modal('hide');
+        $http.delete('/api/albums/'+$scope.albumremove.id).then(function(data) {
+
+            if (data.status == 200) {
+                images.albums.splice(images.albums.indexOf($scope.albumremove), 1);
+            }else {
+                $scope.error = data.data;
+            }
+        });
+    }
 }]);
 
 
@@ -190,8 +215,7 @@ services.factory('images', ['$http', function($http) {
         albums: [],
         images: [],
         imagecount: {},
-        accesskeys: {},
-        accesskeysh: {},
+        accesstokens: [],
         nrofimages: 0,
         thumbs: {},
         imagesarray: {},
@@ -212,7 +236,12 @@ services.factory('images', ['$http', function($http) {
                 var counter =  data.data['counter'];
                 images.queueCount = counter;
             });
-        }
+        },
+        getAccestokensFromBackend: function(album) {
+            $http.get('/api/accesstokens/'+album.id).then(function(data) {
+                images.accesstokens = data.data.accesstokens;
+            });
+        },
     }
     return images;
 }]);
@@ -251,42 +280,3 @@ services.factory("personaSvc", ["$http", "$q", function ($http, $q) {
 }]);
 
 //AlbumListCtrl.$inject = ["$scope", "personaSvc"];
-
-
-
-var pnxadmin = (function() {
-
-    // When you click the modify link in the navigation
-    $('.albummodify').bind('click', function() {
-        console.log(this, 'clicked');
-        var albumname = $(this).attr('id').split('/')[1];
-        console.log(albumname, 'clicked');
-
-        $('#admincontent .adminalbum').prependTo($('#albumcontainer').toggleClass('hidden'));
-        $('#admincontent').html('');
-        $('#album-'+albumname).toggleClass('hidden').prependTo($('#admincontent'));
-
-
-
-        return false;
-    });
-
-
-    $('.link-image-remove').bind('click', function(ev) {
-        console.log(this, 'clicked');
-        ev.stopPropagation();
-        ev.preventDefault();
-        // CALL API
-        $.getJSON($(this).attr('href'), function(data) { 
-            if(data) {
-                $(this).closest('.item').remove();
-            }
-            console.log(data); 
-        });
-        return false;
-    });
-
-    return this;
-});
-
-

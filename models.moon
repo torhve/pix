@@ -100,6 +100,18 @@ class Albums extends Model
       :user_id, :token, :title
     }
 
+  delete: =>
+    super!
+
+
+    -- Delete all images in album
+    images = Images\select album_id:@id
+    for image in *images
+      image\delete!
+
+    -- Delete folder
+    execute 'rmdir ' .. table.concat { config.imgpath, @user_id, @id }, '/'
+
 class Images extends Model
   @timestamp: true
 
@@ -158,6 +170,16 @@ class Images extends Model
     }
     execute "mkdir -p "..image\file_path!
     image
+
+  delete: =>
+    super!
+    -- Remove file from filesystem
+    execute "rm " .. @file_path! .. '/' .. @file_name
+    execute "rm " .. @file_path! .. '/' .. @huge_name
+    execute "rm " .. @file_path! .. '/' .. @thumb_name
+    execute "rmdir " .. @file_path!
+
+
 
 class Accesstokens extends Model
   @timestamp: true

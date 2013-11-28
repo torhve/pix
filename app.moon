@@ -175,13 +175,26 @@ class extends lapis.Application
       album.title = @json_params.title
       album\update "title"
       json: {:album}
-    }
+    DELETE: capture_errors_json require_login =>
+      album = Albums\find id:@params.album_id, user_id: @current_user.id
+      unless album
+        return render:"error", status:404
+      album\delete!
+      json:album
+  }
 
   "/api/images/:album_id": respond_to {
 
     GET: capture_errors_json require_login =>
       images = assert_error Images\select "where user_id = ? and album_id = ?", @current_user.id, @params.album_id
       json: {:images}
+  }
+
+  "/api/accesstokens/:album_id": respond_to {
+
+    GET: capture_errors_json require_login =>
+      accesstokens = Accesstokens\select "where user_id = ? and album_id = ?", @current_user.id, @params.album_id
+      json: {:accesstokens}
   }
 
 
@@ -223,11 +236,15 @@ class extends lapis.Application
         { "ttl", exists: true}
       }
       ttl = tonumber @params.ttl
+      -- TTL not a number ? Assume forever.
+      if ttl == nil
+          ttl = 2^32 -- ~150 years
+
       name = @params.name
       album = Albums\find id:@params.album_id, user_id: @current_user.id
       accesstoken = Accesstokens\create @current_user.id, album.id, name, ttl
 
-      json: {:album}
+      json: {:album,:accesstoken}
     }
 
   [admin: "/admin/"]: =>
@@ -235,6 +252,15 @@ class extends lapis.Application
 
   "/api/tag": =>
     json: {token: generate_token 6}
+
+  "/api/image/:image_id": respond_to {
+    DELETE: capture_errors_json require_login =>
+      image = Images\find id:@params.image_id, user_id: @current_user.id
+      unless image
+        return render:"error", status:"404"
+      image\delete!
+      json:image
+  }
 
   "/api/img/click": =>
     assert_valid @params, {
