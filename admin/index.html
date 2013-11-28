@@ -158,6 +158,7 @@
                             <th>accesses</th>
                             <th>album direct link</th>
                             <th>album portal link</th>
+                            <th></th>
                           </tr>
                           <tr>
                             <td>your</td>
@@ -166,6 +167,7 @@
                             <td>{{ selectedAlbum.views }} </td>
                             <td><a target="_new" href="/album/{{ selectedAlbum.token}}/{{ selectedAlbum.title }}/">/albums/{{ selectedAlbum.token }}/{{ selectedAlbum.title }}</a></td>
                             <td><a target="_new" href="/albums//">/albums/</a></td>
+                            <td></td>
                           </tr>
 
                           <tr ng-repeat="access in images.accesstokens">
@@ -175,6 +177,7 @@
                             <td>{{ access.views }}</td>
                             <td><a target="_new" href="/album/{{ access.slug }}/{{selectedAlbum.token}}/{{ selectedAlbum.title}}/">/album/{{ access.slug }}/{{selectedAlbum.token}}/{{selectedAlbum.title}}/</td>
                             <td><a target="_new" href="/albums/{{ access.slug }}/">/albums/{{ access.slug }}/</a></td>
+                            <td><a ng-click="accesstokenRemove(access)" title="Remove access" class="btn btn-danger"><i class="fa fa-trash-o"></i></a></td>
                           </tr>
                         </table>
                             <div class="items" style="position:relative">

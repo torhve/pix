@@ -195,6 +195,13 @@ class extends lapis.Application
     GET: capture_errors_json require_login =>
       accesstokens = Accesstokens\select "where user_id = ? and album_id = ?", @current_user.id, @params.album_id
       json: {:accesstokens}
+
+    DELETE: =>
+      accesstoken = Accesstokens\find id:@params.album_id, user_id:@current_user.id
+      unless accesstoken
+        return render:"error", status:404
+      accesstoken\delete!
+      json:{ :accesstoken }
   }
 
 

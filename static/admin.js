@@ -193,6 +193,15 @@ pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', f
             }
         });
     }
+    $scope.accesstokenRemove = function(accesstoken) {
+        $http.delete('/api/accesstokens/'+accesstoken.id).then(function(data) {
+            if (data.status == 200) {
+                images.accesstokens.splice(images.accesstokens.indexOf(accesstoken), 1);
+            }else {
+                $scope.error = data.data;
+            }
+        });
+    }
 }]);
 
 
