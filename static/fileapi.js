@@ -1,17 +1,16 @@
 /* FileAPI from filebin.net (C) Espen Braastad */
 /* Modifications by Tor Hveem */
-function FileAPI (c, t, d, f, g, a) {
+function FileAPI (c, t, d, f, a) {
   
       var fileCount = c,
           fileList = t,
           dropZone = d,
           fileField = f,
+          album = a,
           counter_queue = 0,
           counter_uploading = 0,
           counter_completed = 0,
           fileQueue = new Array(),
-          album = a,
-          tag = g,
           preview = null;
   
   
@@ -246,12 +245,12 @@ function FileAPI (c, t, d, f, g, a) {
                   "/api/images"
               );
               xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-              xhr.setRequestHeader("X-Filename", file.name);
-              xhr.setRequestHeader("X-Size", file.size);
-              xhr.setRequestHeader("X-Tag", tag);
-              xhr.setRequestHeader("X-Album", album);
+              fd.append("filename", file.name);
+              fd.append("size", file.size);
+              fd.append("title", album.title);
+              fd.append("token", album.token);
               // TODO use filereader to read file and check md5
-              xhr.setRequestHeader("X-Checksum", calcMD5(file));
+              fd.append("checksum", calcMD5(file));
               // Check upload respone and error message
               xhr.onload = function() {
                   var ps = li.getElementsByTagName("div");

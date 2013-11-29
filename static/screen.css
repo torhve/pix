@@ -95,7 +95,12 @@ a, a:hover {
     position: absolute;
     top: 0;
 }
+.item:hover .admin-label {
+    display: block;
+}
+
 .admin-label {
+    display:none;
     right:0;
 }
 .aitem {
@@ -335,6 +340,9 @@ a, a:hover {
 }    
 .nav-pills > li.active > a, .nav-pills > li.active > a:hover, .nav-pills > li.active > a:focus {
     background-color: #3ea8f4;
+}
+.item:hover {
+    border: 1px solid #3ea8f4;
 }
 .gray {
     color: #333;

@@ -75,6 +75,18 @@ class extends lapis.Application
       album.url = @url_for("tokenalbum", slug:@params.slug, token:album.token, title:album.title)
     render: "albums"
 
+  [album: "/album/:token/:title/"]: =>
+    if @current_user
+      @album = Albums\find token:@params.token
+      unless @album
+        return render:"error", status:404
+      if @current_user.id != @album.user_id
+        return render:"error", status:403
+    @album.views = @album.views + 1
+    @album\update "views"
+    @images = Images\select "where album_id = ?", @album.id
+    render: true
+
   [tokenalbum: "/album/:slug/:token/:title/"]: =>
     @album = Albums\find token:@params.token
     unless @album
@@ -87,17 +99,6 @@ class extends lapis.Application
     @images = Images\select "where album_id = ?", @album.id
     render: "album"
 
-  [album: "/album/:token/:title/"]: =>
-    if @current_user
-      @album = Albums\find token:@params.token
-      unless @album
-        return render:"error", status:404
-      if @current_user.id != @album.id
-        return render:"error", status:403
-    @album.views = @album.views + 1
-    @album\update "views"
-    @images = Images\select "where album_id = ?", @album.id
-    render: true
 
 --
 -- This view gets called from a rewrite_by_lua handler so it exits
@@ -185,6 +186,12 @@ class extends lapis.Application
 
     GET: capture_errors_json require_login =>
       images = assert_error Images\select "where user_id = ? and album_id = ?", @current_user.id, @params.album_id
+      --- TODO maybe use raw query to cast hstore to json?
+      -- Examples found:https://gist.github.com/WoLpH/2318757
+      for image in *images
+        if image.metadata
+          newstr, n, err = ngx.re.gsub(image.metadata, "=>", ":")
+          image.metadata = json.decode '{'..newstr..'}'
       json: {:images}
   }
 
@@ -211,20 +218,18 @@ class extends lapis.Application
     POST: capture_errors_json =>
         assert_valid @params, {
             {'upload', file_exists: true}
+            {'filename', exists: true}
+            {'title', exists: true}
+            {'token', exists: true}
+            {'checksum', exists: true}
         }
-        -- XXX assert_valid ?
-        h = @req.headers
-        fmd5       = h['X-Checksum'] 
-        file_name  = h['X-Filename']
-        referer    = h['referer']
-        album      = h['X-Album']
-        tag        = h['X-Tag']
+        {:upload, :title, :filename, :token, :checksum} = @params
         pattern = '\\.(jpe?g|gif|png)$'
-        unless ngx.re.match(file_name, pattern, "i") 
+        unless ngx.re.match(filename, pattern, "i") 
             return json:status:403, error:'Filename must be of image type'
         file = @params.upload
-        album = assert_error Albums\find user_id: @current_user.id, title:album
-        image = assert_error Images\create @current_user.id, album.id, file_name
+        album = assert_error Albums\find user_id: @current_user.id, token:token
+        image = assert_error Images\create @current_user.id, album.id, filename
         content = file.content
         real_file_name = image\real_file_name!
         diskfile = io.open real_file_name, 'w+'
@@ -312,4 +317,3 @@ class extends lapis.Application
       run_migrations require "migrations"
       return json: { status: "ok" }
     json: status: 403
-

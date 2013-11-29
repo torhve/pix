@@ -76,7 +76,7 @@
                         </li>
 
                         <li class="nav-header">Albums</li>
-                        <li ng-class="{'active': selectedAlbum.title==album.title}" class="li-nav-album" ng-repeat="album in images.albums | filter:albumsearch" ng-mouseover="mouseOverAlbum(album)" >
+                        <li ng-class="{'active': selectedAlbum.title==album.title}" class="li-nav-album" ng-repeat="album in images.albums | filter:albumsearch" ng-mouseenter="mouseOverAlbum(album)" ng-mouseleave="mouseOverAlbumClear()">
                             <a ng-click="clickAlbum(album)">
                                 <i class="fa fa-camera-retro"></i>
                                 <span class="badge pull-right" title="Number of images in album">{{ images.imagesarray[album].length }}</span>
@@ -95,13 +95,15 @@
                 </div><!--/span-->
                 <div id="admincontent" class="col-md-9">
                   <div ng-hide="selectedAlbum || albumname">
-                    <h1>Welcome to the Admin pages</h1>
-                        Here you can
+                    <h1>This is the Photo Engine X administration pages</h1>
+                      <h3>Working features as of now:</h3>
                         <ul>
                           <li>Create new albums</li>
-                          <li>Modify existing albums (delete pictures, etc)</li>
+                          <li>Modify existing album title</li>
+                          <li>Add images to existing album</li>
+                          <li>Delete pictures</li>
                           <li>Delete albums</li>
-                          <li>Create new display links for guests</li>
+                          <li>Create new display links for shareable, time expireable links</li>
                         </ul>
                         Please select an album to start.
                         <div class="aitems" style="position:relative">
@@ -186,14 +188,17 @@
                         </table>
                             <div class="items" style="position:relative">
                               <div class="item" ng-repeat="image in images.images">
-                                <a id="image-{{$index}}" href="/img/{{ image.token }}/{{ image.huge_name || image.file_name }}" class="lb">
+                                <a id="image-{{$index}}" token="{{image.token}}" href="/img/{{ image.token }}/{{ image.huge_name || image.file_name }}" class="lb">
                                   <img class="adminthumb" ng-src="/img/{{ image.token }}/{{ image.thumb_name || image.file_name }}">
                                 </a>
                                 <div class="admin-album-label">
                                   {{ img }}
                                 </div>
-                                <div class="admin-label">
-                                  <a class="btn btn-mini btn-danger" ng-click="imageRemove(image)">
+                                <div class="admin-label btn-group">
+                                  <a class="btn btn-mini btn-info" title="Image information" ng-click="imageInfo(image)">
+                                    <i class="fa fa-info"></i>
+                                  </a>
+                                  <a class="btn btn-mini btn-danger" title="Delete image permanently. Warning: No confirmation will be asked" ng-click="imageRemove(image)">
                                     <i class="fa fa-trash-o"></i> 
                                   </a>
                                 </div>
@@ -300,6 +305,32 @@
   </div>
 </div>
 
+<div id="imageinfomodal" class="modal fade">
+  <div class="modal-dialog">
+    <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h3>Image information</h3>
+        </div>
+        <div class="modal-body">
+          <table>
+          <tr ng-repeat="(key, val) in imageinfo">
+            <td ng-if="key!='metadata'">{{ key }}</td>
+            <td ng-if="key!='metadata'">{{ val }}</td>
+          </tr>
+          <tr ng-repeat="(key, val) in imageinfo.metadata">
+            <td>{{ key }}</td>
+            <td>{{ val }}</td>
+          </tr>
+        </table>
+        </div>
+        <div class="modal-footer">
+          <a href="#" class="btn btn-grey" data-dismiss="modal">Close</a>
+        </div>
+    </div>
+  </div>
+</div>
+
 
 
   <div ng-show="verified" class="container-fluid">
@@ -316,9 +347,6 @@
   </footer>
 
   <script src="/static/md5.js"></script>
-  <script>
-    pnxadmin = pnxadmin();
-  </script>
 
   <script src="/static/bootstrap/js/bootstrap.js"></script>
   <script type="application/javascript" src="/static/smartresize/jquery.debouncedresize.js"></script>

@@ -189,8 +189,12 @@ var photongx = (function($container, $items) {
 
             });
         }else {
-            document.getElementById('img-front').src = image_href;
-            document.getElementById('img-front').onload = function() {  console.log('hullo'); showLB(); }; 
+            if (document.getElementById('img-front').src == image_href) {
+                showLB();
+            }else {
+                document.getElementById('img-front').src = image_href;
+                document.getElementById('img-front').onload = function() { showLB(); }; 
+            }
         }
         // TODO scrollto background pos img
     };

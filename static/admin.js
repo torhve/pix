@@ -6,6 +6,7 @@ pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', f
     $scope.selectedAlbum = false;
     $scope.hoverAlbum = false;
     $scope.verified = false;
+    $scope.imageinfo = false;
 
     angular.extend($scope, { verified:false, error:false, email:"" });
 
@@ -85,6 +86,9 @@ pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', f
     $scope.mouseOverAlbum = function(album) {
         $scope.hoverAlbum = album.title;
     }
+    $scope.mouseOverAlbumClear = function() {
+        $scope.hoverAlbum = false;
+    }
 
     $scope.clickAlbum = function(album) { 
        images.getAccestokensFromBackend(album);
@@ -113,7 +117,7 @@ pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', f
         $http.post('/api/albums', {name:album}).then(function(data) {
             // Refresh album list from backend
             images.getAlbumsFromBackend();
-            var tag = data.data.album.token;
+            var album = data.data.album;
 
             if (typeof FileReader == "undefined") alert ("Your browser is not supported. You will need to update to a modern browser with File API support to upload files.");
             var fileCount = document.getElementById("fileCount");
@@ -125,7 +129,6 @@ pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', f
                 fileList,
                 fileDrop,
                 fileField,
-                tag,
                 album
                 );
             FileAPI.init();
@@ -141,6 +144,7 @@ pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', f
         });
     }
     $scope.albumLink = function(album) {
+        $scope.linkalbum = album;
         $('#input-album-id').val(album.id);
         $('#albumlinkmodal').modal('show');
         return false;
@@ -156,9 +160,9 @@ pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', f
         var formData = $('#form-ttl').serialize();
         var formUrl = "/api/albumttl/"+$('#input-album-id').val();
         $http.post(formUrl, formData).then(function(data) { 
-            console.log(data);
-            $scope.linkAlbum = '';
             $('#albumlinkmodal').modal('hide');
+            images.getAccestokensFromBackend(album);
+            $scope.linkalbum = "";
         });
     }
     $scope.submitAlbumTitle = function () {
@@ -185,7 +189,6 @@ pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', f
     $scope.submitAlbumRemove = function() {
         $('#albumremovemodal').modal('hide');
         $http.delete('/api/albums/'+$scope.albumremove.id).then(function(data) {
-
             if (data.status == 200) {
                 images.albums.splice(images.albums.indexOf($scope.albumremove), 1);
             }else {
@@ -201,6 +204,10 @@ pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', f
                 $scope.error = data.data;
             }
         });
+    }
+    $scope.imageInfo = function(image) {
+        $scope.imageinfo = image;
+        $('#imageinfomodal').modal('show');
     }
 }]);
 
