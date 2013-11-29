@@ -5,6 +5,10 @@ html, body, .modal-content {
   font-family: "Tahoma", sans-serif;
   background: #222426;
 }
+.header {
+  background: rgba(0, 0, 0, 0.4);
+  margin-bottom: 15px;
+}
 body.admin {
     background: #222426;
     color: #aaa
@@ -326,16 +330,18 @@ a, a:hover {
 .bear-color, .bear, {
       color: #abad6a;
 }    
-.blue, a{
+.blue, a {
     color: #3ea8f4;
 }    
+.nav-pills > li.active > a, .nav-pills > li.active > a:hover, .nav-pills > li.active > a:focus {
+    background-color: #3ea8f4;
+}
 .gray {
     color: #333;
 }       
 .white {
     color: white;
     text-shadow: 1px 0px 4px #ffffff;
-
 }
 
 .adminthumb {
@@ -459,16 +465,27 @@ a, a:hover {
     border-radius: 5px;
     text-shadow: 0px -1px 0px rgba(0, 0, 0, 0.25);
     border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+    background: #505050; /* Old browsers */
+    background: -moz-linear-gradient(top, #505050 0%, #2b2b2b 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#505050), color-stop(100%,#2b2b2b)); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top, #505050 0%,#2b2b2b 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top, #505050 0%,#2b2b2b 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top, #505050 0%,#2b2b2b 100%); /* IE10+ */
+    background: linear-gradient(top, #505050 0%,#2b2b2b 100%); /* W3C */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#4f4f4f', endColorstr='#2b2b2b',GradientType=0 ); /* IE6-9 */
+    color: #999;
+}
+.btn-primary {
+    color: #3ea8f4;
+}
+.btn-success {
+    color: #47A447;
+}
+.btn-danger {
+    color: #D9534F;
 }
 .btn-grey {
     background-color: #DDD;
-    color: black;
-}
-.btn-primary {
-    color: white;
-    background-color: #006DCC;
-    background-image: linear-gradient(to bottom, rgb(0, 136, 204), rgb(0, 68, 204));
-    background-repeat: repeat-x;
 }
 input, .form-control, .badge {
     border: 0;
@@ -482,12 +499,7 @@ body.admin table {
     margin-bottom: 15px;
 }
 .sidebar, th {
-  background: #282828;
   padding: 5px;
--webkit-box-shadow: rgba(255, 255, 255, 0.07) 0 1px 0;
-   -moz-box-shadow: rgba(255, 255, 255, 0.07) 0 1px 0;
-        box-shadow: rgba(255, 255, 255, 0.07) 0 1px 0;
-    border: 1px solid #121212;
 }
 .sidebar-nav ul {
 }
@@ -496,15 +508,16 @@ body.admin table {
 .sidebar-nav li {
 }
 
-.sidebar-nav li a {
-   cursor: pointer;
-   color: #DDD;
+.li-nav-album, .li-nav-album>a {
+    cursor: pointer;
+    background: rgba(0, 0, 0, 0.4);
+    color: #ddd;
+    font-weight: bold;
 }
 .sidebar-nav li a.btn {
-   color: black;
 }
 .sidebar-nav li a:hover { 
-  color:black;
+    color: #222; 
 }
 .nav-header {
   display: block;
@@ -514,7 +527,7 @@ body.admin table {
   color: #999999;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
   text-transform: uppercase;
-  padding-top: 30px;
+  margin-bottom: 15px;
 }
 .vertical-line {
     -webkit-box-shadow: rgba(255, 255, 255, 0.07) 0 1px 0;
@@ -522,12 +535,12 @@ body.admin table {
             box-shadow: rgba(255, 255, 255, 0.07) 0 1px 0;
             border-bottom: 1px solid #121212;
 }
-.horizontal-line, .horizontal-line-top, .modal-header {
+.horizontal-line, .horizontal-line-top, .modal-header, th {
 -webkit-box-shadow: rgba(255, 255, 255, 0.07) 0 1px 0;
    -moz-box-shadow: rgba(255, 255, 255, 0.07) 0 1px 0;
         box-shadow: rgba(255, 255, 255, 0.07) 0 1px 0;
 }
-.horizontal-line, .modal-header {
+.horizontal-line, .modal-header, th {
     border-bottom: 1px solid #121212;
 }
 .horizontal-line-top, .modal-footer {

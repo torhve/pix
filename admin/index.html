@@ -36,13 +36,12 @@
       <a ng-click="verify()" class="btn btn-lg btn-primary" title="Login" alt="Login">Log in <i class="fa fa-angle-right"></i></a>
     </div>
     <div ng-show="verified" class="container-fluid">
-      <div class="row">
+      <div class="row header vertical-line">
         <div class="col-md-12">
-          <div class="vertical-line ph">
             <h1><a href="/admin/"><span class="blue">Photo Engine X</span> </a>Administration 
-                </ul>
-              
-                <small class="pull-right" ng-show="images.queueCount" ><span title="When you upload an image it will be process be the server to generate thumbnails and other data. This number reflects the amount of images remaining the the processing queue" ng-class="{'blue':images.queueCount}" ng-bind="images.queueCount"></span> images in processing queue  </small></h1>
+            </ul>
+
+            <small class="pull-right" ng-show="images.queueCount" ><span title="When you upload an image it will be process be the server to generate thumbnails and other data. This number reflects the amount of images remaining the the processing queue" ng-class="{'blue':images.queueCount}" ng-bind="images.queueCount"></span> images in processing queue  </small></h1>
           </div>
         </div>
       </div>
@@ -53,13 +52,13 @@
             <div class="col-md-3">
                 <div class="sidebar">
                     <ul class="sidebar-nav nav nav-pills nav-stacked">
-                        <li class="nav-header">New album</li>
+                        <li class="nav-header">Create a new album</li>
                         <li>
                             <form class="form form-horizontal uploadform" ng-submit="submitNewAlbum()" class="form-inline"> 
                               <div class="input-group">
                                     <input id="albumname" class="form-control" ng-model="albumname" name="album" placeholder="Name">
                                     <span class="input-group-btn">
-                                      <button type="submit" class="btn btn-primary btn-mini"><i class="fa fa-plus"></i></button>
+                                      <button type="submit" class="btn btn-success btn-mini"><i class="fa fa-plus"></i></button>
                                     </span>
                                 </div>
                             </form>
@@ -74,6 +73,7 @@
                         <li class="nav-header">Albums</li>
                         <li ng-class="{'active': selectedAlbum.title==album.title}" class="li-nav-album" ng-repeat="album in images.albums | filter:albumsearch" ng-mouseover="mouseOverAlbum(album)" >
                             <a ng-click="clickAlbum(album)">
+                                <i class="fa fa-camera-retro"></i>
                                 <span class="badge pull-right" title="Number of images in album">{{ images.imagesarray[album].length }}</span>
                                 <i class="fa fa-picture"></i>
                                 <span>{{ album.title }}</span>
@@ -150,7 +150,6 @@
                       </div>
                       <h1><span class="blue">{{ selectedAlbum.title }}</span> <small>contains {{ images.images.length }} images</small></h1>
                       <table class="">
-                        <thead>Album links</thead>
                           <tr>
                             <th>token</th>
                             <th>created</th>
@@ -302,7 +301,7 @@
     <div class="row-fluid">
       <div class="span12">
         <p>
-          <div ng-show="verified"><a ng-click="logout()" class="btn btn-primary" title="You are logged in as {{ email }}" alt="You are logged in as {{ email }}">Log out <i class="fa fa-angle-right"></i></a></div>
+          <div ng-show="verified"><a ng-click="logout()" class="btn" title="You are logged in as {{ email }}" alt="You are logged in as {{ email }}">Log out <i class="fa fa-angle-right"></i></a></div>
         </p>
         &copy; 2012-2013 Tor Hveem
       </div>

@@ -197,6 +197,15 @@ class Accesstokens extends Model
 
   @validate_album: (slug, album_id) =>
     res = db.select "* from accesstokens where slug = ? and album_id = ? and now() < expires_at", slug, album_id
-    return #res > 0
+    if #res > 0 
+      db.update "accesstokens", {
+        views: db.raw"views + 1"
+        }, {
+          album_id:album_id,
+          slug:slug
+        }
+      return true
+    else
+      return false
 
 { :Redis, :Users, :Albums, :Images, :Sessions, :Accesstokens, :generate_token }

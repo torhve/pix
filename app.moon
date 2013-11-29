@@ -7,8 +7,6 @@ import escape_pattern, trim_filter from require "lapis.util"
 import Redis, Users, Albums, Images, Accesstokens, generate_token from require "models"
 config = require("lapis.config").get!
 
---models.init!
-
 require_login = (fn) ->
   =>
     if @current_user
