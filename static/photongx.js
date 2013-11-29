@@ -105,7 +105,7 @@ var photongx = (function($container, $items) {
         setLBimage(image_href);
         countView($(this).attr('token'));
 
-        showLB();
+        //showLB();
     });
 
     this.createLB = function() {
@@ -189,10 +189,10 @@ var photongx = (function($container, $items) {
 
             });
         }else {
-            $('#img-front').attr('src', image_href);
+            document.getElementById('img-front').src = image_href;
+            document.getElementById('img-front').onload = function() {  console.log('hullo'); showLB(); }; 
         }
         // TODO scrollto background pos img
-
     };
     this.showLB = function() {
         $('#lbcontent').imagesLoaded(function( $images, $proper, $broken ) {

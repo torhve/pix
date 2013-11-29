@@ -5,7 +5,7 @@ html, body, .modal-content {
   font-family: "Tahoma", sans-serif;
   background: #222426;
 }
-.header {
+.header, table {
   background: rgba(0, 0, 0, 0.4);
   margin-bottom: 15px;
 }
@@ -497,6 +497,9 @@ input, .form-control, .badge {
 body.admin table {
     width: 100%;
     margin-bottom: 15px;
+}
+td {
+    padding: 5px;
 }
 .sidebar, th {
   padding: 5px;
