@@ -2,8 +2,10 @@ var photongx = (function($container, $items) {
     var slideshow = false,
         currentimage = 0,
         slideshowtimer,
-        interval = 3000,
+        slideinterval = 4000,
         offset = 4;
+
+    ;
 
     $.fn.preload = function() {
         this.each(function(){
@@ -87,10 +89,10 @@ var photongx = (function($container, $items) {
         var image_href = $(this).attr("href");
 
         // Save the current image
-        currentimage = parseInt($(this).attr('id').split('-')[1]);
+        currentimage = $items.index($(this).parent()); 
         
         // Push inn <albumurl>/<image_id>/ to history
-        history.pushState({ image: currentimage }, null, window.location.href + currentimage + "/");
+        // FIXME history.pushState({ image: currentimage }, null, window.location.href + currentimage + "/");
         
         /*  
         If the lightbox window HTML already exists in document, 
@@ -189,10 +191,14 @@ var photongx = (function($container, $items) {
 
             });
         }else {
-            if (document.getElementById('img-front').src == image_href) {
+            // Save the old src so we can compare it to the new one, since the new vs old can use relative vs absolute URL.
+            var oldsrc = document.getElementById('img-front').src;
+            document.getElementById('img-front').src = image_href;
+            var newsrc = document.getElementById('img-front').src;
+            // The onload event will not fire if the src does not change so we check for this condition
+            if (oldsrc == newsrc) {
                 showLB();
             }else {
-                document.getElementById('img-front').src = image_href;
                 document.getElementById('img-front').onload = function() { showLB(); }; 
             }
         }
@@ -202,10 +208,10 @@ var photongx = (function($container, $items) {
         $('#lbcontent').imagesLoaded(function( $images, $proper, $broken ) {
             // effects for background
             $container.addClass('backgrounded');
-            //show lightbox window - you could use .show('fast') for a transition
-            $('#lightbox').removeClass('hidden').show();
             // We are loaded, so hide the spinner
             $('.spinner').addClass('hidden');
+            //show lightbox window - you could use .show('fast') for a transition
+            $('#lightbox').removeClass('hidden').show();
             $('#img-front').css('opacity', 1);
         });
     };
@@ -225,7 +231,7 @@ var photongx = (function($container, $items) {
         var base_parts = window.location.href.split("/");
         if (base_parts[base_parts.length-2] == currentimage) {
             base = base_parts.slice(0, base_parts.length - 2).join("/") + "/";
-            history.pushState({ image: null }, null, base);
+            // FIXME history.pushState({ image: null }, null, base);
         }
     };
     
@@ -263,7 +269,7 @@ var photongx = (function($container, $items) {
     var play = function() {
         $('#play i').removeClass('fa-play').addClass('fa-pause');
         slideshow = true;
-        slideshowtimer = setInterval(function(){ $(document).trigger("next_image"); }, interval);
+        slideshowtimer = setInterval(function(){ $(document).trigger("next_image"); }, slideinterval);
     }
     // Slideshow
     var pause = function() {
@@ -274,12 +280,12 @@ var photongx = (function($container, $items) {
 
     // Clamp skip to images available
     var clampSkip = function (c) {
-        if (c == 0) {
+        if (c < 0) {
             // we are at the start, figure out the amount of items and
             // go to the end
-            c = $items.length;
-        }else if (c > ($items.length)) {
-            c = 1; // Lua starts at 1 :)
+            c = $items.length - 1 ;
+        }else if (c > ($items.length-1)) {
+            c = 0; 
         }
 
         return c;
@@ -288,10 +294,10 @@ var photongx = (function($container, $items) {
     // it wraps on start and end, and preloads 3 images in the current 
     // scrolling direction
     this.navigateImage = function(c) {
-        var imageelement = $('#image-'+c);
-        var image_href = imageelement.attr('href');
+        var link = $($items[c]).find('a');
+        var image_href = link.attr('href');
         setLBimage(image_href);
-        countView(imageelement.attr('token'));
+        countView(link.attr('token'));
 
         var cone = c+1, ctwo = c+2 , cthree = c+3;
         // We are going backwards
@@ -300,8 +306,8 @@ var photongx = (function($container, $items) {
         }
         // Only load 1 image, faster swapping 
         $([
-            $('#image-'+String(parseInt(cone))).attr('href'),
-            ]).preload();
+            $($items[parseInt(cone)]).find('a').attr('href'),
+          ]).preload();
 
             //$('#image-'+String(parseInt(ctwo))).attr('href'),
             //$('#image-'+String(parseInt(cthree))).attr('href')
@@ -313,7 +319,7 @@ var photongx = (function($container, $items) {
     //
     this.countView = function(file_name) {
         // Backend wants the original file name as a key to use for counting
-        $.getJSON('/api/img/click/', { 'img':file_name}, function(data) {
+        $.getJSON('/api/img/click', { 'img':file_name}, function(data) {
             if (!data.views > 0) {
                 console.log('Error counting clicks. Response from backend was',data);
             }
@@ -322,7 +328,7 @@ var photongx = (function($container, $items) {
 
     $(document).on('next_image', function (evt) {
         // Get image number corrected for skipping passed last image
-        var image_num = clampSkip(currentimage + 1);
+        var image_num = clampSkip(currentimage+1);
 
         // Cut out the image number we are at and replace with next image
         var base_parts = window.location.href.split("/");
@@ -332,7 +338,7 @@ var photongx = (function($container, $items) {
             base = window.location.href;
 
         // Push new url for to history for the image we are about to display
-        history.pushState({ image: image_num }, null, base + image_num + "/");
+        // FIXME history.pushState({ image: image_num }, null, base + image_num + "/");
         navigateImage(image_num);
     });
 
@@ -348,12 +354,15 @@ var photongx = (function($container, $items) {
             base = window.location.href;
     
         // Push new url for to history for the image we are about to display
-        history.pushState({ image: image_num }, null, base + image_num + "/");
+        // FIXME history.pushState({ image: image_num }, null, base + image_num + "/");
         navigateImage(image_num);
     });
 
     $(document).keydown(function(e){
         if (e.shiftKey || e.altKey || e.ctrlKey || e.metaKey ) return true;
+        // Don't do anything if lightbox isn't there
+        if (!document.getElementById('lightbox')) return true;
+
         if (e.keyCode == 27) { 
             hideLB();
             return false;

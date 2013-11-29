@@ -188,7 +188,7 @@
                         </table>
                             <div class="items" style="position:relative">
                               <div class="item" ng-repeat="image in images.images">
-                                <a id="image-{{$index}}" token="{{image.token}}" href="/img/{{ image.token }}/{{ image.huge_name || image.file_name }}" class="lb">
+                                <a token="{{image.token}}" href="/img/{{ image.token }}/{{ image.huge_name || image.file_name }}" class="lb">
                                   <img class="adminthumb" ng-src="/img/{{ image.token }}/{{ image.thumb_name || image.file_name }}">
                                 </a>
                                 <div class="admin-album-label">

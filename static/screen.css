@@ -342,7 +342,9 @@ a, a:hover {
     background-color: #3ea8f4;
 }
 .item:hover {
-    border: 1px solid #3ea8f4;
+  -webkit-box-shadow: 0 0 4px #3ea8f4;
+     -moz-box-shadow: 0 0 4px #3ea8f4;
+          box-shadow: 0 0 4px #3ea8f4;
 }
 .gray {
     color: #333;

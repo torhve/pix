@@ -11,7 +11,7 @@ class Album extends Widget
       div class:"items",->
         for index, image in pairs @images 
           div class:"item", ->
-            a id:"image-#{index}", href:image\get_huge_url!, token:image.token, class:"lb", -> 
+            a href:image\get_huge_url!, token:image.token, class:"lb", -> 
               img src:image\get_thumb_url!, title:"#{image.file_name} - #{image.views} views"
       div id:"spinner", class:"spinner", ->
         text "Loading ..."
