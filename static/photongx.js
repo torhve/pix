@@ -1,6 +1,6 @@
 var photongx = (function($container, $items) {
     var slideshow = false,
-        currentimage = 0,
+        currentimage = -1,
         slideshowtimer,
         slideinterval = 4000,
         offset = 4;
@@ -53,6 +53,7 @@ var photongx = (function($container, $items) {
             autoResize: false,
             flexibleWidth: false,
             outerOffset: 0,
+            align: 'left',
             offset: offset
         });
     }

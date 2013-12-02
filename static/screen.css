@@ -4,6 +4,7 @@ article,aside,details,figcaption,figure,footer,header,hgroup,nav,section,summary
 html, body, .modal-content {
   font-family: "Tahoma", sans-serif;
   background: #222426;
+  color: #ddd;
 }
 .header, table {
   background: rgba(0, 0, 0, 0.4);
@@ -11,7 +12,7 @@ html, body, .modal-content {
 }
 body.admin {
     background: #222426;
-    color: #aaa
+    color: #ddd;
 }
 img {
     height: auto;
@@ -356,6 +357,9 @@ a, a:hover {
 
 .adminthumb {
     max-width:180px;
+}
+body.admin .item {
+    margin-right: 4px;
 }
 
 /* TRANSITION */
