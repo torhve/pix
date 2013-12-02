@@ -1,18 +1,17 @@
 /* FileAPI from filebin.net (C) Espen Braastad */
 /* Modifications by Tor Hveem */
-function FileAPI (c, t, d, f, a) {
+var FileAPI = (function (c, t, d, f) {
   
       var fileCount = c,
           fileList = t,
           dropZone = d,
           fileField = f,
-          album = a,
           counter_queue = 0,
+          album,
           counter_uploading = 0,
           counter_completed = 0,
           fileQueue = new Array(),
           preview = null;
-  
   
       this.init = function () {
           fileField.onchange = this.addFiles;
@@ -20,6 +19,10 @@ function FileAPI (c, t, d, f, a) {
           dropZone.addEventListener("dragleave",  this.dragExit, false);
           dropZone.addEventListener("dragover",  this.dragOver, false);
           dropZone.addEventListener("drop",  this.showDroppedFiles, false);
+      }
+
+      this.setAlbum = function(a) {
+          album = a;
       }
   
       this.addFiles = function () {
@@ -53,7 +56,8 @@ function FileAPI (c, t, d, f, a) {
       }
   
       this.clearList = function (ev) {
-          ev.preventDefault();
+          if (ev != undefined) 
+              ev.preventDefault();
           while (fileList.childNodes.length > 0) {
               fileList.removeChild(
                   fileList.childNodes[fileList.childNodes.length - 1]
@@ -273,3 +277,4 @@ function FileAPI (c, t, d, f, a) {
           }
       }
   }
+);

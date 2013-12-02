@@ -8,6 +8,28 @@ pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', f
     $scope.verified = false;
     $scope.imageinfo = false;
 
+
+    if (typeof FileReader == "undefined") alert ("Your browser is not supported. You will need to update to a modern browser with File API support to upload files.");
+    var fileCount = document.getElementById("fileCount");
+    var fileList = document.getElementById("fileList");
+    var fileDrop = document.getElementById("fileDrop");
+    var fileField = document.getElementById("fileField");
+    var fa = new FileAPI(
+        fileCount,
+        fileList,
+        fileDrop,
+        fileField
+        );
+    fa.init();
+
+    // Automatically start upload when using the drop zone
+    fileDrop.ondrop = fa.uploadQueue;
+
+    var reset = document.getElementById("reset");
+    reset.onclick = fa.clearList;
+    var upload = document.getElementById("upload");
+    upload.onclick = fa.uploadQueue;
+
     angular.extend($scope, { verified:false, error:false, email:"" });
 
     $scope.verify = function () {
@@ -62,11 +84,14 @@ pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', f
     $scope.$watch('images.images', function() {
         $('.spinner').addClass('hidden');
         // TODO this should be more clever
+        // 
+         /*
         setTimeout(function() {
             $('.aitems').imagesLoaded(function( $images, $proper, $broken ) {
                 apnx = photongx($('.aitems'), $('.aitem'));
             });
         }, 2000);
+        */
     });
     $scope.$watch('images.albums', function() {
         $('.spinner').addClass('hidden');
@@ -103,6 +128,13 @@ pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', f
         }, 2000);
     }
 
+    $scope.clickPhotoStream = function() {
+       $scope.uploading = false;
+       $scope.selectedAlbum = false;
+       images.getPhotoStreamFromBackend();
+
+    }
+
     $scope.albumModify = function(album) {
         $('#albumtitlemodal').modal('show');
         $scope.album = album;
@@ -118,35 +150,15 @@ pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', f
             // Refresh album list from backend
             images.getAlbumsFromBackend();
             var album = data.data.album;
+            fa.setAlbum(album);
+            fa.clearList();
 
-            if (typeof FileReader == "undefined") alert ("Your browser is not supported. You will need to update to a modern browser with File API support to upload files.");
-            var fileCount = document.getElementById("fileCount");
-            var fileList = document.getElementById("fileList");
-            var fileDrop = document.getElementById("fileDrop");
-            var fileField = document.getElementById("fileField");
-            FileAPI = new FileAPI(
-                fileCount,
-                fileList,
-                fileDrop,
-                fileField,
-                album
-                );
-            FileAPI.init();
-
-            // Automatically start upload when using the drop zone
-            fileDrop.ondrop = FileAPI.uploadQueue;
-            //fileField.onkeypress = FileAPI.uploadQueue;
-
-            var reset = document.getElementById("reset");
-            reset.onclick = FileAPI.clearList;
-            var upload = document.getElementById("upload");
-            upload.onclick = FileAPI.uploadQueue;
         });
     }
     $scope.albumLink = function(album) {
         $scope.linkalbum = album;
         $('#input-album-id').val(album.id);
-        $('#albumlinkmodal').modal('show');
+        $nczos ('#albumlinkmodal').modal('show');
         return false;
     }
     $scope.albumAdd = function(album) {
@@ -230,6 +242,7 @@ services.factory('images', ['$http', function($http) {
         all: {},
         albums: [],
         images: [],
+        photostreamimages: [],
         imagecount: {},
         accesstokens: [],
         nrofimages: 0,
@@ -245,6 +258,11 @@ services.factory('images', ['$http', function($http) {
         getImagesFromBackend: function(album) {
             $http.get('/api/images/'+album.id).then(function(data) {
                 images.images = data.data.images;
+            });
+        },
+        getPhotoStreamFromBackend: function() {
+            $http.get('/api/photostreamimages').then(function(data) {
+                images.photostreamimages = data.data.photostreamimages;
             });
         },
         getQueueCount: function() {

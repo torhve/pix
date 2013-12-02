@@ -103,14 +103,13 @@ class Albums extends Model
   delete: =>
     super!
 
-
     -- Delete all images in album
     images = Images\select album_id:@id
     for image in *images
       image\delete!
 
     -- Delete folder
-    execute 'rmdir ' .. table.concat { config.imgpath, @user_id, @id }, '/'
+    execute 'rmdir ' .. table.concat { config.diskimgpath, @user_id, @id }, '/'
 
 class Images extends Model
   @timestamp: true
@@ -118,6 +117,15 @@ class Images extends Model
   file_path: =>
     path = {
       config.imgpath,
+      @user_id,
+      @album_id,
+      @id
+    }
+    table.concat path, '/'
+
+  real_file_path: =>
+    path = {
+      config.diskimgpath,
       @user_id,
       @album_id,
       @id
@@ -157,7 +165,7 @@ class Images extends Model
 
 
   real_file_name: =>
-    @file_path! .. '/' .. @file_name
+    @real_file_path! .. '/' .. @file_name
 
   @create: (user_id, album_id, file_name) =>
     token = generate_token 6
@@ -168,16 +176,17 @@ class Images extends Model
     image = Model.create @, {
       :user_id, :token, :album_id, file_name:secure_filename(file_name), title:file_name, thumb_name:'', huge_name:''
     }
-    execute "mkdir -p "..image\file_path!
+    execute "mkdir -p "..image\real_file_path!
     image
 
   delete: =>
-    super!
     -- Remove file from filesystem
-    execute "rm " .. @file_path! .. '/' .. @file_name
-    execute "rm " .. @file_path! .. '/' .. @huge_name
-    execute "rm " .. @file_path! .. '/' .. @thumb_name
-    execute "rmdir " .. @file_path!
+    execute "rm " .. @real_file_path! .. '/' .. @file_name
+    execute "rm " .. @real_file_path! .. '/' .. @huge_name
+    execute "rm " .. @real_file_path! .. '/' .. @thumb_name
+    execute "rmdir " .. @real_file_path!
+
+    super!
 
 
 

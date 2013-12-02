@@ -3,8 +3,9 @@ json = require "cjson"
 import capture_errors from require "lapis.application"
 import respond_to, capture_errors, capture_errors_json, assert_error, yield_error from require "lapis.application"
 import validate, assert_valid from require "lapis.validate"
-import escape_pattern, trim_filter from require "lapis.util"
-import Redis, Users, Albums, Images, Accesstokens, generate_token from require "models"
+import escape_pattern, trim_filter, to_json from require "lapis.util"
+db = require "lapis.db"
+import Redis, Users, Albums, Images, Accesstokens, generate_token from require "photongx.models"
 config = require("lapis.config").get!
 
 require_login = (fn) ->
@@ -40,7 +41,8 @@ persona_verify = (assertion, audience) ->
       }
 
 class extends lapis.Application
-  layout: require "views.layout"
+  layout: require "photongx.views.layout"
+  views_prefix: "photongx.views"
 
   @before_filter =>
     @current_user = Users\read_session @
@@ -232,13 +234,24 @@ class extends lapis.Application
         image = assert_error Images\create @current_user.id, album.id, filename
         content = file.content
         real_file_name = image\real_file_name!
-        diskfile = io.open real_file_name, 'w+'
+        diskfile = io.open real_file_name, 'w'
+        unless diskfile
+          -- TODO delete created image from SQL
+          return status:403, json:{status:403, error:"Permission denied"} 
         diskfile\write file.content
+        diskfile\flush!
         diskfile\close
         redis = Redis!
         queue = assert_error redis\queue image.token
         json: 'success'
   }
+
+  [photostreamimages: "/api/photostreamimages"]: respond_to {
+    GET:capture_errors_json require_login  =>
+      photostreamimages = assert_error db.select "*, date_part('epoch', to_timestamp(metadata->'CreateDate', 'YYYY:MM:DD HH24:MI:SS'))*1000 AS createdate FROM images WHERE user_id = ? ORDER BY metadata->'CreateDate'", @current_user.id
+      json: {:photostreamimages}
+    }
+
   "/api/albumttl/:album_id": respond_to {
     POST: capture_errors_json require_login =>
       assert_valid @params, {
@@ -317,3 +330,6 @@ class extends lapis.Application
       run_migrations require "migrations"
       return json: { status: "ok" }
     json: status: 403
+
+  "/debug": =>
+    json: config

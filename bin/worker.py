@@ -17,6 +17,7 @@ import psycopg2
 import psycopg2.extras 
 #from subprocess import check_call as run
 from subprocess import check_output as run
+from time import sleep
 
 class Database:
     def __init__(self, config):
@@ -81,15 +82,19 @@ class Worker:
         ''' Return exif as json. Convert every value to str since we store it as hstore in postgresql which does not support numeric values '''
 
         exif = json.loads(run(['/usr/bin/exiftool', '-json', infile]))[0]
+        res = {}
         for key, val in exif.items():
-            exif[key] = str(val)
-        return exif
+            try:
+               res[key] = str(val)
+            except Exception, e:
+                print 'Error with exif parsing:',e
+        return res
 
     def thumbnail(self, infile, outfile, size, quality, no_upscale=False):
         quality = str(quality)
         if infile.endswith('.gif') or no_upscale:
             size = size+'>'
-        resize = run(['/usr/bin/convert', '-interlace', "Plane", '-quality', quality, '-strip',  '-thumbnail', size, infile, outfile])
+        resize = run(['/usr/bin/convert', '-filter', 'catrom', '-interlace', "Plane", '-quality', quality, '-strip',  '-thumbnail', size, infile, outfile])
 
 if __name__ == '__main__':
     parser = OptionParser()
@@ -119,6 +124,7 @@ if __name__ == '__main__':
     while True:
         try:
             key = w.fetch_thumb_job()
+            #print 'Got key bun syncing', run('sync')
         except IndexError, e:
             break
 

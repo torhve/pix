@@ -74,6 +74,13 @@
                             </div>
                           </form>
                         </li>
+                        <li class="nav-header">Photostream</li>
+                        <li class="li-nav-album" ng-click="clickPhotoStream()">
+                          <a>
+                            <i class="fa fa-camera-retro"></i>
+                            Photo stream
+                          </a>
+                        </li>
 
                         <li class="nav-header">Albums</li>
                         <li ng-class="{'active': selectedAlbum.title==album.title}" class="li-nav-album" ng-repeat="album in images.albums | filter:albumsearch" ng-mouseenter="mouseOverAlbum(album)" ng-mouseleave="mouseOverAlbumClear()">
@@ -94,7 +101,7 @@
                     </div><!--/.well -->
                 </div><!--/span-->
                 <div id="admincontent" class="col-md-9">
-                  <div ng-hide="selectedAlbum || albumname">
+                  <div ng-hide="selectedAlbum || albumname || images.photostreamimages ">
                     <h1>This is the Photo Engine X administration pages</h1>
                       <h3>Working features as of now:</h3>
                         <ul>
@@ -104,6 +111,7 @@
                           <li>Delete pictures</li>
                           <li>Delete albums</li>
                           <li>Create new display links for shareable, time expireable links</li>
+                          <li>Display a simple timeline with all your images (Photo stream)</li>
                         </ul>
                         Please select an album to start.
                         <div class="aitems" style="position:relative">
@@ -146,6 +154,17 @@
 
                       <div id="files">
                         <ul id="fileList"></ul>
+                      </div>
+                    </div>
+                    <div class="photostream">
+                      <div class="aitems" style="position:relative">
+                        <div class="aitem" ng-repeat="image in images.photostreamimages">
+                            <div ng-if="(image.createdate | date) != (images.photostreamimages[$index-1].createdate | date)" style="clear: both;">
+                              <h3 class="">{{ image.createdate | date }}</h3>
+                            </div>
+                            <img class="adminthumb lb" style="float:left; margin-right: 4px;"  ng-src="/img/{{ image.token }}/{{ image.thumb_name || image.file_name }}">
+                          </div>
+                        </div>
                       </div>
                     </div>
                     <div class="adminalbum" ng-show="selectedAlbum">

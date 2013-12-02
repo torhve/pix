@@ -1,2 +1,2 @@
 lapis = require "lapis.init"
-lapis.serve require "app"
+lapis.serve require "photongx.app"
