@@ -129,6 +129,9 @@ if __name__ == '__main__':
             break
 
         image = w.get_image_info(key)
+        if not image:
+          # Happens if user deletes image before queue gets to process it
+          continue
 
         image['thumb_name'] = "t%d.%s" % ( photoconf['thumb_max'], image['file_name'] )
         image['huge_name'] = "t%d.%s" % ( photoconf['huge_max'], image['file_name'] )

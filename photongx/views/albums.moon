@@ -19,7 +19,7 @@ class Albums extends Widget
            continue
          div class:"item", ->
             a href:album.url, -> 
-              img src:@url_for("img", token:album.image.token, filename:album.image.thumb_name)
+              img src:album.image\get_thumb_url!
             div class:"album-label", ->
               a href:album.url, ->
                 i class:"fa fa-camera-retro"

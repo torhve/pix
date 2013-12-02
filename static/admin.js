@@ -120,6 +120,7 @@ pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', f
        images.getImagesFromBackend(album);
        $scope.uploading = false;
        $scope.selectedAlbum = album;
+       $scope.photostreamimages = [];
         // Scroll top top, since we might be far down in the navigaiton list
         $("body").scrollTop(0);
        // TODO make this clever?
@@ -131,6 +132,7 @@ pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', f
     $scope.clickPhotoStream = function() {
        $scope.uploading = false;
        $scope.selectedAlbum = false;
+       $scope.photostreamimages = [];
        images.getPhotoStreamFromBackend();
 
     }
@@ -143,6 +145,7 @@ pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', f
     $scope.submitNewAlbum = function() {
         $scope.uploading = true;
         $scope.selectedAlbum = false;
+        $scope.photostreamimages = [];
         var album = $scope.albumname;
 
         // Create album
@@ -158,7 +161,7 @@ pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', f
     $scope.albumLink = function(album) {
         $scope.linkalbum = album;
         $('#input-album-id').val(album.id);
-        $nczos ('#albumlinkmodal').modal('show');
+        $('#albumlinkmodal').modal('show');
         return false;
     }
     $scope.albumAdd = function(album) {

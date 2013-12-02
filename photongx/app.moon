@@ -82,8 +82,9 @@ class extends lapis.Application
       @album = Albums\find token:@params.token
       unless @album
         return render:"error", status:404
-      if @current_user.id != @album.user_id
+      unless @current_user.id == @album.user_id
         return render:"error", status:403
+    unless @album return render:"error", status:403
     @album.views = @album.views + 1
     @album\update "views"
     @images = Images\select "where album_id = ?", @album.id

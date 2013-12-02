@@ -101,15 +101,18 @@ class Albums extends Model
     }
 
   delete: =>
-    super!
 
     -- Delete all images in album
-    images = Images\select album_id:@id
+    unless @id
+      return nil, "Error: no id"
+    images = Images\select "where album_id = ?", @id
     for image in *images
       image\delete!
 
     -- Delete folder
     execute 'rmdir ' .. table.concat { config.diskimgpath, @user_id, @id }, '/'
+
+    super!
 
 class Images extends Model
   @timestamp: true
