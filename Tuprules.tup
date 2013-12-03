@@ -1,1 +1,2 @@
 : foreach *.moon |> moonc %f |> %B.lua
+: foreach *.less |> lessc -x %f > %o |> %B.css

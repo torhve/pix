@@ -36,7 +36,7 @@ Dev Installation
 
 
 Preqreqs
-    sudo apt-get install libimage-exiftool-perl imagemagick redis-server jhead
+    sudo apt-get install libimage-exiftool-perl imagemagick redis-server jhead node-less
 
 PostgreSQL with hstore
 

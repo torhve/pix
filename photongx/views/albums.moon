@@ -2,12 +2,13 @@ import Widget from require "lapis.html"
 class Albums extends Widget
     content: =>
       if @current_user
-        div class:"", ->
-          div class:"header vertical-line", ->
-            div class:"", ->
-              a href:"/admin/", ->
+        div class:"container-fluid", ->
+          div class:"row header vertical-line", ->
+            div class:"col-md-12", ->
+              a href:@url_for("admin"), ->
                 span class:"blue", ->
-                  text "Photo Engine X "
+                  text "Photo Engine" 
+                  span class:"white", " X "
                 text "Administration "
                 span class:"pull-right", ->
                   text "Logged in as " .. @current_user.email
