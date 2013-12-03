@@ -28,6 +28,22 @@
   </head>
 
   <body class="admin" ng-controller="AlbumListCtrl">
+    <div class="navbar navbar-inverse vertical-line">
+      <div class="navbar-header">
+        <a class="navbar-brand" href="/"><span class="blue">Photo Engine</span> <span class="white">X</span> </a>
+      </div>
+      <ul class="nav navbar-nav navbar-left">
+        <li><a href="/admin"> Administration </a></li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+          <small class="pull-right" ng-show="images.queueCount" ><span title="When you upload an image it will be process be the server to generate thumbnails and other data. This number reflects the amount of images remaining the the processing queue" ng-class="{'blue':images.queueCount}" ng-bind="images.queueCount"></span> images in processing queue  </small>
+        </li>
+        <li ng-show="verified">
+          <a ng-click="logout()" href="#" class="" title="You are logged in as {{ email }}" alt="You are logged in as {{ email }}">Log out <i class="fa fa-angle-right"></i></a>
+        </li>
+      </ul>
+    </div>
     <div ng-show="error" class="label label-danger">{{ error }}</div>
     <div ng-hide="verified" class="login">
       <p>
@@ -36,16 +52,6 @@
       <a ng-click="verify()" class="btn btn-lg btn-primary" title="Login" alt="Login">Log in <i class="fa fa-angle-right"></i></a>
     </div>
     <div ng-show="verified" class="container">
-      <div class="row header vertical-line">
-        <div class="col-md-12">
-            <h1><a href="/admin/"><span class="blue">Photo Engine X</span> </a>Administration 
-            </ul>
-
-            <small class="pull-right" ng-show="images.queueCount" ><span title="When you upload an image it will be process be the server to generate thumbnails and other data. This number reflects the amount of images remaining the the processing queue" ng-class="{'blue':images.queueCount}" ng-bind="images.queueCount"></span> images in processing queue  </small></h1>
-          </div>
-        </div>
-      </div>
-    </div>
 
     <div ng-show="verified" class="container">
       <div class="row">
@@ -355,9 +361,6 @@
   <div ng-show="verified" class="container">
     <div class="row">
       <div class="span12">
-        <p>
-          <div ng-show="verified"><a ng-click="logout()" class="btn" title="You are logged in as {{ email }}" alt="You are logged in as {{ email }}">Log out <i class="fa fa-angle-right"></i></a></div>
-        </p>
         &copy; 2012-2013 Tor Hveem
       </div>
     </div>
