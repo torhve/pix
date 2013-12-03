@@ -207,7 +207,7 @@ var FileAPI = (function (c, t, d, f) {
           if (li && file) {
               var xhr = new XMLHttpRequest(),
                   upload = xhr.upload,
-                  fd = FormData();
+                  fd = new FormData();
 
               upload.addEventListener("progress", function (ev) {
                   if (ev.lengthComputable) {

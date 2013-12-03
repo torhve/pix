@@ -33,11 +33,11 @@
         <a class="navbar-brand" href="/"><span class="blue">Photo Engine</span> <span class="white">X</span> </a>
       </div>
       <ul class="nav navbar-nav navbar-left">
-        <li><a href="/admin"> Administration </a></li>
+        <li><a href="/admin/"> Administration </a></li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        <li>
-          <small class="pull-right" ng-show="images.queueCount" ><span title="When you upload an image it will be process be the server to generate thumbnails and other data. This number reflects the amount of images remaining the the processing queue" ng-class="{'blue':images.queueCount}" ng-bind="images.queueCount"></span> images in processing queue  </small>
+        <li ng-show="images.queueCount" >
+        <span title="When you upload an image it will be process be the server to generate thumbnails and other data. This number reflects the amount of images remaining the the processing queue" ng-class="{'blue':images.queueCount}" ng-bind="images.queueCount"></span> images in processing queue
         </li>
         <li ng-show="verified">
           <a ng-click="logout()" href="#" class="" title="You are logged in as {{ email }}" alt="You are logged in as {{ email }}">Log out <i class="fa fa-angle-right"></i></a>

@@ -218,7 +218,7 @@ class extends lapis.Application
       images = assert_error Images\select "where user_id = ?", @current_user.id
       json: {:images}
 
-    POST: capture_errors_json =>
+    POST: capture_errors_json require_login =>
         assert_valid @params, {
             {'upload', file_exists: true}
             {'filename', exists: true}

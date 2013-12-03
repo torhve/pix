@@ -22,9 +22,13 @@ class Index extends Widget
             span class:"blue", ->
               text ' X '
             small "the little gallery that could"
+          h3 "What is it ?"
           div ->
             p "A self hostable web gallery that lets you share your photos with the world."
             p ""
+          h3 "Why ?"
+          div ->
+            p "Do not trust anyone but yourselv to keep your photos safe."
           raw [[
             <div class="actions">
                 <a class="btn btn-primary btn-huge" href="/albums/demo/"><i class="fa fa-camera-retro"></i> Show me photos!</a>
@@ -32,7 +36,7 @@ class Index extends Widget
             ]]
       div class:"row", ->
         div class:"col-sm-6 col-md-6", ->
-          h2 "Screenshot"
+          h2 "Screenshot of albums"
           a class:"thumbnail", href:'/albums/demo/', ->
             img src:"/static/pex.png"
         div class:"col-sm-6 col-md-6", ->
@@ -46,6 +50,7 @@ class Index extends Widget
               <li><i class="fa fa-check"></i>Super fast</li>
               <li><i class="fa fa-check"></i>Open source, free software</li>
               <li><i class="fa fa-check"></i>Backend written in <a href="http://luajit.org/luajit.html">MoonScript/lua</a></li>
+              <li><i class="fa fa-check"></i><a href="http://leafo.net/lapis">Lapis</a> web framework</li>
               <li><i class="fa fa-check"></i><a href="http://postgresql.org">PostgreSQL</a> as database</li>
               <li><i class="fa fa-check"></i><a href="http://redis.io">Redis</a> for queue</li>
               <li><i class="fa fa-check"></i><a href="http://openresty.org/">nginx (openresty)</a> as the app server</li>
