@@ -1,5 +1,13 @@
 var pnxapp = angular.module('PNXApp', ['PNXApp.services']);
 
+pnxapp.filter('startFrom', function() {
+    return function(input, start) {
+        start = +start; //parse to int
+        return input.slice(start);
+    }
+});
+
+
 pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', function($scope, $http, images, personaSvc) {
     $scope.images = images;
     $scope.selectedImages = [];
@@ -8,8 +16,15 @@ pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', f
     $scope.verified = false;
     $scope.imageinfo = false;
 
+    $scope.currentPage = 0;
+    $scope.pageSize = 50;
+    $scope.numberOfPages = function() {
+        return Math.ceil(images.photostreamimages.length/$scope.pageSize);
+    }
 
-    if (typeof FileReader == "undefined") alert ("Your browser is not supported. You will need to update to a modern browser with File API support to upload files.");
+    if (typeof FileReader == "undefined") {
+        alert ("Your browser is not supported. You will need to update to a modern browser with File API support to upload files.");
+    }
     var fileCount = document.getElementById("fileCount");
     var fileList = document.getElementById("fileList");
     var fileDrop = document.getElementById("fileDrop");

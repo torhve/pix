@@ -162,17 +162,28 @@
                         <ul id="fileList"></ul>
                       </div>
                     </div>
-                    <div class="photostream">
+                    <div class="photostream" ng-show="images.photostreamimages">
                       <div class="aitems" style="position:relative">
-                        <div class="aitem" ng-repeat="image in images.photostreamimages">
-                            <div ng-if="(image.createdate | date) != (images.photostreamimages[$index-1].createdate | date)" style="clear: both;">
-                              <h3 class="">{{ image.createdate | date }}</h3>
-                            </div>
-                            <img class="adminthumb lb" style="float:left; margin-right: 4px;"  ng-src="/img/{{ image.token }}/{{ image.thumb_name || image.file_name }}">
+                        <div class="aitem" ng-repeat="image in images.photostreamimages | startFrom:currentPage*pageSize | limitTo:pageSize ">
+                          <div ng-if="(image.createdate | date) != (images.photostreamimages[$index-1].createdate | date)" style="clear: both;">
+                            <h3 class="">{{ image.createdate | date }}</h3>
                           </div>
+                          <img class="adminthumb lb" style="float:left; margin-right: 4px;"  ng-src="/img/{{ image.token }}/{{ image.thumb_name || image.file_name }}">
                         </div>
                       </div>
-                    </div>
+
+                    
+                      <div style="clear:both;">
+                        <button class="btn" ng-disabled="currentPage == 0" ng-click="currentPage=currentPage-1">
+                          Older
+                        </button>
+                        {{currentPage+1}}/{{numberOfPages()}}
+                        <button class="btn" ng-disabled="currentPage >= numberOfPages()-1" ng-click="currentPage=currentPage+1">
+                          Newer 
+                        </button>
+                      </div>
+                  </div>
+                  </div>
                     <div class="adminalbum" ng-show="selectedAlbum">
                       <div class="pull-right btn-group">
                         <a class="btn btn-success" ng-click="albumAdd(selectedAlbum)" title="Add more images to album"><i class="fa fa-plus"></i> Add images</a>
