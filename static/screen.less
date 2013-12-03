@@ -33,39 +33,30 @@ a, a:hover, a:focus {
   color: @blue;
   text-decoration: none;
 }
+.btn:hover, .btn:focus, .btn.active {
+    color: @fg;
+}
 .header, table {
   margin-bottom: 15px;
 }
 #about {
-    margin-top: 15px;
-    text-align: center;
-    .row-fluid {
-        margin-top: 40px;
-        margin-bottom: 80px;
-    }
-    h1, h2, li {
-        color: white;
-        text-shadow: none;
-    }
-    h2 {
-        color: #999;
-    }
     ul {
         text-align: left;
         margin-bottom: 40px;
         margin: none;
     }
     li {
-        font-size: 34px;
-        line-height: 40px;
-        list-style-type: none;
-        margin: 0;
+      font-size: larger;
+      list-style-type: none;
+      margin: 0;
+      i { 
+        margin-right: 5px;
+      }
     }
     .actions {
         text-align: justify;
-    }
-    .btn {
-        margin-right: 5px;
+        margin-top: 60px;
+        margin-bottom: 60px;
     }
     .footer {
         text-align: left;
@@ -74,6 +65,7 @@ a, a:hover, a:focus {
     img {
         max-width: 100%;
     }
+
 }
 .album-label, .admin-album-label {
     background: rgba(0, 0, 0, 0.4);
