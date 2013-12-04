@@ -201,6 +201,8 @@ class Images extends Model
 
     super!
 
+  get_coverimage: (album_id) =>
+    Images\select "where album_id = ? order by views desc limit 1", album_id
 
 
 class Accesstokens extends Model

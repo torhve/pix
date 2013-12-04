@@ -57,7 +57,7 @@ class extends lapis.Application
     @albums = Albums\select "where user_id = ?", @current_user.id
     -- FIXME improve SQL to single statement
     for album in *@albums
-      images = Images\select "where album_id = ? order by views desc limit 1", album.id
+      images = Images\get_coverimage album.id
       album.image = images[1]
       album.url = @url_for("album", token:album.token, title:album.title)
     render: true
@@ -71,7 +71,7 @@ class extends lapis.Application
 
     -- FIXME improve SQL to single statement
     for album in *@albums
-      images = Images\select "where album_id = ? order by views desc limit 1", album.id
+      images = Images\get_coverimage album.id
       album.image = images[1]
       -- Override the token with our given slug so the template generates the correct URLs
       album.slug = @params.slug
@@ -88,7 +88,7 @@ class extends lapis.Application
     unless @album return render:"error", status:403
     @album.views = @album.views + 1
     @album\update "views"
-    @images = Images\select "where album_id = ?", @album.id
+    @images = Images\select "where album_id = ? ORDER BY date", @album.id, fields: "*, "..imagedatesql
     render: true
 
   [tokenalbum: "/album/:slug/:token/:title/"]: =>
@@ -100,7 +100,7 @@ class extends lapis.Application
       return render:"error", status:410
     @album.views = @album.views + 1
     @album\update "views"
-    @images = Images\select "where album_id = ?", @album.id
+    @images = Images\select "where album_id = ? ORDER BY date", @album.id, fields: "*, "..imagedatesql
     render: "album"
 
 
@@ -189,12 +189,12 @@ class extends lapis.Application
   "/api/images/:album_id": respond_to {
 
     GET: capture_errors_json require_login =>
-      images = assert_error db.select '*, '..imagedatesql..[[
-        FROM images 
-        WHERE 
-          user_id = ? AND
-          album_id = ? 
-        ORDER BY date]], @current_user.id, @params.album_id
+      album = Albums\find id:@params.album_id
+      unless album
+        return render:"error", status:404
+      unless album.user_id == @current_user.id
+        return render:"error", status:403
+      images = assert_error Images\select "where album_id = ? ORDER BY date", @params.album_id, fields: "*, "..imagedatesql
       --- TODO maybe use raw query to cast hstore to json?
       -- Examples found:https://gist.github.com/WoLpH/2318757
       for image in *images
@@ -255,12 +255,7 @@ class extends lapis.Application
 
   [photostreamimages: "/api/photostreamimages"]: respond_to {
     GET:capture_errors_json require_login  =>
-      photostreamimages = assert_error db.select [[
-        *, 
-        ]]..imagedatesql..[[
-        FROM images 
-        WHERE user_id = ? 
-        ORDER BY date DESC]], @current_user.id
+      photostreamimages = assert_error Images\select "WHERE user_id = ? ORDER BY date DESC", @current_user.id, fields: "*, "..imagedatesql
       json: {:photostreamimages}
     }
 
