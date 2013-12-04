@@ -249,7 +249,16 @@ class extends lapis.Application
 
   [photostreamimages: "/api/photostreamimages"]: respond_to {
     GET:capture_errors_json require_login  =>
-      photostreamimages = assert_error db.select "*, date_part('epoch', to_timestamp(metadata->'CreateDate', 'YYYY:MM:DD HH24:MI:SS'))*1000 AS createdate FROM images WHERE user_id = ? ORDER BY metadata->'CreateDate'", @current_user.id
+      photostreamimages = assert_error db.select [[
+        *, 
+        date_part('epoch',
+          COALESCE(
+            to_timestamp(metadata->'CreateDate', 'YYYY:MM:DD HH24:MI:SS'),
+            created_at
+          ))*1000 AS createdate 
+        FROM images 
+        WHERE user_id = ? 
+        ORDER BY createdate DESC]], @current_user.id
       json: {:photostreamimages}
     }
 
