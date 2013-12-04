@@ -8,7 +8,7 @@ pnxapp.filter('startFrom', function() {
 });
 
 
-pnxapp.controller('AlbumListCtrl', ['$scope', '$http', 'images', 'personaSvc', function($scope, $http, images, personaSvc) {
+pnxapp.controller('AlbumListCtrl', ['$scope', '$http', '$filter', 'images', 'personaSvc', function($scope, $http, $filter, images, personaSvc) {
     $scope.images = images;
     $scope.selectedImages = [];
     $scope.selectedAlbum = false;
