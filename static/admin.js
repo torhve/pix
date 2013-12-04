@@ -8,7 +8,7 @@ pnxapp.filter('startFrom', function() {
 });
 
 
-pnxapp.controller('AlbumListCtrl', ['$scope', '$http', '$filter', 'images', 'personaSvc', function($scope, $http, $filter, images, personaSvc) {
+pnxapp.controller('AlbumListCtrl', ['$rootScope', '$scope', '$http', '$filter', 'images', 'personaSvc', function($rootScope, $scope, $http, $filter, images, personaSvc) {
     $scope.images = images;
     $scope.selectedImages = [];
     $scope.selectedAlbum = false;
@@ -95,6 +95,15 @@ pnxapp.controller('AlbumListCtrl', ['$scope', '$http', '$filter', 'images', 'per
             $scope.$apply();
         }, 6000);
     }
+    /* Fired after photostream navigation */
+    $scope.$watch('currentPage', function(current, previous, scope) {
+        console.log('a');
+        $('.items').imagesLoaded(function( $images, $proper, $broken ) {
+            console.log('b');
+            apnx = photongx($('.items'), $('.item'));
+        });
+    });
+
     /* Fired after everything has been loaded from the backend */
     $scope.$watch('images.images', function() {
         $('.spinner').addClass('hidden');
@@ -149,8 +158,15 @@ pnxapp.controller('AlbumListCtrl', ['$scope', '$http', '$filter', 'images', 'per
        $scope.selectedAlbum = false;
        $scope.photostreamimages = [];
        images.getPhotoStreamFromBackend();
-
     }
+    $rootScope.$on('photostreamLoaded', function() {
+        console.log('loaded');
+       setTimeout(function() {
+           $('.items').imagesLoaded(function( $images, $proper, $broken ) {
+               apnx = photongx($('.items'), $('.item'));
+           });
+        });
+    });
 
     $scope.albumModify = function(album) {
         $('#albumtitlemodal').modal('show');
@@ -255,7 +271,7 @@ PImage.prototype.$$hashKey = function() {
 var services = angular.module('PNXApp.services', []);
 
 
-services.factory('images', ['$http', function($http) {
+services.factory('images', ['$rootScope', '$http', function($rootScope, $http) {
     var images = {
         all: {},
         albums: [],
@@ -281,6 +297,7 @@ services.factory('images', ['$http', function($http) {
         getPhotoStreamFromBackend: function() {
             $http.get('/api/photostreamimages').then(function(data) {
                 images.photostreamimages = data.data.photostreamimages;
+                $rootScope.$emit('photostreamLoaded', '');
             });
         },
         getQueueCount: function() {

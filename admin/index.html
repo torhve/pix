@@ -120,16 +120,6 @@
                           <li>Display a simple timeline with all your images (Photo stream)</li>
                         </ul>
                         Please select an album to start.
-                        <div class="aitems" style="position:relative">
-                          <div class="" ng-repeat="album in images.albums | filter:albumsearch" ng-click="clickAlbum(album)">
-                            <div class="aitem" ng-repeat="img in images.imagesarray[album] | limitTo:1" style="float:left">
-                              <div class="admin-album-label">
-                                <i class="fa fa-camera-retro"></i> {{ album }}
-                              </div>
-                              <img class="adminthumb" ng-src="/img/{{ images.tags[album] }}/{{ img }}">
-                            </div>
-                          </div>
-                        </div>
                   </div>
                   <div id="albumcontainer">
                     <div class="uploadcontainer" ng-show="uploading">
@@ -181,12 +171,13 @@
                         </button>
                       </div>
                       <h2>Photo stream</h2>
-                      <div class="aitems" style="position:relative">
-                        <div class="aitem" ng-repeat="image in images.photostreamimages | startFrom:currentPage*pageSize | limitTo:pageSize ">
+                      <div class="items" style="position:relative">
+                        <div class="item" ng-repeat="image in images.photostreamimages | startFrom:currentPage*pageSize | limitTo:pageSize ">
                           <div ng-if="(image.createdate | date) != ((images.photostreamimages | startFrom: currentPage*pageSize)[$index-1].createdate | date)" style="clear: both;">
                             <h3 class="">{{ image.createdate | date }}</h3>
                           </div>
-                          <img class="adminthumb lb" style="float:left; margin-right: 4px;"  ng-src="/img/{{ image.token }}/{{ image.thumb_name || image.file_name }}">
+                          <a class="lb" href="/img/{{image.token}}/{{ image.huge_name || image.file_name}}" token="{{image.token}}">
+                            <img class="adminthumb" style="float:left; margin-right: 4px;" ng-src="/img/{{ image.token }}/{{ image.thumb_name || image.huge_name || image.file_name }}">
                         </div>
                       </div>
 
