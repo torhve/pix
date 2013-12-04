@@ -171,7 +171,7 @@
                         </button>
                       </div>
                       <h2>Photo stream</h2>
-                      <div class="items" style="position:relative">
+                      <div ng-if="images.photostreamimages" class="items" style="position:relative">
                         <div class="item" ng-repeat="image in images.photostreamimages | startFrom:currentPage*pageSize | limitTo:pageSize ">
                           <div ng-if="(image.createdate | date) != ((images.photostreamimages | startFrom: currentPage*pageSize)[$index-1].createdate | date)" style="clear: both;">
                             <h3 class="">{{ image.createdate | date }}</h3>
@@ -222,7 +222,7 @@
                             <td><a ng-click="accesstokenRemove(access)" title="Remove access" class="btn btn-danger"><i class="fa fa-trash-o"></i></a></td>
                           </tr>
                         </table>
-                            <div class="items" style="position:relative">
+                            <div id="albumitems" class="items" style="position:relative">
                               <div class="item" ng-repeat="image in images.images">
                                 <a token="{{image.token}}" href="/img/{{ image.token }}/{{ image.huge_name || image.file_name }}" class="lb">
                                   <img class="adminthumb" ng-src="/img/{{ image.token }}/{{ image.thumb_name || image.file_name }}">
@@ -240,6 +240,8 @@
                                 </div>
                               </div>
                             </div>
+
+
                           </div>
                         </div>
                       </div>

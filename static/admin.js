@@ -84,8 +84,8 @@ pnxapp.controller('AlbumListCtrl', ['$rootScope', '$scope', '$http', '$filter', 
 
     // Init function gets called from status function when user logs in
     $scope.init = function() {
-        $('.spinner').removeClass('hidden');
         //images.getImagesFromBackend();
+        $rootScope.$emit('spin');
 
         images.getAlbumsFromBackend();
         images.getQueueCount();
@@ -95,30 +95,30 @@ pnxapp.controller('AlbumListCtrl', ['$rootScope', '$scope', '$http', '$filter', 
             $scope.$apply();
         }, 6000);
     }
+
+
+    // Spinner start event
+    $rootScope.$on('spin', function() {
+        $('.spinner').removeClass('hidden');
+    });
+
+    // Spinner end event
+    $rootScope.$on('spun', function() {
+        $('.spinner').addClass('hidden');
+    });
+
+
     /* Fired after photostream navigation */
     $scope.$watch('currentPage', function(current, previous, scope) {
-        console.log('a');
+        $rootScope.$emit('spin');
         $('.items').imagesLoaded(function( $images, $proper, $broken ) {
-            console.log('b');
             apnx = photongx($('.items'), $('.item'));
+            $rootScope.$emit('spun');
         });
     });
 
-    /* Fired after everything has been loaded from the backend */
-    $scope.$watch('images.images', function() {
-        $('.spinner').addClass('hidden');
-        // TODO this should be more clever
-        // 
-         /*
-        setTimeout(function() {
-            $('.aitems').imagesLoaded(function( $images, $proper, $broken ) {
-                apnx = photongx($('.aitems'), $('.aitem'));
-            });
-        }, 2000);
-        */
-    });
     $scope.$watch('images.albums', function() {
-        $('.spinner').addClass('hidden');
+        $rootScope.$emit('spun');
     });
     
     /* Rewookmark when filter expression changes */
@@ -140,30 +140,37 @@ pnxapp.controller('AlbumListCtrl', ['$rootScope', '$scope', '$http', '$filter', 
     }
 
     $scope.clickAlbum = function(album) { 
-       images.getAccestokensFromBackend(album);
-       images.getImagesFromBackend(album);
-       $scope.uploading = false;
-       $scope.selectedAlbum = album;
-       $scope.photostreamimages = [];
+        $rootScope.$emit('spin');
+        images.getAccestokensFromBackend(album);
+        images.getImagesFromBackend(album);
+        $scope.uploading = false;
+        $scope.selectedAlbum = album;
+        images.photostreamimages = [];
         // Scroll top top, since we might be far down in the navigaiton list
         $("body").scrollTop(0);
-       // TODO make this clever?
-       setTimeout(function() {
-           pnx = photongx($('.items'), $('.item'));
-        }, 2000);
     }
-
-    $scope.clickPhotoStream = function() {
-       $scope.uploading = false;
-       $scope.selectedAlbum = false;
-       $scope.photostreamimages = [];
-       images.getPhotoStreamFromBackend();
-    }
-    $rootScope.$on('photostreamLoaded', function() {
-        console.log('loaded');
+    $rootScope.$on('imagesLoaded', function() {
+        // TODO make this clever?
        setTimeout(function() {
            $('.items').imagesLoaded(function( $images, $proper, $broken ) {
                apnx = photongx($('.items'), $('.item'));
+               $rootScope.$emit('spun');
+           });
+        });
+    });
+
+    $scope.clickPhotoStream = function() {
+       $rootScope.$emit('spin');
+       $scope.uploading = false;
+       $scope.selectedAlbum = false;
+       images.photostreamimages = [];
+       images.getPhotoStreamFromBackend();
+    }
+    $rootScope.$on('photostreamLoaded', function() {
+       setTimeout(function() {
+           $('.items').imagesLoaded(function( $images, $proper, $broken ) {
+               apnx = photongx($('.items'), $('.item'));
+               $rootScope.$emit('spun');
            });
         });
     });
@@ -292,6 +299,7 @@ services.factory('images', ['$rootScope', '$http', function($rootScope, $http) {
         getImagesFromBackend: function(album) {
             $http.get('/api/images/'+album.id).then(function(data) {
                 images.images = data.data.images;
+                $rootScope.$emit('imagesLoaded');
             });
         },
         getPhotoStreamFromBackend: function() {
