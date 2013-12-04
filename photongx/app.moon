@@ -227,7 +227,7 @@ class extends lapis.Application
             {'checksum', exists: true}
         }
         {:upload, :title, :filename, :token, :checksum} = @params
-        pattern = '\\.(jpe?g|gif|png)$'
+        pattern = '\\.(jpe?g|gif|png|crw|raw)$'
         unless ngx.re.match(filename, pattern, "i") 
             return json:status:403, error:'Filename must be of image type'
         file = @params.upload
@@ -253,6 +253,7 @@ class extends lapis.Application
         *, 
         date_part('epoch',
           COALESCE(
+            to_timestamp(metadata->'DateTimeOriginal', 'YYYY:MM:DD HH24:MI:SS'),
             to_timestamp(metadata->'CreateDate', 'YYYY:MM:DD HH24:MI:SS'),
             created_at
           ))*1000 AS createdate 

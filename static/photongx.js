@@ -115,7 +115,7 @@ var photongx = (function($container, $items) {
         if ($('#lightbox').length == 0) { // #lightbox does not exist
             //create HTML markup for lightbox window
             var lightbox = 
-            '<div id="lightbox" class="hidden">' +
+            '<div id="lightbox" style="display:none">' +
                 '<div class="action-group">' +
                 '<a id="play" href="#" title="Toggle slideshow"><i class="fa fa-play"></i></a>' +
                 '<a id="goFS" href="#" title="Toggle full screen"><i class="fa fa-arrows-alt"></i></a>' +
@@ -212,7 +212,7 @@ var photongx = (function($container, $items) {
             // We are loaded, so hide the spinner
             $('.spinner').addClass('hidden');
             //show lightbox window - you could use .show('fast') for a transition
-            $('#lightbox').removeClass('hidden').show();
+            $('#lightbox').show();
             $('#img-front').css('opacity', 1);
         });
     };

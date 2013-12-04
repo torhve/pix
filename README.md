@@ -37,7 +37,7 @@ Watch Leafo's Lapis screencast to get going <http://www.youtube.com/watch?v=Eo67
 
 Preqreqs
 
-    sudo apt-get install libimage-exiftool-perl imagemagick redis-server jhead node-less
+    sudo apt-get install libimage-exiftool-perl imagemagick redis-server jhead node-less dcraw ufraw
 
 PostgreSQL with hstore
 

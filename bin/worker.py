@@ -94,7 +94,20 @@ class Worker:
         quality = str(quality)
         if infile.endswith('.gif') or no_upscale:
             size = size+'>'
+
         resize = run(['/usr/bin/convert', '-filter', 'catrom', '-interlace', "Plane", '-quality', quality, '-strip',  '-thumbnail', size, infile, outfile])
+
+# Converts raw filenames to jpg filenames
+def web_filename(filename):
+    raw_types = ('.crw', '.raw', '.cr2')
+
+    # Check if image is of type raw, then we convert from raw to JPG for web display
+    for raw_type in raw_types:
+        if filename.lower().endswith(raw_type):
+            filename = filename[:-4] + '.jpg'
+            break
+
+    return filename
 
 if __name__ == '__main__':
     parser = OptionParser()
@@ -133,8 +146,8 @@ if __name__ == '__main__':
           # Happens if user deletes image before queue gets to process it
           continue
 
-        image['thumb_name'] = "t%d.%s" % ( photoconf['thumb_max'], image['file_name'] )
-        image['huge_name'] = "t%d.%s" % ( photoconf['huge_max'], image['file_name'] )
+        image['thumb_name'] = web_filename("t%d.%s" % ( photoconf['thumb_max'], image['file_name'] ))
+        image['huge_name'] = web_filename("t%d.%s" % ( photoconf['huge_max'], image['file_name'] ))
 
         relbase = sep.join([BASE_DIR, config['path']['image'], str(image['user_id']), str(image['album_id']), str(image['id'])]) + sep
 
