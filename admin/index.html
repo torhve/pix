@@ -37,7 +37,7 @@
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li ng-show="images.queueCount" >
-        <span title="When you upload an image it will be process be the server to generate thumbnails and other data. This number reflects the amount of images remaining the the processing queue" ng-class="{'blue':images.queueCount}" ng-bind="images.queueCount"></span> images in processing queue
+        <p class="nav navbar-text" title="When you upload an image it will be process be the server to generate thumbnails and other data. This number reflects the amount of images remaining the the processing queue"><span ng-class="{'blue':images.queueCount}" ng-bind="images.queueCount"></span> images in processing queue</p>
         </li>
         <li ng-show="verified">
           <a ng-click="logout()" href="#" class="" title="You are logged in as {{ email }}" alt="You are logged in as {{ email }}">Log out <i class="fa fa-angle-right"></i></a>
