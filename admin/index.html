@@ -181,8 +181,8 @@
                       <h2>Photo stream</h2>
                       <div ng-if="images.photostreamimages" class="items" style="position:relative">
                         <div class="item" ng-repeat="image in images.photostreamimages | startFrom:currentPage*pageSize | limitTo:pageSize ">
-                          <div ng-if="(image.createdate | date) != ((images.photostreamimages | startFrom: currentPage*pageSize)[$index-1].createdate | date)" style="clear: both;">
-                            <h3 class="">{{ image.createdate | date }}</h3>
+                          <div ng-if="(image.date | date) != ((images.photostreamimages | startFrom: currentPage*pageSize)[$index-1].date | date)" style="clear: both;">
+                            <h3 class="">{{ image.date | date }}</h3>
                           </div>
                           <a class="lb" href="/img/{{image.token}}/{{ image.huge_name || image.file_name}}" token="{{image.token}}">
                             <img class="adminthumb" style="float:left; margin-right: 4px;" ng-src="/img/{{ image.token }}/{{ image.thumb_name || image.huge_name || image.file_name }}">

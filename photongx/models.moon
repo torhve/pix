@@ -32,6 +32,16 @@ generate_token = do
 secure_filename = (str) ->
     (str\gsub("%s+", "-")\gsub("%.+", ".")\gsub("[^%w%-_%.]+", ""))
 
+imagedatesql = do
+  [[
+        date_part('epoch',
+          COALESCE(
+            to_timestamp(metadata->'DateTimeOriginal', 'YYYY:MM:DD HH24:MI:SS'),
+            to_timestamp(metadata->'CreateDate', 'YYYY:MM:DD HH24:MI:SS'),
+            created_at
+          ))*1000 AS date 
+  ]]
+
 
 
 class Redis
@@ -220,4 +230,4 @@ class Accesstokens extends Model
     else
       return false
 
-{ :Redis, :Users, :Albums, :Images, :Sessions, :Accesstokens, :generate_token }
+{ :Redis, :Users, :Albums, :Images, :Sessions, :Accesstokens, :generate_token, :imagedatesql }

@@ -5,7 +5,7 @@ import respond_to, capture_errors, capture_errors_json, assert_error, yield_erro
 import validate, assert_valid from require "lapis.validate"
 import escape_pattern, trim_filter, to_json from require "lapis.util"
 db = require "lapis.db"
-import Redis, Users, Albums, Images, Accesstokens, generate_token from require "photongx.models"
+import Redis, Users, Albums, Images, Accesstokens, generate_token, imagedatesql from require "photongx.models"
 config = require("lapis.config").get!
 
 require_login = (fn) ->
@@ -39,6 +39,7 @@ persona_verify = (assertion, audience) ->
         status:res.status,
         body:res.body
       }
+
 
 class extends lapis.Application
   layout: require "photongx.views.layout"
@@ -188,7 +189,12 @@ class extends lapis.Application
   "/api/images/:album_id": respond_to {
 
     GET: capture_errors_json require_login =>
-      images = assert_error Images\select "where user_id = ? and album_id = ?", @current_user.id, @params.album_id
+      images = assert_error db.select '*, '..imagedatesql..[[
+        FROM images 
+        WHERE 
+          user_id = ? AND
+          album_id = ? 
+        ORDER BY date]], @current_user.id, @params.album_id
       --- TODO maybe use raw query to cast hstore to json?
       -- Examples found:https://gist.github.com/WoLpH/2318757
       for image in *images
@@ -251,15 +257,10 @@ class extends lapis.Application
     GET:capture_errors_json require_login  =>
       photostreamimages = assert_error db.select [[
         *, 
-        date_part('epoch',
-          COALESCE(
-            to_timestamp(metadata->'DateTimeOriginal', 'YYYY:MM:DD HH24:MI:SS'),
-            to_timestamp(metadata->'CreateDate', 'YYYY:MM:DD HH24:MI:SS'),
-            created_at
-          ))*1000 AS createdate 
+        ]]..imagedatesql..[[
         FROM images 
         WHERE user_id = ? 
-        ORDER BY createdate DESC]], @current_user.id
+        ORDER BY date DESC]], @current_user.id
       json: {:photostreamimages}
     }
 
