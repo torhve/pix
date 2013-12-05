@@ -125,6 +125,7 @@
                         <li>Export photos and albums as ZIP-archive</li>
                         <li>Organize photos from photo stream to albums</li>
                         <li>A "Drop box" that you use to upload without first creating album</li>
+                        <li>Date pickers to find photos in a gien time period</li>
                       </ul>
 
                         Please select an album to start.
@@ -166,13 +167,13 @@
                           &laquo; First
                         </button>
                         <button class="btn" ng-disabled="currentPage == 0" ng-click="currentPage=currentPage-1">
-                          &larr; Older
+                          &larr; Newer
                         </button>
                         <button class="btn">
                         Page {{currentPage+1}}/{{numberOfPages()}}
                         </button>
                         <button class="btn" ng-disabled="currentPage >= numberOfPages()-1" ng-click="currentPage=currentPage+1">
-                          Newer &rarr;
+                          Older &rarr;
                         </button>
                         <button class="btn" ng-disabled="currentPage == numberOfPages()-1" ng-click="currentPage = numberOfPages()-1">
                           Last &raquo;

@@ -119,7 +119,7 @@ var photongx = (function($container, $items) {
                 '<div class="action-group">' +
                 '<a id="play" href="#" title="Toggle slideshow"><i class="fa fa-play"></i></a>' +
                 '<a id="goFS" href="#" title="Toggle full screen"><i class="fa fa-arrows-alt"></i></a>' +
-                '<a id="hideLB" href="# title="Close image""><i class="fa fa-times"></i></a></div>' +
+                '<a id="hideLB" href="#" title="Close image"><i class="fa fa-times"></i></a></div>' +
                 '<a href="#prev" id="prev" title="Previous image"><div><i class="fa fa-backward"></i></div></a>' +
                     '<div id="lbcontent">' + //insert clicked link's href into img src
                         '<img class="lbimg" id="img-front" src="">' +

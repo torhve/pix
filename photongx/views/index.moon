@@ -8,10 +8,9 @@ class Index extends Widget
             text "Photo Engine" 
             span class:"blue", " X "
       ul class:"nav navbar-nav navbar-right", ->
-        li ->
-          button class:"btn btn-default navbar-btn", href:@url_for("admin"), ->
-            text "Get started "
-            i class:"fa fa-arrow-right"
+        a class:"btn btn-default navbar-btn", href:@url_for("admin"), ->
+          text "Get started "
+          i class:"fa fa-arrow-right"
         li ->
           text ""
     div id:"about", class: "container", ->

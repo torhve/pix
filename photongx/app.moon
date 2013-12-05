@@ -197,6 +197,7 @@ class extends lapis.Application
       images = assert_error Images\select "where album_id = ? ORDER BY date", @params.album_id, fields: "*, "..imagedatesql
       --- TODO maybe use raw query to cast hstore to json?
       -- Examples found:https://gist.github.com/WoLpH/2318757
+      -- Or use postgresql 9.3 which can cast hstore to JSON
       for image in *images
         if image.metadata
           newstr, n, err = ngx.re.gsub(image.metadata, "=>", ":")
