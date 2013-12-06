@@ -5,8 +5,20 @@ var photongx = (function($container, $items) {
         slideinterval = 4000,
         offset = 4;
 
-    ;
+    // If lightbox already exists it means that photngx was called
+    // multiple times on the same page
+    // In that case we remove the lightbox, since the lightbox contains
+    // bindings that would trigger multiple times if not
+    var lb = document.getElementById('lightbox');
+    if(lb != null) {
+        // Lightbox should always be a child of body
+        document.body.removeChild(lb);
+    }
+    // We also need to unbind our previously registered event handlers
+    // or they would all trigger multiple times
+    $(document).off('next_image prev_image keydown debouncedresize');
 
+    // Image preloading function
     $.fn.preload = function() {
         this.each(function(){
             // Check if url starts with /
