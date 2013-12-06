@@ -88,7 +88,7 @@ class extends lapis.Application
     unless @album return render:"error", status:403
     @album.views = @album.views + 1
     @album\update "views"
-    @images = Images\select "where album_id = ? ORDER BY date", @album.id, fields: "*, "..imagedatesql
+    @images = Images\select "where album_id = ? ORDER BY date, file_name", @album.id, fields: "*, "..imagedatesql
     render: true
 
   [tokenalbum: "/album/:slug/:token/:title/"]: =>
@@ -100,7 +100,7 @@ class extends lapis.Application
       return render:"error", status:410
     @album.views = @album.views + 1
     @album\update "views"
-    @images = Images\select "where album_id = ? ORDER BY date", @album.id, fields: "*, "..imagedatesql
+    @images = Images\select "where album_id = ? ORDER BY date, file_name", @album.id, fields: "*, "..imagedatesql
     render: "album"
 
 
