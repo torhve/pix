@@ -47,9 +47,8 @@
     text-align: center;
     width: 100%;
     height: auto;
-    max-width:100%; 
-    max-height:100% !important; 
-    text-align:center;
+    max-width: 100%; 
+    max-height: 100% !important; 
     z-index: 2;
 
   .action-group {
@@ -104,17 +103,26 @@
       top: 50%;
       padding: 4%;
   }
+  // Position image in center
+  img {
+    position: absolute;
+    margin: auto;
+    right: 0;
+    top: 0;
+    left: 0;
+    bottom: 0;
+  }
   img {
     -webkit-box-shadow:0 0 40px #000;
        -moz-box-shadow:0 0 40px #000;
             box-shadow:0 0 40px #000;
-    /*
-    border-left: 5px solid black;
-    border-right: 5px solid black;
-    */
     border: 3px solid black;
-    max-width:100%;
     height: 100%;
+    width: auto;
+  }
+  img {
+    height: auto;
+    width: 100%;
   }
 }
 #lbcontent {

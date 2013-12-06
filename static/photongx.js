@@ -317,9 +317,11 @@ var photongx = (function($container, $items) {
 
     //
     // Function responsible for counting clicks/views in the backend
+    // It uses a html attribute named token which the backend uses to increment the view
+    // counter of the correct image
     //
     this.countView = function(file_name) {
-        // Backend wants the original file name as a key to use for counting
+        if (file_name == undefined || file_name == '') return;
         $.getJSON('/api/img/click', { 'img':file_name}, function(data) {
             if (!data.views > 0) {
                 console.log('Error counting clicks. Response from backend was',data);
@@ -363,6 +365,8 @@ var photongx = (function($container, $items) {
         if (e.shiftKey || e.altKey || e.ctrlKey || e.metaKey ) return true;
         // Don't do anything if lightbox isn't there
         if (!document.getElementById('lightbox')) return true;
+        // Don't do anything if lightbox isn't visible
+        if (document.getElementById('lightbox').style.display == 'none') return true;
 
         if (e.keyCode == 27) { 
             hideLB();
