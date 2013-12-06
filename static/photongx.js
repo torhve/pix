@@ -1,6 +1,6 @@
 var photongx = (function($container, $items) {
     var slideshow = false,
-        currentimage = -1,
+        currentimage = parseInt(window.location.hash.replace('#', ''), 10) || -1,
         slideshowtimer,
         slideinterval = 4000,
         offset = 4;
@@ -81,6 +81,7 @@ var photongx = (function($container, $items) {
     });
 
     // We got a new browser state from pressing prev or next buttons
+    /*
     window.addEventListener("popstate", function (evt) {
         if (evt.state && evt.state.image) {
             navigateImage(evt.state.image);
@@ -90,6 +91,7 @@ var photongx = (function($container, $items) {
             hideLB();
         }
     });
+    */
     
     $('.lb').click(function(e) {
         // Show spinner
@@ -97,13 +99,18 @@ var photongx = (function($container, $items) {
         
         //prevent default action (hyperlink)
         e.preventDefault();
+
+        createLB();
         
         //Get clicked link href
-        var image_href = $(this).attr("href");
+        //var image_href = $(this).attr("href");
 
         // Save the current image
         currentimage = $items.index($(this).parent()); 
         
+        navigateImage(currentimage);
+        showLB();
+
         // Push inn <albumurl>/<image_id>/ to history
         // FIXME history.pushState({ image: currentimage }, null, window.location.href + currentimage + "/");
         
@@ -114,11 +121,12 @@ var photongx = (function($container, $items) {
         If the lightbox window HTML doesn't exists, create it and insert it.
         (This will only happen the first time around)
         */
-        
+        /*
         createLB();
 
         setLBimage(image_href);
         countView($(this).attr('token'));
+        */
 
         //showLB();
     });
@@ -246,6 +254,9 @@ var photongx = (function($container, $items) {
             base = base_parts.slice(0, base_parts.length - 2).join("/") + "/";
             // FIXME history.pushState({ image: null }, null, base);
         }
+
+        // Remove hash
+        window.location.hash = '';
     };
     
     document.cancelFullScreen = document.webkitExitFullscreen || document.mozCancelFullScreen || document.exitFullscreen;
@@ -325,6 +336,9 @@ var photongx = (function($container, $items) {
             //$('#image-'+String(parseInt(ctwo))).attr('href'),
             //$('#image-'+String(parseInt(cthree))).attr('href')
         currentimage = c;
+
+        // Update hash
+        window.location.hash = '#' + c;
     }
 
     //
@@ -406,6 +420,13 @@ var photongx = (function($container, $items) {
         }
     });
 
+
+    // If currentImage is set, create lightbox and navigate to it
+    if(currentimage > -1) {
+        createLB();
+        navigateImage(currentimage);
+        showLB();
+    }
 
     return this;
 });

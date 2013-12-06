@@ -20,18 +20,8 @@ class Album extends Widget
       div id:"spinner", class:"spinner", ->
         text "Loading ..."
       script ->
-        raw "var album = '"..@album.title.."';"
-        raw [[
-        var showimage = false;
-        //var showimage = {% if showimage then %}{{showimage}}{% else %}null{% end %};
-        ]]
         raw [[
         $(document).on("ready", function (evt) {
             pnx = photongx($('.items'), $('.item'));
-            if (showimage) {
-                pnx.createLB();
-                pnx.navigateImage(showimage);
-                pnx.showLB();
-            }
         });
         ]]
