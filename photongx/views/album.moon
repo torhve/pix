@@ -2,10 +2,10 @@ import Widget from require "lapis.html"
 class Album extends Widget
     content: =>
       div class:"album-label", ->
-        a href:@url_for("albums"), title:"Back to album list", ->
+        a href:@albumsurl, title:"Back to album list", ->
           i class:"fa fa-home"
           text " | " 
-        a href:@url_for("album", token: @album.token, title:@album.title), ->
+        a href:@albumurl, ->
           i class:"fa fa-camera-retro"
           text " " ..@album.title
       div class:"items",->

@@ -89,6 +89,8 @@ class extends lapis.Application
     @album.views = @album.views + 1
     @album\update "views"
     @images = Images\select "where album_id = ? ORDER BY date, file_name", @album.id, fields: "*, "..imagedatesql
+    @albumurl = @url_for('album', token:@params.token, title:@album.title)
+    @albumsurl = @url_for('albums')
     render: true
 
   [tokenalbum: "/album/:slug/:token/:title/"]: =>
@@ -98,6 +100,8 @@ class extends lapis.Application
     valid_token = Accesstokens\validate_album @params.slug, @album.id
     unless valid_token
       return render:"error", status:410
+    @albumurl = @url_for('tokenalbum', slug:@params.slug, token:@album.token, title:@album.title)
+    @albumsurl = @url_for('tokenalbums', slug:@params.slug)
     @album.views = @album.views + 1
     @album\update "views"
     @images = Images\select "where album_id = ? ORDER BY date, file_name", @album.id, fields: "*, "..imagedatesql
