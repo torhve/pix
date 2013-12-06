@@ -1,3 +1,4 @@
+@import "variables.less";
 /* disable transitons 
 .item {
   -webkit-transition-duration: 0.8s;
@@ -111,18 +112,20 @@
     top: 0;
     left: 0;
     bottom: 0;
+    max-height: 100%;
+    max-width: 100%;
   }
   img {
-    -webkit-box-shadow:0 0 40px #000;
-       -moz-box-shadow:0 0 40px #000;
-            box-shadow:0 0 40px #000;
+    -webkit-box-shadow:0 0 120px black;
+       -moz-box-shadow:0 0 120px black;
+            box-shadow:0 0 120px block;
     border: 3px solid black;
-    height: 100%;
-    width: auto;
+    //height: 100%;
+    //width: auto;
   }
   img {
-    height: auto;
-    width: 100%;
+    //height: auto;
+    //width: 100%;
   }
 }
 #lbcontent {
@@ -132,7 +135,7 @@
     right: 0;
     bottom: 0;
     // Fade whatever the lb is in top of
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(0, 0, 0, 0.8);
 }
 #spinner {
     z-index: 3;
