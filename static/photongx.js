@@ -109,7 +109,8 @@ var photongx = (function($container, $items) {
         currentimage = $items.index($(this).parent()); 
         
         navigateImage(currentimage);
-        showLB();
+
+        //showLB();
 
         // Push inn <albumurl>/<image_id>/ to history
         // FIXME history.pushState({ image: currentimage }, null, window.location.href + currentimage + "/");
