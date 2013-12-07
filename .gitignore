@@ -1,0 +1,10 @@
+*.lua
+logs/
+nginx.conf.compiled
+config.moon
+.tup
+*.swp
+*.swo
+*.swn
+static/screen.css
+static/variables.css
