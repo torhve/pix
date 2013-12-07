@@ -125,7 +125,7 @@ var photongx = (function($container, $items) {
         createLB();
 
         setLBimage(image_href);
-        countView($(this).attr('token'));
+        countView($(this).attr('id'));
         */
 
         //showLB();
@@ -249,14 +249,17 @@ var photongx = (function($container, $items) {
         pause();
 
         // Push away image number path
+        /*
         var base_parts = window.location.href.split("/");
         if (base_parts[base_parts.length-2] == currentimage) {
             base = base_parts.slice(0, base_parts.length - 2).join("/") + "/";
             // FIXME history.pushState({ image: null }, null, base);
         }
+        */
 
-        // Remove hash
-        window.location.hash = '';
+        // Remove hash (and scroll to the current image)
+        var link = $($items[currentimage]).find('a');
+        window.location.hash = link.attr('id');
     };
     
     document.cancelFullScreen = document.webkitExitFullscreen || document.mozCancelFullScreen || document.exitFullscreen;
@@ -321,7 +324,7 @@ var photongx = (function($container, $items) {
         var link = $($items[c]).find('a');
         var image_href = link.attr('href');
         setLBimage(image_href);
-        countView(link.attr('token'));
+        countView(link.attr('id'));
 
         var cone = c+1, ctwo = c+2 , cthree = c+3;
         // We are going backwards
@@ -343,7 +346,7 @@ var photongx = (function($container, $items) {
 
     //
     // Function responsible for counting clicks/views in the backend
-    // It uses a html attribute named token which the backend uses to increment the view
+    // It uses the HTML id of the image which the backend uses to increment the view
     // counter of the correct image
     //
     this.countView = function(file_name) {
