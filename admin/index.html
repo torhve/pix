@@ -98,6 +98,7 @@
                             </a>
                             <div class="btn-group animate-show" ng-show="hoverAlbum==album.title">
                                 <a class="btn btn-success" ng-click="albumAdd(album)" title="Add more images to album"><i class="fa fa-plus"></i></a>
+                                <a class="btn btn-grey" target="_blank" href="/album/{{album.token}}/{{album.title}}/" title="Open album in new window"><i class="fa fa-camera-retro"></i></a>
                                 <a class="btn btn-grey" ng-click="albumLink(album)" title="Create expirable album link"><i class="fa fa-clock-o"></i></a>
                                 <a class="btn btn-grey" ng-click="albumModify(album)"><i class="fa fa-pencil"></i></a>
                                 <a ng-click="albumRemove(album)" title="Remove album and all images. You will be prompted for confirmation"  class="btn btn-danger"><i class="fa fa-trash-o"></i></a>
