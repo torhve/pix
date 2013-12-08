@@ -1,7 +1,7 @@
 lapis = require "lapis"
 json = require "cjson"
 import capture_errors from require "lapis.application"
-import respond_to, capture_errors, capture_errors_json, assert_error, yield_error from require "lapis.application"
+import json_params, respond_to, capture_errors, capture_errors_json, assert_error, yield_error from require "lapis.application"
 import validate, assert_valid from require "lapis.validate"
 import escape_pattern, trim_filter, to_json from require "lapis.util"
 db = require "lapis.db"
@@ -14,15 +14,6 @@ require_login = (fn) ->
       fn @
     else
       redirect_to: @url_for "admin"
-
-json_params = (fn) ->
-  =>
-    body = ngx.req.get_body_data!
-    if body
-      @json_params = json.decode body
-      fn @
-    else
-      json:{error:"No parameters recieved"}
 
 persona_verify = (assertion, audience) -> 
 
@@ -164,22 +155,22 @@ class extends lapis.Application
       albums = assert_error Albums\select "where user_id = ?", @current_user.id
       json: {:albums}
 
-    POST: capture_errors_json json_params require_login =>
+    POST: capture_errors_json require_login json_params =>
 
-      assert_valid @json_params, {
+      assert_valid @params, {
         { "name", exists: true, min_length: 1 }
       }
       -- Get or create
-      album = Albums\find user_id: @current_user.id, title:@json_params.name
+      album = Albums\find user_id: @current_user.id, title:@params.name
       unless album
-        album = Albums\create @current_user.id, @json_params.name
+        album = Albums\create @current_user.id, @params.name
       json: { album: album }
   }
 
   "/api/albums/:album_id": respond_to {
     PUT: capture_errors_json require_login json_params =>
       album = Albums\find id:@params.album_id, user_id: @current_user.id
-      album.title = @json_params.title
+      album.title = @params.title
       album\update "title"
       json: {:album}
     DELETE: capture_errors_json require_login =>
@@ -343,5 +334,5 @@ class extends lapis.Application
       return json: { status: "ok" }
     json: status: 403
 
-  "/debug": =>
-    json: config
+  "/debug": json_params =>
+    json: @params
