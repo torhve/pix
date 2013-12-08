@@ -244,6 +244,10 @@ pnxapp.controller('AlbumListCtrl', ['$rootScope', '$scope', '$http', '$filter', 
         $http.delete('/api/albums/'+$scope.albumremove.id).then(function(data) {
             if (data.status == 200) {
                 images.albums.splice(images.albums.indexOf($scope.albumremove), 1);
+                // Unselect album if it was selected
+                if($scope.albumremove == $scope.selectedAlbum) {
+                    $scope.selectedAlbum = false;
+                }
             }else {
                 $scope.error = data.data;
             }
