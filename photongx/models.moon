@@ -3,6 +3,7 @@ redis = require "resty.redis"
 config = require("lapis.config").get!
 json = require "cjson"
 os = require "os"
+import assert_error from require "lapis.application"
 
 import execute from require "os"
 
@@ -186,10 +187,11 @@ class Images extends Model
         token = generate_token 6
 
 
-    image = Model.create @, {
+    image = assert_error Model.create @, {
       :user_id, :token, :album_id, file_name:secure_filename(file_name), title:file_name, thumb_name:'', huge_name:''
     }
-    execute "mkdir -p "..image\real_file_path!
+    if image
+      execute "mkdir -p "..image\real_file_path!
     image
 
   delete: =>

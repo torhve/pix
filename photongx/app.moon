@@ -234,7 +234,10 @@ class extends lapis.Application
             return json:status:403, error:'Filename must be of image type'
         file = @params.upload
         album = assert_error Albums\find user_id: @current_user.id, token:token
-        image = assert_error Images\create @current_user.id, album.id, filename
+        success, image = pcall -> Images\create @current_user.id, album.id, filename
+        -- Since there is a likely chance our silly token can be duplicate we just try to generate image again if it fails
+        while not success
+          success, image = pcall -> Images\create @current_user.id, album.id, filename
         content = file.content
         real_file_name = image\real_file_name!
         diskfile = io.open real_file_name, 'w'
@@ -334,5 +337,6 @@ class extends lapis.Application
       return json: { status: "ok" }
     json: status: 403
 
-  "/debug": json_params =>
-    json: @params
+  "/debug": =>
+    status, user = pcall -> Users\find id: "faf"
+    "result: #{user.id}, status: #{status}"
