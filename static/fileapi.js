@@ -266,9 +266,11 @@ var FileAPI = (function (c, t, d, f) {
                   }else if(xhr.status == 403) {
                       divBar.className = "progress-bar progress-bar-danger";
                   }
+                  divBar.textContent = JSON.parse(xhr.responseText).result;
                   for (var i = 0; i < ps.length; i++) {
                       if (ps[i].className == "loader") {
-                          ps[i].textContent = xhr.responseText;
+                          //divContainer.removeChild(ps[i]);
+                          //ps[i].textContent = xhr.responseText;
                           break;
                       }
                   }

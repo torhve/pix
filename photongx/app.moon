@@ -231,7 +231,7 @@ class extends lapis.Application
         {:upload, :title, :filename, :token, :checksum} = @params
         pattern = '\\.(jpe?g|gif|png|crw|raw)$'
         unless ngx.re.match(filename, pattern, "i") 
-            return json:status:403, error:'Filename must be of image type'
+            return status:403, json:{status:403, result:'Filename must be of image type'}
         file = @params.upload
         album = assert_error Albums\find user_id: @current_user.id, token:token
         success, image = pcall -> Images\create @current_user.id, album.id, filename
@@ -249,7 +249,7 @@ class extends lapis.Application
         diskfile\close
         redis = Redis!
         queue = assert_error redis\queue image.token
-        json: 'success'
+        status:200, json:{status:200, result:'Image successfully uploaded'}
   }
 
   [photostreamimages: "/api/photostreamimages"]: respond_to {
