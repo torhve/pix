@@ -29,11 +29,16 @@ Features planned
  * Share from android ?
  * Sorty/query exif
  * Show disk space used
+ * Tags
+ * Export as ZIP archive
+ * Organize photos into albums/tags
+ * Date picker to find photos in a given time period
+ * A "drop box" for fast/easy upload
 
 Dev Installation
 ================
 
-Watch Leafo's Lapis screencast to get going <http://www.youtube.com/watch?v=Eo67iTY1Yf8>
+Watch Leafo's Lapis screencast to get started with Lapis <http://www.youtube.com/watch?v=Eo67iTY1Yf8>
 
 Preqreqs
 
@@ -43,7 +48,7 @@ PostgreSQL with hstore
 
     sudo apt-get install postgresql-server postgresql-contrib
 
-Tup used when developing to compile moonscript to lua and LESS to CSS 
+Tup used when developing to compile MoonScript to Lua and LESS to CSS 
 
     sudo apt-add-repository 'deb http://ppa.launchpad.net/anatol/tup/ubuntu precise main'
     sudo apt-get update
@@ -53,17 +58,18 @@ Lapis
 
     luarocks install --server=http://rocks.moonscript.org/manifests/leafo lapis
     
-First time:
+First time, set up tup to automatically recompile MoonScript and Less:
 
     lapis new --tup --git
     tup init
 
-Every time:
+Start the tup monitor and the lapis server
 
     tup monitor -a
     lapis server development 
 
 Create postgresql database:
+
     sudo -u postgres psql template1 < scripts/create-postgres-database.sql
 
 Configure etc/config.json and config.moon
