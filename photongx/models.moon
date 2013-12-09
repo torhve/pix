@@ -219,6 +219,10 @@ class Images extends Model
   get_coverimage: (album_id) =>
     Images\select "where album_id = ? order by views desc limit 1", album_id
 
+  get_coverimages: (albums) =>
+    flat_ids = table.concat [db.escape_literal a.id for a in *albums], ", "
+    Images\select "where album_id IN ("..flat_ids..") order by album_id DESC, views DESC", flat_ids, fields:"distinct on (album_id) *"
+
 
 class Accesstokens extends Model
   @timestamp: true

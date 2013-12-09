@@ -43,11 +43,12 @@ class extends lapis.Application
     render:true
 
   [albums: "/albums"]: require_login =>
-    @albums = Albums\select "where user_id = ?", @current_user.id
-    -- FIXME improve SQL to single statement
-    for album in *@albums
-      images = Images\get_coverimage album.id
-      album.image = images[1]
+    @albums = Albums\select "where user_id = ? order by id DESC", @current_user.id
+    --@albums = Albums\select "left join images on albums.id=images.album_id where albums.user_id = ? order by albums.id DESC, images.views DESC", @current_user.id, fields:"distinct on (albums.id) *"
+    --images = Images\get_coverimages @albums
+    for i=1, #@albums
+      album = @albums[i]
+      album.image = (Images\get_coverimage album.id)[1]
       album.url = @url_for("album", token:album.token, title:album.title)
     render: true
 
