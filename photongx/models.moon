@@ -1,9 +1,9 @@
 db = require "lapis.db"
 redis = require "resty.redis"
 config = require("lapis.config").get!
-json = require "cjson"
 os = require "os"
 import assert_error from require "lapis.application"
+import from_json, to_json from require "lapis.util"
 
 import execute from require "os"
 
@@ -43,7 +43,10 @@ imagedatesql = do
           ))*1000 AS date 
   ]]
 
-
+cache_session = (session) ->
+  session_cache = ngx.shared.session_cache
+  if session.email and session.id
+    session_cache\set(session.email, to_json(session))
 
 class Redis
   new: =>
@@ -88,16 +91,26 @@ class Users extends Model
 
   @read_session: (r) =>
     if r.session.user
+      -- First check session cache for user
+      session_cache = ngx.shared.session_cache
+      user = session_cache\get r.session.user.email
+      if user
+        return from_json user
+      -- No cache hit, try database
       user = @find email: r.session.user.email
+      -- No database hit, create a new user
       unless user
         user = @create r.session.user.email
+      -- Write session to cache
+      cache_session(user)
       user
 
   @write_session: (r, verification_data) =>
-    r.session.user = {
+    session = {
       email: verification_data.email
-      id: @id
     }
+    -- Write the cookie
+    r.session.user = session
 
 class Albums extends Model
   @timestamp: true

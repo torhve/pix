@@ -1,9 +1,8 @@
 lapis = require "lapis"
-json = require "cjson"
 import capture_errors from require "lapis.application"
 import json_params, respond_to, capture_errors, capture_errors_json, assert_error, yield_error from require "lapis.application"
 import validate, assert_valid from require "lapis.validate"
-import escape_pattern, trim_filter, to_json from require "lapis.util"
+import escape_pattern, trim_filter, from_json, to_json from require "lapis.util"
 db = require "lapis.db"
 import Redis, Users, Albums, Images, Accesstokens, generate_token, imagedatesql from require "photongx.models"
 config = require("lapis.config").get!
@@ -17,20 +16,19 @@ require_login = (fn) ->
 
 persona_verify = (assertion, audience) -> 
 
-    options = { method:ngx.HTTP_POST, body:json.encode {:assertion, :audience} }
+    options = { method:ngx.HTTP_POST, body:to_json {:assertion, :audience} }
     res, err = ngx.location.capture('/persona/', options)
 
     if not res then
       return { err: res }
 
     if res.status >= 200 and res.status < 300 then
-      return json.decode(res.body)
+      return from_json res.body
     else
       return {
         status:res.status,
         body:res.body
       }
-
 
 class extends lapis.Application
   layout: require "photongx.views.layout"
@@ -127,7 +125,7 @@ class extends lapis.Application
     POST: capture_errors_json =>
       body = ngx.req.get_body_data!
       if body
-        body = json.decode body
+        body = from_json body
 
         verification_data = persona_verify body.assertion, config.site
         if verification_data.status == 'okay' 
@@ -196,7 +194,7 @@ class extends lapis.Application
       for image in *images
         if image.metadata
           newstr, n, err = ngx.re.gsub(image.metadata, "=>", ":")
-          image.metadata = json.decode '{'..newstr..'}'
+          image.metadata = from_json '{'..newstr..'}'
       json: {:images}
   }
 
@@ -338,5 +336,6 @@ class extends lapis.Application
     json: status: 403
 
   "/debug": =>
-    status, user = pcall -> Users\find id: "faf"
-    "result: #{user.id}, status: #{status}"
+    session_cache = ngx.shared.session_cache
+    user = from_json session_cache\get @session.user.email
+    json:{session:@session.user, :user, current_user:@current_user}
