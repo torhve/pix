@@ -360,14 +360,14 @@ class extends lapis.Application
     json: {counter:queue}
 
   "/db/make": =>
-    schema = require "schema"
+    schema = require "photongx.schema"
     schema.make_schema!
     json: { status: "ok" }
 
   "/db/destroy": require_login =>
     -- Hard coded to first user for now
     if @current_user.id == 1 
-      schema = require "schema"
+      schema = require "photongx.schema"
       schema.destroy_schema!
       return json: { status: "ok" }
     json: status: 403
@@ -376,7 +376,7 @@ class extends lapis.Application
     -- Hard coded to first user for now
     if @current_user.id == 1 
       import run_migrations from require "lapis.db.migrations"
-      run_migrations require "migrations"
+      run_migrations require "photongx.migrations"
       return json: { status: "ok" }
     json: status: 403
 
