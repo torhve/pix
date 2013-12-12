@@ -1,4 +1,5 @@
 lapis = require "lapis"
+io = require "io"
 import capture_errors from require "lapis.application"
 import json_params, respond_to, capture_errors, capture_errors_json, assert_error, yield_error from require "lapis.application"
 import validate, assert_valid from require "lapis.validate"
@@ -121,6 +122,53 @@ class extends lapis.Application
     -- Check access tokens and return status 410 if expired
     imguri = '/real' .. @image\file_path! .. '/' ..@params.filename
     ngx.req.set_uri imguri, true
+
+-- FIXME require_login
+  [zipalbum: "/archive/album/:token/:title/"]: =>
+    if @current_user
+      @album = Albums\find token:@params.token
+      unless @album
+        return render:"error", status:404
+      unless @current_user.id == @album.user_id
+        return render:"error", status:403
+    -- FIXME
+    @album = Albums\find token:@params.token
+    unless @album return render:"error", status:403
+
+    @images = Images\select "where album_id = ? ORDER BY date, file_name", @album.id, fields: "*, "..imagedatesql
+
+    -- Craft the body request that modzip wants
+
+    reqbody = {}
+
+    sample = "- 428    /foo.txt   My Document1.txt"
+
+    for image in *@images
+      size = image\get_file_size!
+      url = image\real_file_name!
+      name = image.file_name
+      table.insert(reqbody, table.concat({'-', size, url, name}, ' '))
+
+    reqbody = table.concat(reqbody, '\n')
+
+    --do
+    --  json:{:reqbody}
+
+    ngx.header["X-Archive-Files"] = 'zip'
+    ngx.header['Content-Type'] = 'application/force-download'
+    ngx.header['Content-Disposition'] = "attachment; filename=#{@album.title}.zip"
+    ngx.req.set_header "X-Archive-Files", 'zip'
+    -- Capture the zip file from modzip
+    options = { method:ngx.HTTP_GET, body:reqbody } 
+    res, err = ngx.location.capture('/zip', options)
+
+    unless res
+      return render:"error", status:500
+
+    --if res.status >= 200 and res.status < 300 then
+    --return layout:false, res.body
+    return layout:false, reqbody
+
 
   [persona_login: "/api/persona/login"]: respond_to {
     POST: capture_errors_json =>
@@ -311,14 +359,10 @@ class extends lapis.Application
     queue = assert_error redis\queue_length!
     json: {counter:queue}
 
-
-  "/db/make": require_login =>
-    -- Hard coded to first user for now
-    if @current_user.id == 1 
-      schema = require "schema"
-      schema.make_schema!
-      return json: { status: "ok" }
-    json: status: 403
+  "/db/make": =>
+    schema = require "schema"
+    schema.make_schema!
+    json: { status: "ok" }
 
   "/db/destroy": require_login =>
     -- Hard coded to first user for now
@@ -337,6 +381,4 @@ class extends lapis.Application
     json: status: 403
 
   "/debug": =>
-    session_cache = ngx.shared.session_cache
-    user = from_json session_cache\get @session.user.email
-    json:{session:@session.user, :user, current_user:@current_user}
+    layout:false, "hello"
