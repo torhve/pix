@@ -35,52 +35,39 @@ Features planned
  * Date picker to find photos in a given time period
  * A "drop box" for fast/easy upload
 
-Dev Installation
+Installation
 ================
 
-Watch Leafo's Lapis screencast to get started with Lapis <http://www.youtube.com/watch?v=Eo67iTY1Yf8>
+*Warning*, this software project uses lots of uncommon requirements, so it can be a bit tricky to install. 
+I have tried to documented all the steps required in the scripts/Dockerfile if you want a manual install if you do not wish to run Docker.
 
-Preqreqs
+Watch Leafo's Lapis screencast to get familiar with Lapis <http://www.youtube.com/watch?v=Eo67iTY1Yf8>
+It includes information that is relevant to this development process.
 
-    sudo apt-get install libimage-exiftool-perl imagemagick redis-server jhead node-less dcraw ufraw
+A Dockerfile is provided to get the project with all its requirements quickly up and running
 
-PostgreSQL with hstore
 
-    sudo apt-get install postgresql-server postgresql-contrib
+Build the image
 
-Tup used when developing to compile MoonScript to Lua and LESS to CSS 
+    $ docker build -t torhve/pix scripts/
 
-    sudo apt-add-repository 'deb http://ppa.launchpad.net/anatol/tup/ubuntu precise main'
-    sudo apt-get update
-    sudo apt-get install tup
+This will build a complete docker image with all the requirements installed, database setup, and everything included.
 
-Lapis 
+You can then run it:
 
-    luarocks install --server=http://rocks.moonscript.org/manifests/leafo lapis
-    
-First time, set up tup to automatically recompile MoonScript and Less:
+    $ docker run -i -t torhve/pix
 
-    lapis new --tup --git
-    tup init
+To get the port number to connect your browser to use docker with -p argument, or inspect output from *docker ps*
 
-Start the tup monitor and the lapis server
+If you want to configure or further hack you can use this command to get a bash prompt inside the docker image
 
-    tup monitor -a
-    lapis server development 
+    $ docker run -i -t torhve/pix bash
 
-Create postgresql database:
 
-    sudo -u postgres psql template1 < scripts/create-postgres-database.sql
-
-Configure etc/config.json and config.moon
-
-Create the application tables
-Navigate browser to /db/create (requires a user to do, so you have to disable the user check for first run)
-
+Configuration is in etc/config.json and config.moon
 
 Deployment
 ==========
 
-Start the image postprocessing utility: bin/worker.py 
-Use nginx with proxy_pass (or similar) to the lapis server
+Use nginx with proxy_pass (or similar) to the lapis server port
  
