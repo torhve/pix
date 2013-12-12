@@ -84,26 +84,12 @@ make_schema = ->
   }
   create_index "accesstokens", "user_id"
   create_index "accesstokens", "album_id"
-  create_index "accesstokens", "token", unique: true
-
-  -- Persona session
-  create_table "sessions", {
-    {"sessionid", "VARCHAR(32)"}
-    {"email", foreign_key}
-    {"created_at", time}
-    {"updated_at", time}
-    {"expires_at", time}
-
-    "PRIMARY KEY (sessionid)"
-  }
-  create_index "sessions", "sessionid", unique: true
-  create_index "sessions", "email"
 
 --migrations.create_migrations_table!
 
 destroy_schema = ->
     tbls = {
-      "users", "albums", "images", "accesstokens", "sessions"
+      "users", "albums", "images", "accesstokens" 
     }
 
     for t in *tbls
