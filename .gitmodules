@@ -11,5 +11,5 @@
 	path = static/smartresize
 	url = https://github.com/louisremi/jquery-smartresize
 [submodule "static/imagesloaded"]
-    path = static/imagesloaded
-    url = https://github.com/desandro/imagesloaded
+	path = static/imagesloaded
+	url = https://github.com/desandro/imagesloaded
