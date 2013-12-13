@@ -38,10 +38,11 @@ RUN     apt-get update
 RUN     apt-get install -y nodejs 
 RUN     npm install less -g
 
-RUN    apt-get -y install libimage-exiftool-perl imagemagick jhead dcraw ufraw luarocks python-redis python-psycopg2
+RUN    apt-get -y install libimage-exiftool-perl imagemagick jhead dcraw ufraw luarocks python-redis python-psycopg2 liblz-dev
 
 
-
+RUN    luarocks install lzlib ZLIB_LIBDIR=/lib/x86_64-linux-gnu/
+RUN    luarocks install ZipWriter
 RUN    luarocks install --server=http://rocks.moonscript.org/manifests/leafo lapis
 RUN    luarocks install --server=http://rocks.moonscript.org/manifests/leafo moonscript
 

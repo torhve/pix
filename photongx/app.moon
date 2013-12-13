@@ -15,6 +15,23 @@ require_login = (fn) ->
     else
       redirect_to: @url_for "admin"
 
+make_reader = (fname, timestamp) ->
+  f = assert(io.open(fname, 'rb'))
+  chunk_size = 1024
+  desc = {
+    ["istext"]: false,
+    ["isfile"]: true,
+    ["isdir"]: false,
+    ["mtime"]: timestamp, 
+  }
+  desc, desc.isfile and ->
+    chunk = f\read(chunk_size)
+    if chunk 
+      return chunk 
+    f\close!
+    return nil
+  
+
 persona_verify = (assertion, audience) -> 
 
     options = { method:ngx.HTTP_POST, body:to_json {:assertion, :audience} }
@@ -123,52 +140,50 @@ class extends lapis.Application
     imguri = '/real' .. @image\file_path! .. '/' ..@params.filename
     ngx.req.set_uri imguri, true
 
--- FIXME require_login
-  [zipalbum: "/archive/album/:token/:title/"]: =>
+
+
+  [zipalbum: "/archive/album/:token/:title/"]: require_login =>
     if @current_user
       @album = Albums\find token:@params.token
       unless @album
         return render:"error", status:404
       unless @current_user.id == @album.user_id
         return render:"error", status:403
-    -- FIXME
-    @album = Albums\find token:@params.token
     unless @album return render:"error", status:403
 
     @images = Images\select "where album_id = ? ORDER BY date, file_name", @album.id, fields: "*, "..imagedatesql
+    ngx.header['Content-Type'] = 'application/force-download'
+    ngx.header['Content-Disposition'] = "attachment; filename=#{@album.title}.zip"
 
-    -- Craft the body request that modzip wants
+    ZipWriter = require 'ZipWriter'
+    ZipStream = ZipWriter.new()
 
-    reqbody = {}
-
-    sample = "- 428    /foo.txt   My Document1.txt"
+    writer = ZipWriter.new{
+      level: ZipWriter.COMPRESSION_LEVEL.DEFAULT,
+      zip64: false,
+      utf8: false,
+    }
+    writer\open_writer (path) ->
+      ngx.print(path)
+      ngx.flush(true)
+      writerfunc = (chunk) ->
+        if not chunk
+          return
+        ngx.print(chunk)
+      readerfunc = (...) ->
+        return
+      return writerfunc, readerfunc
 
     for image in *@images
       size = image\get_file_size!
       url = image\real_file_name!
       name = image.file_name
-      table.insert(reqbody, table.concat({'-', size, url, name}, ' '))
-
-    reqbody = table.concat(reqbody, '\n')
-
-    --do
-    --  json:{:reqbody}
-
-    ngx.header["X-Archive-Files"] = 'zip'
-    ngx.header['Content-Type'] = 'application/force-download'
-    ngx.header['Content-Disposition'] = "attachment; filename=#{@album.title}.zip"
-    ngx.req.set_header "X-Archive-Files", 'zip'
-    -- Capture the zip file from modzip
-    options = { method:ngx.HTTP_GET, body:reqbody } 
-    res, err = ngx.location.capture('/zip', options)
-
-    unless res
-      return render:"error", status:500
-
-    --if res.status >= 200 and res.status < 300 then
-    --return layout:false, res.body
-    return layout:false, reqbody
-
+      timestamp = image.date/1000
+      writer\write name, make_reader(url, timestamp)
+      
+    writer\close!
+    ngx.exit(200)
+    --return layout:false, ''
 
   [persona_login: "/api/persona/login"]: respond_to {
     POST: capture_errors_json =>

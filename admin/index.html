@@ -100,6 +100,7 @@
                                 <a class="btn btn-success" ng-click="albumAdd(album)" title="Add more images to album"><i class="fa fa-plus"></i></a>
                                 <a class="btn btn-grey" target="_blank" href="/album/{{album.token}}/{{album.title}}/" title="Open album in new window"><i class="fa fa-camera-retro"></i></a>
                                 <a class="btn btn-grey" ng-click="albumLink(album)" title="Create expirable album link"><i class="fa fa-clock-o"></i></a>
+                                <a class="btn btn-grey" target="_blank" href="/archive/album/{{album.token}}/{{album.title}}/" title="Download album in a ZIP archive"><i class="fa fa-archive"></i></a>
                                 <a class="btn btn-grey" ng-click="albumModify(album)"><i class="fa fa-pencil"></i></a>
                                 <a ng-click="albumRemove(album)" title="Remove album and all images. You will be prompted for confirmation"  class="btn btn-danger"><i class="fa fa-trash-o"></i></a>
                             </div>
@@ -198,6 +199,7 @@
                       <div class="pull-right btn-group">
                         <a class="btn btn-success" ng-click="albumAdd(selectedAlbum)" title="Add more images to album"><i class="fa fa-plus"></i> Add images</a>
                         <a class="btn btn-grey" ng-click="albumLink(selectedAlbum)" title="Create expirable album link"><i class="fa fa-clock-o"></i> Share</a>
+                        <a class="btn btn-grey" target="_blank" href="/archive/album/{{selectedAlbum.token}}/{{selectedAlbum.title}}/" title="Download album in a ZIP archive"><i class="fa fa-archive"></i> Download</a>
                         <a class="btn btn-grey" ng-click="albumModify(selectedAlbum)"><i class="fa fa-pencil"></i> Rename</a>
                         <a ng-click="albumRemove(selectedAlbum)" title="Remove album and all images. You will be prompted for confirmation"  class="btn btn-danger"><i class="fa fa-trash-o"></i> Delete</a>
                       </div>

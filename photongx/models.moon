@@ -194,6 +194,15 @@ class Images extends Model
   real_file_name: =>
     @real_file_path! .. '/' .. @file_name
 
+  get_file_size: => 
+      fp = io.open @real_file_name!
+      if fp == nil then 
+        return 0 
+      filesize = fp\seek "end" 
+      fp\close()
+      return filesize
+
+
   @create: (user_id, album_id, file_name) =>
     token = generate_token 6
     while @check_unique_constraint "token", token
