@@ -55,19 +55,52 @@ This will build a complete docker image with all the requirements installed, dat
 
 You can then run it:
 
-    $ docker run -i -t torhve/pix
+    $ docker run -i -p 8080:8080 -t torhve/pix
 
-To get the port number to connect your browser to use docker with -p argument, or inspect output from *docker ps*
+The -p 8080:8080 argument exposes the container port 8080 to the host port 8080 on interface 0.0.0.0
 
 If you want to configure or further hack you can use this command to get a bash prompt inside the docker image
 
-    $ docker run -i -t torhve/pix bash
+    $ docker run -i -p 8080:8080 -t torhve/pix bash
+
+Hacking
+=======
+
+Docker lets you share a directory from the host to the container using the *-v* argument, so if you want to hack on the source you can check out the source on the host as you usually would do and then share the directory to the container like this:
+
+    $ docker run -i -p 8080:8080 -t torhve/pix -v /home/tor/projects/pix:/pix
+
+This maps the directory /home/tor/projects/pix to the container directory /pix.
+
+Then you would want to install <http://gittup.org/tup/> on the host to automatically compile MoonScript to Lua and LESS to CSS.
+I could not get tup working inside the docker since it requires FUSE filesystem which did not work in the container.
+
+Tup installation on Ubuntu:
+
+    sudo apt-add-repository 'deb http://ppa.launchpad.net/anatol/tup/ubuntu lucid main'
+    sudo apt-get update
+    sudo apt-get install tup
+
+Tup first time:
+
+    cd /home/tor/projects/pix
+    tup init
+    tup upd
+
+Tup each time:
+
+    tup monitor -a
 
 
-Configuration is in etc/config.json and config.moon
+
+
+PIX Configuration is in etc/config.json and config.moon
 
 Deployment
 ==========
 
-Use nginx with proxy_pass (or similar) to the lapis server port
+Use nginx with proxy_pass (or similar) to the exposed lapis port.
+You can then start a different lapis configuration like this:
+
+    $ docker run -i -p 8181:8080 -v=/home/tor/src/pix:/pix -w=/pix -t torhve/pix lapis server production
  
