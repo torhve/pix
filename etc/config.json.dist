@@ -6,6 +6,9 @@
     "redis": {
         "unix_socket_path": "/var/run/redis/redis.sock"
     },
+    "postgresql": {
+        "connstring": "dbname='pix' user='pix' host='127.0.0.1' password='pixplzpixplzpixplz'"
+    },
     "photos": {
         "thumb_max": 640,
         "huge_max": 2000,
