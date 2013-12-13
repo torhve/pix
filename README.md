@@ -5,8 +5,7 @@ A photo gallery with next to no chrome, written in lua deploying with nginx
 See demo at <http://pix.hveem.no>
 
 
- * Full width thumbnails
- * Responsive design
+ * Full width and responsive design
  * Simplistic interface
  * Expirable shareable URLs for albums to share with friends
  * Super fast
@@ -17,7 +16,7 @@ See demo at <http://pix.hveem.no>
  * Redis as queue
  * Mozilla Persona for login
  * AngularJS admin panel
- * Is awesome!
+ * Download albums as ZIP archive
  * Multi user
  * Display exif info
  
@@ -30,7 +29,6 @@ Features planned
  * Sorty/query exif
  * Show disk space used
  * Tags
- * Export as ZIP archive
  * Organize photos into albums/tags
  * Date picker to find photos in a given time period
  * A "drop box" for fast/easy upload
