@@ -92,6 +92,8 @@ Tup each time:
     tup monitor -a
 
 
+If you do not want to run Redis and PostgreSQL inside the container, but rather on the host itself you have to get the postgresql daemon and the redis daemon to listen on the docker0 interface IP on the host. And then have the container configuration connect to the docker0 IP for redis and postgresql.
+
 
 
 PIX Configuration is in etc/config.json and config.moon
