@@ -11,6 +11,10 @@ json_file = (fname) ->
 config {"production", "development"}, ->
   for k,v in pairs json_file "etc/config.json"
     set k, v
+
+config "production", ->
+    port 8080
+    lua_code_cache on
  
 --c = require("lapis.config").get "development"
 --print c.site.name
