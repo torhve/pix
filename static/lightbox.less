@@ -40,6 +40,19 @@
 }
 */
 
+.backgrounded {
+    -webkit-filter: blur(6px);
+        -ms-filter: blur(6px);
+         -o-filter: blur(6px);
+            filter: blur(6px);
+      filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'blur\'><feGaussianBlur stdDeviation=\'5\'/></filter></svg>#blur"); /* Firefox 10+, Firefox on Android */
+-webkit-transition: all 0.3s ease-out; 
+   -moz-transition: all 0.3s ease-out; 
+    -ms-transition: all 0.3s ease-out; 
+     -o-transition: all 0.3s ease-out; 
+        transition: all 0.3s ease-out;
+}
+
 #lightbox {
     position:fixed; /* keeps the lightbox window in the current viewport */
     top:  0; 
@@ -89,7 +102,7 @@
     color: transparent;
 
   }
-  #next:hover, #prev:hover, #next:focus, #prev:focus {
+  #next:hover, #prev:hover {
     background: rgba(0, 0, 0, 0.4);
   -webkit-box-shadow: 0 2px 10px rgba(0,0,0,.25);
      -moz-box-shadow: 0 2px 10px rgba(0,0,0,.25);
@@ -118,10 +131,12 @@
   img {
     -webkit-box-shadow:0 0 120px black;
        -moz-box-shadow:0 0 120px black;
-            box-shadow:0 0 120px block;
-    border: 3px solid black;
+            box-shadow:0 0 120px black;
+    border: 5px solid black;
     //height: 100%;
     //width: auto;
+  }
+  img:hover {
   }
   img {
     //height: auto;

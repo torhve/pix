@@ -147,8 +147,12 @@ var photongx = (function($container, $items) {
                     '</div>' +  
                 '<a href="#next" id="next" title="Next image"><div><i class="fa fa-forward"></i></div></a>' +
             '</div>';
+
+            //var svg_image_blur = '<svg><filter id="blur-effect-1"><feGaussianBlur stdDeviation="2"/></filter></svg>'
+            // insert svg image blur
+            //$('body').append(svg_image_blur);
                 
-            //insert lightbox HTML into page
+            // insert lightbox HTML into page
             $('body').append(lightbox);
 
             // Run the set here to, to trigger click
