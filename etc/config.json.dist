@@ -1,10 +1,14 @@
 {
     "path": {
-        "base": "/photongx/",
-        "image": "/img"
+        "base": "/",
+        "image": "img",
+        "disk": "/pix/img"
     },
     "redis": {
-        "unix_socket_path": "/var/run/redis/redis.sock"
+        "unix_socket_path": "/var/run/redis/redis.sock",
+        "host": "127.0.0.1",
+        "port": 6379,
+        "prefix": "pix"
     },
     "postgresql": {
         "connstring": "dbname='pix' user='pix' host='127.0.0.1' password='pixplzpixplzpixplz'"
@@ -12,7 +16,19 @@
     "photos": {
         "thumb_max": 640,
         "huge_max": 2000,
-        "quality": 70
+        "quality": 75
     },
-    "admin": "emailaddress@persona"
+    "session": {
+        "name": "pix_session"
+    },
+    "secret": "photongx",
+    "site": {
+        "name": "pix.io"
+    },
+    "postgresql_url": "postgres://pix:pixplzpixplzpixplz@127.0.0.1/pix",
+    "port": 8080,
+    "lua_code_cache": "off",
+    "num_workers": 2,
+    "upload_size": "64M",
+    "admin": "myemail@persona"
 }
