@@ -51,10 +51,10 @@ cache_session = (session) ->
 class Redis
   new: =>
     math.randomseed os.time!
-    @prefix = config.redis_prefix
+    @prefix = config.redis.prefix
     @queuekey = @prefix .. ':upload:queue'
     @red = redis\new!
-    ok, err = @red\connect unpack(config.redis)
+    ok, err = @red\connect config.redis.host, config.redis.port
 
   queue: (token) =>
     @red\lpush @queuekey, token
@@ -134,7 +134,7 @@ class Albums extends Model
       image\delete!
 
     -- Delete folder
-    execute 'rmdir ' .. table.concat { config.diskimgpath, @user_id, @id }, '/'
+    execute 'rmdir ' .. table.concat { config.path.disk, @user_id, @id }, '/'
 
     super!
 
@@ -143,7 +143,7 @@ class Images extends Model
 
   file_path: =>
     path = {
-      config.imgpath,
+      config.path.image,
       @user_id,
       @album_id,
       @id
@@ -152,7 +152,7 @@ class Images extends Model
 
   real_file_path: =>
     path = {
-      config.diskimgpath,
+      config.path.disk,
       @user_id,
       @album_id,
       @id

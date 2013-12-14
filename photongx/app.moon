@@ -191,7 +191,7 @@ class extends lapis.Application
       if body
         body = from_json body
 
-        verification_data = persona_verify body.assertion, config.site
+        verification_data = persona_verify body.assertion, config.site.name
         if verification_data.status == 'okay' 
           Users\write_session @, verification_data
           return json:verification_data
