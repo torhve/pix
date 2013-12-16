@@ -8,8 +8,6 @@ var photongx = (function($container, $items) {
         endPos, 
         lastPos;
 
-
-
     // If lightbox already exists it means that photngx was called
     // multiple times on the same page
     // In that case we remove the lightbox, since the lightbox contains
@@ -59,7 +57,7 @@ var photongx = (function($container, $items) {
         cwidth = docwidth / columns - (offset*(columns-1)); 
         //$('.item').css('max-width', cwidth + 'px');
         $items.find('img').css('width', cwidth + 'px');
-        console.log('Decided on ', columns, ' columns with docwidth ', docwidth);
+        //console.log('Decided on ', columns, ' columns with docwidth ', docwidth);
     }
     setColumnwidth();
 
@@ -148,7 +146,7 @@ var photongx = (function($container, $items) {
                 '<a id="hideLB" href="#" title="Close image"><i class="fa fa-times"></i></a></div>' +
                 '<a href="#prev" id="prev" title="Previous image"><div><i class="fa fa-backward"></i></div></a>' +
                     '<div id="lbcontent">' + //insert clicked link's href into img src
-                        '<img class="lbimg" id="img-front" src="">' +
+                        '<img class="lbimg" id="img-front">' +
                     '</div>' +  
                 '<a href="#next" id="next" title="Next image"><div><i class="fa fa-forward"></i></div></a>' +
             '</div>';
@@ -210,8 +208,6 @@ var photongx = (function($container, $items) {
             $('#lightbox').bind('touchstart touchmove touchend', function(ev) {
                 var e = ev.originalEvent;
                 if(e.type == 'touchstart') {
-                    console.log(e);
-            
                     //record the start clientX
                     startPos = e.touches[0].clientX;
 
