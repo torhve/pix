@@ -45,8 +45,8 @@ class Worker:
         self.config = config
         self.work_list = None
         if 'redis' in config:
-            if 'unix_socket_path' in config["redis"]:
-                self.redis = Redis(unix_socket_path = config["redis"]["unix_socket_path"])
+            if 'host' in config["redis"] and 'port' in config['redis']:
+                self.redis = Redis(host=config["redis"]["host"], port=config["redis"]["port"])
 
         self.db = Database(config)
 
