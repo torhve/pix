@@ -16,21 +16,14 @@ class Layout extends Widget
         else
           meta name:"description", content:"Photo engine X"
 
+        meta name:"viewport", content:"width=device-width, initial-scale=1.0, maximum-scale=1"
         link rel: "stylesheet", href: "/static/screen.css"
-        link href:"/static/fa/css/font-awesome.css", rel:"stylesheet"
-        meta name:"viewport", content:"width:device-width, initial-scale=1.0"
         meta name:"author", content:"Tor Hveem"
         link rel:"shortcut icon", type:"image/png", href:"/static/favicon.png"
         link rel:"icon", type:"image/png", href:"/static/favicon.png"
 
+        link href:"/static/fa/css/font-awesome.css", rel:"stylesheet"
         script type: "text/javascript", src: "//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"
-        raw [[
-        <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
-        <!--[if lt IE 9]>
-          <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
-        <![endif]-->
-        ]]
-
       body ->
         div class: "", ->
           @content_for "inner"
