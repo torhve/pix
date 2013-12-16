@@ -23,18 +23,6 @@
        -o-transition-property:      -o-transform, opacity;
           transition-property:         transform, opacity;
 }
-
-
-.isotope.no-transition,
-.isotope.no-transition .isotope-item,
-.isotope .isotope-item.no-transition {
-  -webkit-transition-duration: 0s;
-     -moz-transition-duration: 0s;
-      -ms-transition-duration: 0s;
-       -o-transition-duration: 0s;
-          transition-duration: 0s;
-}
-
 .transition {
     transition: all 500ms cubic-bezier(0.250, 0.100, 0.250, 1.000); // ease (default) 
 }
@@ -196,10 +184,10 @@
 }
 
 .lbimg {
-    -webkit-transition: opacity 150ms ease-in; 
-       -moz-transition: opacity 150ms ease-in; 
-         -o-transition: opacity 150ms ease-in; 
-            transition: opacity 150ms ease-in; 
+    -webkit-transition: opacity 0.3s ease-in; 
+       -moz-transition: opacity 0.3s ease-in; 
+         -o-transition: opacity 0.3s ease-in; 
+            transition: opacity 0.3s ease-in; 
 
     -webkit-backface-visibility: hidden;
     -webkit-perspective: 1000;
@@ -209,7 +197,4 @@
     -o-perspective: 1000;
     -backface-visibility: hidden;
     -perspective: 1000;
-
-
-
 }

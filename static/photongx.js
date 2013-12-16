@@ -161,7 +161,7 @@ var photongx = (function($container, $items) {
             $('body').append(lightbox);
 
             // Run the set here to, to trigger click
-            $('#next').bind('click touchstart', function(e) {
+            $('#next').bind('click', function(e) {
                 // Reset timer so we don't doubleskip
                 if (slideshow) {
                     pause(); 
@@ -171,7 +171,7 @@ var photongx = (function($container, $items) {
                 return false;
             });
             // Handle clicks on the prev link
-            $('#prev').bind('click touchstart', function(e) {
+            $('#prev').bind('click', function(e) {
                 if (slideshow) {
                     // Reset timer so we don't doubleskip
                     pause();
@@ -252,28 +252,37 @@ var photongx = (function($container, $items) {
     }
 
     var setLBimage = function(image_href) {
-        /* ANIM slideshow */
-        if(slideshow) {
-            $('#img-front').css('opacity', 0).bind("transitionend webkitTransitionEnd oTransitionEnd MSTransitionEnd", function(){ 
-                $('#lbcontent').html('<img class="lbimg" id="img-front" src="' + image_href +'">');
-                //$('#img-front').attr('src', image_href);
-                $('#img-front').css('opacity', 0.999).bind("transitionend webkitTransitionEnd oTransitionEnd MSTransitionEnd", function(){ 
-                    $('#img-front').css('opacity', 1);
-                });
-            });
-        }else {
+
+        var swapsrc = function(image_href) {
+            var imgfront = document.getElementById('img-front');
             // Save the old src so we can compare it to the new one, since the new vs old can use relative vs absolute URL.
-            var oldsrc = document.getElementById('img-front').src;
-            document.getElementById('img-front').src = image_href;
-            var newsrc = document.getElementById('img-front').src;
+            var oldsrc = imgfront.src;
+            imgfront.src = image_href;
+            var newsrc = imgfront.src;
             // The onload event will not fire if the src does not change so we check for this condition
             if (oldsrc == newsrc) {
                 showLB();
             }else {
-                document.getElementById('img-front').onload = function() { showLB(); }; 
+                if(slideshow) {
+                    imgfront.onload = function() {
+                        $('#img-front').css('opacity', 0.999).one("transitionend webkitTransitionEnd oTransitionEnd MSTransitionEnd", function(){ 
+                            $('#img-front').css('opacity', 1);
+                        });
+                    }
+                }
+                else {
+                    imgfront.onload = function() { showLB(); }; 
+                }
             }
         }
-        // TODO scrollto background pos img
+        /* ANIM slideshow */
+        if(slideshow) {
+            $('#img-front').css('opacity', 0).one("transitionend webkitTransitionEnd oTransitionEnd MSTransitionEnd", function(){ 
+                swapsrc(image_href);
+            });
+        }else {
+            swapsrc(image_href);
+        }
     };
     this.showLB = function() {
         $('#lbcontent').imagesLoaded(function( $images, $proper, $broken ) {
