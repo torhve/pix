@@ -3,7 +3,12 @@ var photongx = (function($container, $items) {
         currentimage = parseInt(window.location.hash.replace('#', ''), 10) || -1,
         slideshowtimer,
         slideinterval = 4000,
-        offset = 4;
+        offset = 4,
+        startPos, 
+        endPos, 
+        lastPos;
+
+
 
     // If lightbox already exists it means that photngx was called
     // multiple times on the same page
@@ -201,20 +206,60 @@ var photongx = (function($container, $items) {
                 hideLB();
                 return false;
             });
+            // Handle touch events in lb-mode
+            $('#lightbox').bind('touchstart touchmove touchend', function(ev) {
+                var e = ev.originalEvent;
+                if(e.type == 'touchstart') {
+                    console.log(e);
+            
+                    //record the start clientX
+                    startPos = e.touches[0].clientX;
+
+                    //lastPos is startPos at the beginning
+                    lastPos = startPos;
+
+                    //we'll keep track of direction as a signed integer.
+                    // -1 is left, 1 is right and 0 is staying still
+                    direction = 0;
+                }
+                else if(e.type == 'touchmove' ) {
+                    e.preventDefault();
+
+                    //figure out the direction
+                    if(lastPos > startPos){
+                        direction = -1;
+                    }else{
+                        direction = 1;
+                    }
+                    //save the last position, we need it for touch end
+                    lastPos = e.touches[0].clientX;
+                }
+                else if(e.type == 'touchend'){
+                    //figure out if we have moved left or right beyond a threshold
+                    //(50 pixels in this case)
+                    if(lastPos - startPos > 50){
+                        $(document).trigger("prev_image");
+                    } else if(lastPos - startPos < -50){
+                        $(document).trigger("next_image");
+                    }else{
+                        //we are not advancing
+                    }
+                }
+
+                return false;
+            });
         }
     }
 
     var setLBimage = function(image_href) {
         /* ANIM slideshow */
         if(slideshow) {
-
             $('#img-front').css('opacity', 0).bind("transitionend webkitTransitionEnd oTransitionEnd MSTransitionEnd", function(){ 
                 $('#lbcontent').html('<img class="lbimg" id="img-front" src="' + image_href +'">');
                 //$('#img-front').attr('src', image_href);
                 $('#img-front').css('opacity', 0.999).bind("transitionend webkitTransitionEnd oTransitionEnd MSTransitionEnd", function(){ 
                     $('#img-front').css('opacity', 1);
                 });
-
             });
         }else {
             // Save the old src so we can compare it to the new one, since the new vs old can use relative vs absolute URL.
