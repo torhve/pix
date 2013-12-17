@@ -379,11 +379,10 @@ var photongx = (function($container, $items) {
         var link = $($items[c]).find('a');
         var image_href = link.attr('href');
         setLBimage(image_href);
-        countView(link.attr('id'));
 
         var cone = c+1, ctwo = c+2 , cthree = c+3;
         // We are going backwards
-        if (c - currentimage) {
+        if (c < currentimage) {
             cone = c-1, ctwo = c-2, cthree = c-3;
         }
         // Only load 1 image, faster swapping 
@@ -395,8 +394,11 @@ var photongx = (function($container, $items) {
             //$('#image-'+String(parseInt(cthree))).attr('href')
         currentimage = c;
 
+
         // Update hash
         window.location.hash = '#' + c;
+
+        countView(link.attr('id'));
     }
 
     //
