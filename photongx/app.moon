@@ -396,4 +396,5 @@ class extends lapis.Application
     json: status: 403
 
   "/debug": =>
-    layout:false, "hello"
+    json: {vers:version, count: db.select 'count(*) from images'}
+    

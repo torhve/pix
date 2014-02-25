@@ -60,7 +60,7 @@ class Index extends Widget
           raw [[
             <div class="actions">
               <a class="btn btn-primary btn-huge" href="/admin/">Get started <i class="fa fa-arrow-right"></i> </a>
-              <a class="btn btn-primary btn-huge" href="https://github.com/torhve/photongx/"><i class="fa fa-github"></i> View project on github</a>
+              <a class="btn btn-primary btn-huge" href="https://github.com/torhve/pix/"><i class="fa fa-github"></i> View project on github</a>
             </div>
               ]]
       div class:"row", ->
