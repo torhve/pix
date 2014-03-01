@@ -66,7 +66,7 @@ Hacking
 
 Docker lets you share a directory from the host to the container using the *-v* argument, so if you want to hack on the source you can check out the source on the host as you usually would do and then share the directory to the container like this:
 
-    $ docker run -i -p 8080:8080 -t torhve/pix -v /home/tor/projects/pix:/pix
+    $ docker run -i -p 8080:8080 -v /home/tor/projects/pix:/pix -t torhve/pix
 
 This maps the directory /home/tor/projects/pix to the container directory /pix.
 
