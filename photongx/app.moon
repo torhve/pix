@@ -371,7 +371,7 @@ class extends lapis.Application
     json: { status: ok}
 
   "/api/queue": require_login capture_errors_json =>
-    redis = Redis!
+    redis = assert_error Redis!
     queue = assert_error redis\queue_length!
     json: {counter:queue}
 

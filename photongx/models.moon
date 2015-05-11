@@ -54,7 +54,7 @@ class Redis
     @prefix = config.redis.prefix
     @queuekey = @prefix .. ':upload:queue'
     @red = redis\new!
-    ok, err = @red\connect config.redis.host, config.redis.port
+    @red\connect config.redis.host, config.redis.port
 
   queue: (token) =>
     @red\lpush @queuekey, token
