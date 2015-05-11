@@ -8,3 +8,5 @@ config.moon
 *.swn
 static/screen.css
 static/variables.css
+img
+etc/config.json

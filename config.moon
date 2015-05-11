@@ -12,6 +12,9 @@ config {"production", "development"}, ->
   for k,v in pairs json_file "etc/config.json"
     set k, v
 
+config "development", ->
+    port 8000
+
 config "production", ->
     port 8080
     lua_code_cache on
