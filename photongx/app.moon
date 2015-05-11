@@ -187,23 +187,24 @@ class extends lapis.Application
 
   [persona_login: "/api/persona/login"]: respond_to {
     POST: capture_errors_json =>
+      ngx.req.read_body!
       body = ngx.req.get_body_data!
       if body
         body = from_json body
 
         verification_data = persona_verify body.assertion, config.site.name
-        if verification_data.status == 'okay' 
+        if verification_data.status == 'okay'
           Users\write_session @, verification_data
           return json:verification_data
       json: {email:false}
   }
   [persona_status: "/api/persona/status"]: respond_to {
     GET: =>
-      render: true
+      render:"error", status:404
 
     POST: capture_errors_json =>
       cu = @current_user
-      if cu 
+      if cu
         return json:{email:cu.email}
       json:{email:false}
   }
