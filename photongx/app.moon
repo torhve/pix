@@ -22,17 +22,17 @@ make_reader = (fname, timestamp) ->
     ["istext"]: false,
     ["isfile"]: true,
     ["isdir"]: false,
-    ["mtime"]: timestamp, 
+    ["mtime"]: timestamp,
   }
   desc, desc.isfile and ->
     chunk = f\read(chunk_size)
-    if chunk 
-      return chunk 
+    if chunk
+      return chunk
     f\close!
     return nil
-  
 
-persona_verify = (assertion, audience) -> 
+
+persona_verify = (assertion, audience) ->
 
     options = { method:ngx.HTTP_POST, body:to_json {:assertion, :audience} }
     res, err = ngx.location.capture('/persona/', options)
@@ -129,7 +129,7 @@ class extends lapis.Application
     -- Simple auth check for now
     --unless @current_user
     --  ngx.exit(403)
-    
+
     -- TODO maybe disallow original?
 
     @image = Images\find token:@params.token
@@ -180,7 +180,7 @@ class extends lapis.Application
       name = image.file_name
       timestamp = image.date/1000
       writer\write name, make_reader(url, timestamp)
-      
+
     writer\close!
     ngx.exit(200)
     --return layout:false, ''
@@ -305,7 +305,7 @@ class extends lapis.Application
         diskfile = io.open real_file_name, 'w'
         unless diskfile
           -- TODO delete created image from SQL
-          return status:403, json:{status:403, error:"Permission denied"} 
+          return status:403, json:{status:403, error:"Permission denied"}
         diskfile\write file.content
         diskfile\flush!
         diskfile\close
@@ -368,7 +368,7 @@ class extends lapis.Application
   [adminapi: "/admin/api/all"]: =>
     ok = "test"
     json: { status: ok}
-   
+
   "/api/queue": require_login capture_errors_json =>
     redis = Redis!
     queue = assert_error redis\queue_length!
@@ -381,7 +381,7 @@ class extends lapis.Application
 
   "/db/destroy": require_login =>
     -- Hard coded to first user for now
-    if @current_user.id == 1 
+    if @current_user.id == 1
       schema = require "photongx.schema"
       schema.destroy_schema!
       return json: { status: "ok" }
@@ -389,7 +389,7 @@ class extends lapis.Application
 
   "/db/migrate": require_login =>
     -- Hard coded to first user for now
-    if @current_user.id == 1 
+    if @current_user.id == 1
       import run_migrations from require "lapis.db.migrations"
       run_migrations require "photongx.migrations"
       return json: { status: "ok" }
@@ -397,4 +397,3 @@ class extends lapis.Application
 
   "/debug": =>
     json: {vers:version, count: db.select 'count(*) from images'}
-    
