@@ -13,7 +13,7 @@ config {"production", "development"}, ->
     set k, v
 
 config "development", ->
-    port 8000
+    port 8080
 
 config "production", ->
     port 8080

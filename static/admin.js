@@ -212,7 +212,12 @@ pnxapp.controller('AlbumListCtrl', ['$rootScope', '$scope', '$http', '$filter', 
     $scope.submitAlbumLink = function() {
         var formData = $('#form-ttl').serialize();
         var formUrl = "/api/albumttl/"+$('#input-album-id').val();
-        $http.post(formUrl, formData).then(function(data) { 
+        $http({
+            method: 'POST',
+            url: formUrl,
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            data: formData
+            }).then(function(data) {
             $('#albumlinkmodal').modal('hide');
             images.getAccestokensFromBackend($scope.linkalbum);
             $scope.linkalbum = "";

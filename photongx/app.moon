@@ -323,17 +323,17 @@ class extends lapis.Application
 
   "/api/albumttl/:album_id": respond_to {
     POST: capture_errors_json require_login =>
-      assert_valid @params, {
+      assert_valid @req.params_post, {
         { "name", exists: true}
         { "ttl", exists: true}
       }
-      ttl = tonumber @params.ttl
+      ttl = tonumber @req.params_post.ttl
       -- TTL not a number ? Assume forever.
       if ttl == nil
           ttl = 2^32 -- ~150 years
 
-      name = @params.name
-      album = Albums\find id:@params.album_id, user_id: @current_user.id
+      name = @req.params_post.name
+      album = Albums\find id:@req.params_post.album_id, user_id: @current_user.id
       accesstoken = Accesstokens\create @current_user.id, album.id, name, ttl
 
       json: {:album,:accesstoken}
