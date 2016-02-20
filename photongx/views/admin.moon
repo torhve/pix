@@ -41,9 +41,9 @@ class Layout extends Widget
       <div class="row">
         <div class="col-md-12">
           <div class="vertical-line ph">
-            <h1><a href="/admin/"><span class="blue">Photo Engine X</span> </a>Administration 
+            <h1><a href="/admin/"><span class="blue">Photo Engine X</span> </a>Administration
                 </ul>
-              
+
                 <small class="pull-right">{{ images.nrofimages }} images in {{ images.albums.length }} albums.  <span ng-class="{'blue':images.queueCount}" ng-bind="images.queueCount"></span> images in processing queue  </small></h1>
           </div>
         </div>
@@ -57,7 +57,7 @@ class Layout extends Widget
                     <ul class="sidebar-nav nav nav-pills nav-stacked">
                         <li class="nav-header">New album</li>
                         <li>
-                            <form class="form form-horizontal uploadform" ng-submit="submitNewAlbum()" class="form-inline"> 
+                            <form class="form form-horizontal uploadform" ng-submit="submitNewAlbum()" class="form-inline">
                               <div class="input-group">
                                     <input id="albumname" text="text" class="form-control" ng-model="albumname" name="album" placeholder="Name">
                                     <span class="input-group-btn">
@@ -68,7 +68,7 @@ class Layout extends Widget
                         </li>
                         <li class="nav-header">Filter albums by name</li>
                         <li>
-                          <form class="form form-horizontal" class="form-inline"> 
+                          <form class="form form-horizontal" class="form-inline">
                               <input id="albumsearch" text="text" class="form-control" ng-model="albumsearch" name="albumsearch" placeholder="Search">
                           </form>
                         </li>
@@ -181,7 +181,7 @@ class Layout extends Widget
                                 </div>
                                 <div class="admin-label">
                                   <a class="btn btn-mini btn-danger link-image-remove" href="/admin/api/img/remove/?album={{ selectedAlbum }}&amp;image={{ img }}">
-                                    <i class="fa fa-trash-o"></i> 
+                                    <i class="fa fa-trash-o"></i>
                                   </a>
                                 </div>
                               </div>
