@@ -21,6 +21,7 @@ make_schema = ->
     {"token", "VARCHAR(6) NOT NULL"}
     {"email", text}
     {"name", text}
+    {"encrypted_password", text}
     {"created_at", time}
     {"updated_at", time}
 
