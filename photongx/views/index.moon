@@ -5,7 +5,7 @@ class Index extends Widget
       div class:"navbar-header", ->
         a class:"navbar-brand", href:'/', ->
           span class:"white", ->
-            text "Photo Engine" 
+            text "Photo Engine"
             span class:"blue", " X "
       ul class:"nav navbar-nav navbar-right", ->
         a class:"btn btn-default navbar-btn", href:@url_for("admin"), ->
@@ -53,7 +53,6 @@ class Index extends Widget
               <li><i class="fa fa-check"></i><a href="http://postgresql.org">PostgreSQL</a> as database</li>
               <li><i class="fa fa-check"></i><a href="http://redis.io">Redis</a> for queue</li>
               <li><i class="fa fa-check"></i><a href="http://openresty.org/">nginx (openresty)</a> as the app server</li>
-              <li><i class="fa fa-check"></i><a href="https://login.persona.org/about">Persona</a> for login</li>
               <li><i class="fa fa-check"></i><a href="http://angularjs.org/">AngularJS</a> admin dashboard</li>
               <li><i class="fa fa-check"></i>Is awesome!</li>
             ]]
@@ -69,4 +68,4 @@ class Index extends Widget
               &copy; 2012-2013 <a href="mailto:tor@h%76e%65m%2Eno"><i class="fa fa-envelope-o"></i> Tor Hveem</a>
           ]]
 
-        
+       

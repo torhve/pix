@@ -46,10 +46,21 @@
     </div>
     <div ng-show="error" class="label label-danger">{{ error }}</div>
     <div ng-hide="verified" class="login">
-      <p>
-      Photo Engine X uses <a href="https://login.persona.org/about">Mozilla Persona</a> to authenticate you. If you use your gmail address you will be logged in using Google Authentication services. Otherwise Persona will create an account/password associated with your given email address. 
-      </p>
-      <a ng-click="verify()" class="btn btn-lg btn-primary" title="Login" alt="Login">Log in <i class="fa fa-angle-right"></i></a>
+      <form class="form-signin">
+        <h2 class="form-signin-heading">Please sign in</h2>
+        <label for="inputEmail" class="sr-only">Email address</label>
+        <input type="email" id="inputEmail" ng-model="username" class="form-control" placeholder="Email address" required autofocus>
+        <label for="inputPassword" class="sr-only">Password</label>
+        <input type="password" id="inputPassword" class="form-control" ng-model="password" placeholder="Password" required>
+<!--
+        <div class="checkbox">
+          <label>
+            <input type="checkbox" value="remember-me"> Remember me
+          </label>
+        </div>
+-->
+        <button ng-click="login()" ng-submit="login()" class="btn btn-lg btn-primary btn-block" type="submit">Log in <i class="fa fa-angle-right"></i></button>
+      </form>
     </div>
     <div ng-show="verified" class="container">
 
@@ -60,7 +71,7 @@
                     <ul class="sidebar-nav nav nav-pills nav-stacked">
                         <li class="nav-header">Create a new album</li>
                         <li>
-                            <form class="form form-horizontal uploadform" ng-submit="submitNewAlbum()" class="form-inline"> 
+                            <form class="form form-horizontal uploadform" ng-submit="submitNewAlbum()" class="form-inline">
                               <div class="input-group">
                                     <input id="albumname" class="form-control" ng-model="albumname" name="album" placeholder="Name">
                                     <span class="input-group-btn">
@@ -71,7 +82,7 @@
                         </li>
                         <li class="nav-header">Filter albums by name</li>
                         <li>
-                          <form class="form form-horizontal" class="form-inline"> 
+                          <form class="form form-horizontal" class="form-inline">
                             <div class="input-group">
                               <input id="albumsearch" class="form-control" ng-model="albumsearch" name="albumsearch" placeholder="Search">
                               <span class="input-group-btn">
@@ -192,7 +203,7 @@
                         </div>
                       </div>
 
-                    
+                   
                   </div>
                   </div>
                     <div class="adminalbum" ng-show="selectedAlbum">
@@ -247,7 +258,7 @@
                                     <i class="fa fa-info"></i>
                                   </a>
                                   <a class="btn btn-mini btn-danger" title="Delete image permanently. Warning: No confirmation will be asked" ng-click="imageRemove(image)">
-                                    <i class="fa fa-trash-o"></i> 
+                                    <i class="fa fa-trash-o"></i>
                                   </a>
                                 </div>
                                 <div class="thumb-label">

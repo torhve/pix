@@ -1,5 +1,6 @@
 db = require "lapis.db"
 redis = require "resty.redis"
+bcrypt = require 'bcrypt'
 config = require("lapis.config").get!
 os = require "os"
 import assert_error from require "lapis.application"
@@ -66,11 +67,14 @@ class Sessions extends Model
   @timestamp: true
   @create: (email) =>
 
+-- Generate a hash with a 2^12 cost
+generate_hash = (s) ->
+  bcrypt.digest(s, 12)
 
 class Users extends Model
   @timestamp: true
 
-  @create: (email) =>
+  @create: (email, password) =>
     if @check_unique_constraint "email", email
       return nil, "Email already taken"
 
@@ -80,12 +84,21 @@ class Users extends Model
 
     name = ""
 
+    encrypted_password = generate_hash email .. password .. config.bcrypt_token
+
     Model.create @, {
-      :email, :token, :name
+      :email, :token, :name, :encrypted_password
     }
 
-  @login: =>
-    nil
+  @login: (username, password) =>
+    user = @find email: username
+    -- No user found with that username
+    if not user
+        return false, "err_invalid_user"
+    verified = bcrypt.verify(username .. password .. config.bcrypt_token, user.encrypted_password)
+    if verified
+      return user
+    return false, "err_invalid_user"
   @logout: =>
     nil
 

@@ -14,12 +14,11 @@ See demo at <http://pix.hveem.no>
  * Runs on nginx (openresty)
  * Postgres as database
  * Redis as queue
- * Mozilla Persona for login
  * AngularJS admin panel
  * Download albums as ZIP archive
  * Multi user
  * Display exif info
- 
+
 Features planned
 ================
 
@@ -36,30 +35,21 @@ Features planned
 Installation
 ================
 
-*Warning*, this software project uses lots of uncommon requirements, so it can be a bit tricky to install. 
-I have tried to documented all the steps required in the scripts/Dockerfile if you want a manual install if you do not wish to run Docker.
+*Warning*, this software project uses lots of uncommon requirements, so it can be a bit tricky to install.
 
 Watch Leafo's Lapis screencast to get familiar with Lapis <http://www.youtube.com/watch?v=Eo67iTY1Yf8>
 It includes information that is relevant to this development process.
 
-A Dockerfile is provided to get the project with all its requirements quickly up and running
+```
+$ sudo apt-get install luajit
+$ sudo apt-get install luarocks
+$ sudo apt-get install postgresql
 
+$ luarocks install bcrypt
+$ luarocks install lapis
+$ luarocks install md5
+```
 
-Build the image
-
-    $ docker build -t torhve/pix scripts/
-
-This will build a complete docker image with all the requirements installed, database setup, and everything included.
-
-You can then run it:
-
-    $ docker run -i -p 8080:8080 -t torhve/pix
-
-The -p 8080:8080 argument exposes the container port 8080 to the host port 8080 on interface 0.0.0.0
-
-If you want to configure or further hack you can use this command to get a bash prompt inside the docker image
-
-    $ docker run -i -p 8080:8080 -t torhve/pix bash
 
 Hacking
 =======
@@ -103,4 +93,4 @@ Use nginx with proxy_pass (or similar) to the exposed lapis port.
 You can then start a different lapis configuration like this:
 
     $ docker run -i -p 8181:8080 -v=/home/tor/src/pix:/pix -w=/pix -t torhve/pix lapis server production
- 
+

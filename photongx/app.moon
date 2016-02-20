@@ -31,23 +31,6 @@ make_reader = (fname, timestamp) ->
     f\close!
     return nil
 
-
-persona_verify = (assertion, audience) ->
-
-    options = { method:ngx.HTTP_POST, body:to_json {:assertion, :audience} }
-    res, err = ngx.location.capture('/persona/', options)
-
-    if not res then
-      return { err: res }
-
-    if res.status >= 200 and res.status < 300 then
-      return from_json res.body
-    else
-      return {
-        status:res.status,
-        body:res.body
-      }
-
 class extends lapis.Application
   layout: require "photongx.views.layout"
   views_prefix: "photongx.views"
@@ -185,20 +168,20 @@ class extends lapis.Application
     ngx.exit(200)
     --return layout:false, ''
 
-  [persona_login: "/api/persona/login"]: respond_to {
+  [user_login: "/api/user/login"]: respond_to {
     POST: capture_errors_json =>
       ngx.req.read_body!
       body = ngx.req.get_body_data!
       if body
         body = from_json body
+        user, err = Users\login body.username, body.password
+        if user
+          Users\write_session @, user
+          return {email:user.email}
 
-        verification_data = persona_verify body.assertion, config.site.name
-        if verification_data.status == 'okay'
-          Users\write_session @, verification_data
-          return json:verification_data
       json: {email:false}
   }
-  [persona_status: "/api/persona/status"]: respond_to {
+  [user_status: "/api/user/status"]: respond_to {
     GET: =>
       render:"error", status:404
 
@@ -208,7 +191,7 @@ class extends lapis.Application
         return json:{email:cu.email}
       json:{email:false}
   }
-  [user_logout: "/api/persona/logout"]: =>
+  [user_logout: "/api/user/logout"]: =>
     @session.user = false
     json: {email:false}
 
@@ -293,7 +276,7 @@ class extends lapis.Application
         }
         {:upload, :title, :filename, :token, :checksum} = @params
         pattern = '\\.(jpe?g|gif|png|crw|raw)$'
-        unless ngx.re.match(filename, pattern, "i") 
+        unless ngx.re.match(filename, pattern, "i")
             return status:403, json:{status:403, result:'Filename must be of image type'}
         file = @params.upload
         album = assert_error Albums\find user_id: @current_user.id, token:token
@@ -340,7 +323,7 @@ class extends lapis.Application
     }
 
   [admin: "/admin/"]: =>
-    layout:'admin' 
+    layout:'admin'
 
   "/api/tag": =>
     json: {token: generate_token 6}

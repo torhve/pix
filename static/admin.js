@@ -8,7 +8,7 @@ pnxapp.filter('startFrom', function() {
 });
 
 
-pnxapp.controller('AlbumListCtrl', ['$rootScope', '$scope', '$http', '$filter', 'images', 'personaSvc', function($rootScope, $scope, $http, $filter, images, personaSvc) {
+pnxapp.controller('AlbumListCtrl', ['$rootScope', '$scope', '$http', '$filter', 'images', 'userSvc', function($rootScope, $scope, $http, $filter, images, userSvc) {
     $scope.images = images;
     $scope.selectedImages = [];
     $scope.selectedAlbum = false;
@@ -47,8 +47,11 @@ pnxapp.controller('AlbumListCtrl', ['$rootScope', '$scope', '$http', '$filter', 
 
     angular.extend($scope, { verified:false, error:false, email:"" });
 
+    $scope.login = function () {
+        userSvc.login($scope.username, $scope.password);
+    };
     $scope.verify = function () {
-        personaSvc.verify().then(function (email) {
+        userSvc.verify().then(function (email) {
             angular.extend($scope, { verified:true, error:false, email:email });
             $scope.status();
         }, function (err) {
@@ -57,7 +60,7 @@ pnxapp.controller('AlbumListCtrl', ['$rootScope', '$scope', '$http', '$filter', 
     };
 
     $scope.logout = function () {
-        personaSvc.logout().then(function () {
+        userSvc.logout().then(function () {
             angular.extend($scope, { verified:false, error:false});
         }, function (err) {
             $scope.error = err;
@@ -65,7 +68,7 @@ pnxapp.controller('AlbumListCtrl', ['$rootScope', '$scope', '$http', '$filter', 
     };
 
     $scope.status = function () {
-        personaSvc.status().then(function (data) {
+        userSvc.status().then(function (data) {
             // in addition to email, everything else returned by persona/status will be added to the scope
             // this could be the chance to expose data from your local DB, for example
             angular.extend($scope, data, { error:false, verified:!!data.email, email:data.email });
@@ -73,7 +76,7 @@ pnxapp.controller('AlbumListCtrl', ['$rootScope', '$scope', '$http', '$filter', 
             // basicially means we just logged in
             if ($scope.verified) {
                 $scope.init();
-            }                                                                                                                                               
+            }
         }, function (err) {
             $scope.error = err;
         });
@@ -120,7 +123,7 @@ pnxapp.controller('AlbumListCtrl', ['$rootScope', '$scope', '$http', '$filter', 
     $scope.$watch('images.albums', function() {
         $rootScope.$emit('spun');
     });
-    
+
     /* Rewookmark when filter expression changes */
     $scope.$watch('albumsearch', function() {
         setTimeout(function() {
@@ -139,7 +142,7 @@ pnxapp.controller('AlbumListCtrl', ['$rootScope', '$scope', '$http', '$filter', 
         $scope.hoverAlbum = false;
     }
 
-    $scope.clickAlbum = function(album) { 
+    $scope.clickAlbum = function(album) {
         $rootScope.$emit('spin');
         images.getAccestokensFromBackend(album);
         images.getImagesFromBackend(album);
@@ -332,9 +335,15 @@ services.factory('images', ['$rootScope', '$http', function($rootScope, $http) {
     return images;
 }]);
 
-services.factory("personaSvc", ["$http", "$q", function ($http, $q) {
+services.factory("userSvc", ["$http", "$q", function ($http, $q) {
 
   return {
+        login:function (username, password) {
+            return $http.post("/api/user/login", {'username':username, 'password':password}).then(function (response) {
+              console.log(response);
+              return response.data;
+            });
+        },
         verify:function () {
             var deferred = $q.defer();
             navigator.id.get(function (assertion) {
@@ -350,7 +359,7 @@ services.factory("personaSvc", ["$http", "$q", function ($http, $q) {
             return deferred.promise;
         },
         logout:function () {
-            return $http.post("/api/persona/logout").then(function (response) {
+            return $http.post("/api/user/logout").then(function (response) {
                 if (response.data.status != "okay") {
                     $q.reject(response.data.reason);
                 }
@@ -358,11 +367,11 @@ services.factory("personaSvc", ["$http", "$q", function ($http, $q) {
             });
         },
         status:function () {
-            return $http.post("/api/persona/status").then(function (response) {
+            return $http.post("/api/user/status").then(function (response) {
                 return response.data;
             });
         }
     };
 }]);
 
-//AlbumListCtrl.$inject = ["$scope", "personaSvc"];
+//AlbumListCtrl.$inject = ["$scope", "userSvc"];
