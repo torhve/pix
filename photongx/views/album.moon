@@ -4,14 +4,14 @@ class Album extends Widget
       div class:"album-label", ->
         a href:@albumsurl, title:"Back to album list", ->
           i class:"fa fa-home"
-          text " | " 
+          text " | "
         a href:@albumurl, ->
           i class:"fa fa-camera-retro"
           text " " ..@album.title
       div class:"items",->
-        for index, image in pairs @images 
+        for index, image in pairs @images
           div class:"item", ->
-            a href:image\get_huge_url!, id:image.token, class:"lb", -> 
+            a href:image\get_huge_url!, id:image.token, class:"lb", ->
               img src:image\get_thumb_url!, title:"#{image.file_name} - #{image.views} views"
               div class:"thumb-label", ->
                 p image.file_name, ->
