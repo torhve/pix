@@ -40,7 +40,7 @@ imagedatesql = do
             to_timestamp(metadata->'DateTimeOriginal', 'YYYY:MM:DD HH24:MI:SS'),
             to_timestamp(metadata->'CreateDate', 'YYYY:MM:DD HH24:MI:SS'),
             created_at
-          ))*1000 AS date 
+          ))*1000 AS date
   ]]
 
 cache_session = (session) ->
@@ -194,11 +194,11 @@ class Images extends Model
   real_file_name: =>
     @real_file_path! .. '/' .. @file_name
 
-  get_file_size: => 
+  get_file_size: =>
       fp = io.open @real_file_name!
-      if fp == nil then 
-        return 0 
-      filesize = fp\seek "end" 
+      if fp == nil then
+        return 0
+      filesize = fp\seek "end"
       fp\close()
       return filesize
 
@@ -249,7 +249,7 @@ class Accesstokens extends Model
 
   @validate_album: (slug, album_id) =>
     res = db.select "* from accesstokens where slug = ? and album_id = ? and now() < expires_at", slug, album_id
-    if #res > 0 
+    if #res > 0
       db.update "accesstokens", {
         views: db.raw"views + 1"
         }, {
