@@ -175,10 +175,12 @@ class extends lapis.Application
       body = ngx.req.get_body_data!
       if body
         body = from_json body
-        user, err = Users\login body.username, body.password
-        if user
+        status, err = Users\login body.username, body.password
+        if status
+          user = err
           Users\write_session @, user
-          return {email:user.email}
+          return {status:'okay', email:user.email}
+        return {email:false, reason: err}
 
       json: {email:false}
   }

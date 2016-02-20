@@ -97,7 +97,7 @@ class Users extends Model
         return false, "err_invalid_user"
     verified = bcrypt.verify(username .. password .. config.bcrypt_token, user.encrypted_password)
     if verified
-      return user
+      return true, user
     return false, "err_invalid_user"
   @logout: =>
     nil

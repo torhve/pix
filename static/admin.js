@@ -48,10 +48,7 @@ pnxapp.controller('AlbumListCtrl', ['$rootScope', '$scope', '$http', '$filter', 
     angular.extend($scope, { verified:false, error:false, email:"" });
 
     $scope.login = function () {
-        userSvc.login($scope.username, $scope.password);
-    };
-    $scope.verify = function () {
-        userSvc.verify().then(function (email) {
+        userSvc.login($scope.username, $scope.password).then(function (email) {
             angular.extend($scope, { verified:true, error:false, email:email });
             $scope.status();
         }, function (err) {
@@ -339,22 +336,13 @@ services.factory("userSvc", ["$http", "$q", function ($http, $q) {
 
   return {
         login:function (username, password) {
-            return $http.post("/api/user/login", {'username':username, 'password':password}).then(function (response) {
-              console.log(response);
-              return response.data;
-            });
-        },
-        verify:function () {
             var deferred = $q.defer();
-            navigator.id.get(function (assertion) {
-                $http.post("/api/persona/login", {assertion:assertion})
-                    .then(function (response) {
-                        if (response.data.status != "okay") {
-                            deferred.reject(response.data.reason);
-                        } else {
-                            deferred.resolve(response.data.email);
-                        }
-                    });
+            $http.post("/api/user/login", {'username':username, 'password':password}).then(function (response) {
+                if (response.data.status != "okay") {
+                    deferred.reject(response.data.reason);
+                } else {
+                    deferred.resolve(response.data.email);
+                }
             });
             return deferred.promise;
         },
