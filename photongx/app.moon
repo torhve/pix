@@ -82,6 +82,7 @@ class extends lapis.Application
     @images = Images\select "where album_id = ? ORDER BY date, file_name", @album.id, fields: "*, "..imagedatesql
     @albumurl = @url_for('album', token:@params.token, title:@album.title)
     @albumsurl = @url_for('albums')
+    @title = "Album #{@album.title}"
     render: true
 
   [tokenalbum: "/album/:slug/:token/:title/"]: =>
