@@ -201,7 +201,7 @@ class extends lapis.Application
 -- ALBUMS API view - get albums or add new album
   [apialbums: "/api/albums"]: respond_to {
     GET: capture_errors_json require_login =>
-      albums = assert_error Albums\select "where user_id = ?", @current_user.id
+      albums = assert_error Albums\select "where user_id = ? ORDER BY id", @current_user.id
       json: {:albums}
 
     POST: capture_errors_json require_login json_params =>
@@ -319,7 +319,7 @@ class extends lapis.Application
           ttl = 2^32 -- ~150 years
 
       name = @req.params_post.name
-      album = Albums\find id:@req.params_post.album_id, user_id: @current_user.id
+      album = Albums\find id:@params.album_id, user_id: @current_user.id
       accesstoken = Accesstokens\create @current_user.id, album.id, name, ttl
 
       json: {:album,:accesstoken}

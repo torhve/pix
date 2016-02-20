@@ -196,12 +196,14 @@ pnxapp.controller('AlbumListCtrl', ['$rootScope', '$scope', '$http', '$filter', 
         });
     }
     $scope.albumLink = function(album) {
+        console.log('albumLink', album);
         $scope.linkalbum = album;
         $('#input-album-id').val(album.id);
         $('#albumlinkmodal').modal('show');
         return false;
     }
     $scope.albumAdd = function(album) {
+        console.log('albumAdd', album);
         $scope.uploading = true;
         $scope.selectedAlbum = false;
         $scope.albumname = album.title;
