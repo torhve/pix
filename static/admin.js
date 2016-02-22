@@ -340,11 +340,10 @@ services.factory("userSvc", ["$http", "$q", function ($http, $q) {
         login:function (username, password) {
             var deferred = $q.defer();
             $http.post("/api/user/login", {'username':username, 'password':password}).then(function (response) {
-                if (response.data.status != "okay") {
-                    deferred.reject(response.data.reason);
-                } else {
+                if (response.data.status === "okay") {
                     deferred.resolve(response.data.email);
                 }
+                deferred.reject(response.data.reason);
             });
             return deferred.promise;
         },

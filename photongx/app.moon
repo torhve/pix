@@ -1,6 +1,5 @@
 lapis = require "lapis"
 io = require "io"
-import capture_errors from require "lapis.application"
 import json_params, respond_to, capture_errors, capture_errors_json, assert_error, yield_error from require "lapis.application"
 import validate, assert_valid from require "lapis.validate"
 import escape_pattern, trim_filter, from_json, to_json from require "lapis.util"
@@ -170,19 +169,13 @@ class extends lapis.Application
     --return layout:false, ''
 
   [user_login: "/api/user/login"]: respond_to {
-    POST: capture_errors_json =>
-      ngx.req.read_body!
-      body = ngx.req.get_body_data!
-      if body
-        body = from_json body
-        status, err = Users\login body.username, body.password
-        if status
-          user = err
-          Users\write_session @, user
-          return {status:'okay', email:user.email}
-        return {email:false, reason: err}
-
-      json: {email:false}
+    POST: json_params capture_errors_json =>
+      status, err = Users\login @params.username, @params.password
+      if status
+        user = err
+        Users\write_session @, user
+        return json: {status:'okay', email:user.email}
+      json: {email:false, reason: err}
   }
   [user_status: "/api/user/status"]: respond_to {
     GET: =>
