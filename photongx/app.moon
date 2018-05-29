@@ -33,6 +33,10 @@ make_reader = (fname, timestamp) ->
 class extends lapis.Application
   layout: require "photongx.views.layout"
   views_prefix: "photongx.views"
+  handle_error: (err, trace) =>
+    print(err)
+    print(trace)
+    super err, trace
 
   @before_filter =>
     @current_user = Users\read_session @
